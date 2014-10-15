@@ -1,0 +1,234 @@
+<html>
+
+<!-- these 4 files always have to be included -->
+<link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
+<script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+<script type="text/javascript" src="../../lib/js/jquery-ui-1.10.3.full.min.js"></script>
+
+<!-- these three files  have to be always included -->
+<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
+<script type="text/javascript" src="../../js/translate.js"></script>
+<script type="text/javascript" src="../../js/adapter-settings.js"></script>
+
+<!-- you have to define 2 functions in the global scope: -->
+<script type="text/javascript">
+    var rooms =       [];
+    var roomsSelect = "";
+    var devices =     [];
+    var processed =   1000;
+    var isStarted =   null;
+    var changed =     false;
+
+    systemDictionary = {
+        "Connection settings":{"de": "Verbindungseinstellungen", "ru": "Настройки соединения"},
+        "Transport:"         :{"de": "Transport:",               "ru": "Протокол:"}
+    };
+
+    function encrypt(key, value) {
+        var result="";
+        for(var i = 0; i < value.length; ++i) {
+            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+        }
+        return result;
+    }
+
+    function decrypt(key, value) {
+        var result = "";
+        for(var i = 0; i < value.length; ++i) {
+            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+        }
+        return result;
+    }
+
+    function showHideSettings() {
+        if ($('#type').val() == 'client') {
+            $('#_url').show();
+        }else {
+            $('#_url').hide();
+        }
+    }
+
+    function init() {
+        showHideSettings();
+        $('#type').change(showHideSettings);
+        $('#test').button().click(test);
+        $('#save').button("disable");
+    }
+
+    function setValue(id, value) {
+        // example: select elements with id=key and class=value and insert value
+        if ($('#' + id + '.value').attr('type') == 'checkbox') {
+            $('#' + id + '.value').prop('checked', value).change(function() {
+                changed = true;
+                $('#save').button("enable");
+            });
+        } else {
+            $('#' + id + '.value').val(value).change(function() {
+                changed = true;
+                $('#save').button("enable");
+            }).keyup(function() {
+                changed = true;
+                $('#save').button("enable");
+            });
+        }
+    }
+
+    function loadHelper(settings, param, subparam) {
+        if (!settings) return;
+
+        if (subparam && param) {
+            for (var key in settings[param][subparam]) {
+                if (typeof settings[param][subparam][key] != 'object') {
+                    if (key == "pass") {
+                        settings[param][subparam][key] = decrypt("Zgfr56gFe87jJOM", settings[param][subparam][key]);
+                    };
+                    setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
+                } else {
+                    alert("4th level is not supported");
+                }
+            }
+        } else if (param) {
+            for (var key in settings[param]) {
+                if (typeof settings[param][key] != 'object') {
+                    setValue(param + '_' + key, settings[param][key]);
+                } else {
+                    loadHelper(settings, param, key);
+                }
+            }
+        } else {
+            for (var key in settings) {
+                if (typeof settings[key] != 'object') {
+                    setValue(key, settings[key]);
+                } else {
+                    loadHelper(settings, key);
+                }
+            }
+        }
+    }
+
+    // the function loadSettings has to exist ...
+    function load(settings) {
+        loadHelper(settings);
+        $('#pass_confirm').val($('#pass').val());
+        init ();
+    }
+
+    function test() {
+        var newValue = JSON.stringify(getSettings());
+        if (!common.enabled) {
+            showMessage("Enable first the adapter to test email.");
+            return;
+        }
+        if (changed) {
+            showMessage("First save the adapter");
+            return;
+        }
+        sendTo('mqtt.' + instance, 'list', function () {
+            showMessage('Check the log or your email');
+        });
+    }
+
+    function saveHelper(obj, id, value) {
+        var ids = id.split('_');
+
+        if (ids.length === 1) {
+            obj[id] = value;
+            if (ids[2] == "pass") {
+                value = encrypt("Zgfr56gFe87jJOM", value);
+            }
+        } else if (ids.length === 2) {
+            if (!obj[ids[0]]) obj[ids[0]] = {};
+            obj[ids[0]][ids[1]] = value;
+        } else if (ids.length === 3) {
+            if (!obj[ids[0]]) obj[ids[0]] = {};
+            if (!obj[ids[0]][ids[1]]) obj[ids[0]][ids[1]] = {};
+            obj[ids[0]][ids[1]][ids[2]] = value;
+        }
+        return obj;
+    }
+    function getSettings() {
+        var obj = {};
+        $('.value').each(function () {
+            var $this = $(this);
+            var id = $this.attr('id');
+
+            if ($this.attr('type') == 'checkbox') {
+                obj = saveHelper(obj, id, $this.prop('checked'))
+            } else {
+                obj = saveHelper(obj, id, $this.val())
+            }
+        });
+        return obj;
+    }
+
+    // ... and the function save has to exist.
+    // you have to make sure the callback is called with the settings object as first param!
+    function save(callback) {
+        if ($('#pass').val() != $('#pass_confirm').val()) {
+            alert(_('Password confirmation is not equal with password'));
+            return;
+        }
+        // example: select elements with class=value and build settings object
+        changed = false;
+        callback(getSettings());
+        $('#save').button("disable");
+    }
+</script>
+
+<!-- you have to put your config page in a div with id adapter-container -->
+<div id="adapter-container">
+
+    <table><tr>
+        <td><img src="mqtt.png"></td>
+        <td style="padding-top: 20px;padding-left: 10px"><h3 class="translate">MQTT adapter settings</h3></td>
+    </tr></table>
+
+    <table>
+        <tr>
+            <td colspan='3'><h4 class="translate">Connection settings</h4></td>
+        </tr>
+        <tr>
+            <td class="translate">Type:</td>
+            <td><select id="type" class="value">
+                <option value="client">Client</option>
+                <option value="server">Server</option>
+            </select></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="translate">Port:</td>
+            <td><input id="port" type="text" size="5" class="value"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="translate">User:</td>
+            <td><input id="user" type="text" size="50" class="value"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="translate">Password:</td>
+            <td><input id="pass" type="password" size="50" class="value"/></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="translate">Password confirmation:</td>
+            <td><input id="pass_confirm" type="password" size="50"/></td>
+            <td></td>
+        </tr>
+        <tr id="_url">
+            <td class="translate">URL:</td>
+            <td><input type="checkbox" id="url" class="value"/></td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td class="translate">Patterns:</td>
+            <td><input id="patterns" type="text" size="100" class="value"/></td>
+            <td class="translate">Divided by comma</td>
+        </tr>
+    </table>
+    <button id="test" class="translate">Test connection</button>
+
+</div>
+</html>

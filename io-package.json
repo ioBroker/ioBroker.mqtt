@@ -1,0 +1,29 @@
+{
+    "common": {
+        "name":                     "mqtt",
+        "version":                  "0.0.1",
+        "title":                    "mqtt Adapter",
+        "desc":                     "This adapter allows to send and receive mqtt messages from ioBroker",
+        "authors": [
+            "bluefox <bluefox@ccu.io>"
+        ],
+        "license":                  "MIT",
+        "platform":                 "Javascript/Node.js",
+        "mode":                     "daemon",
+        "loglevel":                 "info",
+        "icon":                     "mqtt.png",
+        "keywords":                 ["notification", "mqtt", "message"],
+        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png"
+    },
+    "native": {
+        "type":     "client",
+        "port":     1883,
+        "user":     "",
+        "pass":     "",
+        "url":      "localhost",
+        "patterns": ["*"]
+    },
+    "objects": [
+
+    ]
+}
