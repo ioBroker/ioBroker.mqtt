@@ -13,16 +13,27 @@
 
 <!-- you have to define 2 functions in the global scope: -->
 <script type="text/javascript">
-    var rooms =       [];
-    var roomsSelect = "";
-    var devices =     [];
-    var processed =   1000;
     var isStarted =   null;
-    var changed =     false;
 
     systemDictionary = {
-        "Connection settings":{"de": "Verbindungseinstellungen", "ru": "Настройки соединения"},
-        "Transport:"         :{"de": "Transport:",               "ru": "Протокол:"}
+        "MQTT adapter settings":  {"en": "MQTT adapter settings",  "de": "MQTT adapter settings",  "ru": "MQTT adapter settings"},
+        "Type:":                  {"en": "Type:",                  "de": "Type:",                  "ru": "Type:"},
+        "Port:":                  {"en": "Port:",                  "de": "Port:",                  "ru": "Port:"},
+        "User:":                  {"en": "User:",                  "de": "User:",                  "ru": "User:"},
+        "Password:":              {"en": "Password:",              "de": "Password:",              "ru": "Password:"},
+        "Password confirmation:": {"en": "Password confirmation:", "de": "Password confirmation:", "ru": "Password confirmation:"},
+        "URL:":                   {"en": "URL:",                   "de": "URL:",                   "ru": "URL:"},
+        "Patterns:":              {"en": "Patterns:",              "de": "Patterns:",              "ru": "Patterns:"},
+        "Divided by comma":       {"en": "Divided by comma",       "de": "Divided by comma",       "ru": "Divided by comma"},
+        "Store only on change:":  {"en": "Store only on change:",  "de": "Store only on change:",  "ru": "Store only on change:"},
+        "Trace output for every message:": {
+            "en": "Trace output for every message:",
+            "de": "Trace output for every message:",
+            "ru": "Trace output for every message:"
+        },
+        "Test connection":        {"en": "Test connection",        "de": "Test connection",        "ru": "Test connection"},
+        "Result: ":               {"en": "Result: ",               "de": "Result: ",               "ru": "Result: "},
+        "connected":              {"en": "connected",              "de": "connected",              "ru": "connected"}
     };
 
     function encrypt(key, value) {
@@ -44,8 +55,10 @@
     function showHideSettings() {
         if ($('#type').val() == 'client') {
             $('#_url').show();
+            $('#test').show();
         }else {
             $('#_url').hide();
+            $('#test').hide();
         }
     }
 
@@ -80,9 +93,6 @@
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
                 if (typeof settings[param][subparam][key] != 'object') {
-                    if (key == "pass") {
-                        settings[param][subparam][key] = decrypt("Zgfr56gFe87jJOM", settings[param][subparam][key]);
-                    };
                     setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
                 } else {
                     alert("4th level is not supported");
@@ -99,6 +109,9 @@
         } else {
             for (var key in settings) {
                 if (typeof settings[key] != 'object') {
+                    if (key == "pass") {
+                        settings[key] = decrypt("Zgfr56gFe87jJOM", settings[key]);
+                    };
                     setValue(key, settings[key]);
                 } else {
                     loadHelper(settings, key);
@@ -117,15 +130,15 @@
     function test() {
         var newValue = JSON.stringify(getSettings());
         if (!common.enabled) {
-            showMessage("Enable first the adapter to test email.");
+            showMessage("Enable first the adapter to test client.");
             return;
         }
         if (changed) {
             showMessage("First save the adapter");
             return;
         }
-        sendTo('mqtt.' + instance, 'list', function () {
-            showMessage('Check the log or your email');
+        sendTo('mqtt.' + instance, 'test', getSettings(), function (result) {
+            showMessage(_('Result: ') + _(result));
         });
     }
 
@@ -133,10 +146,8 @@
         var ids = id.split('_');
 
         if (ids.length === 1) {
+            if (ids[0] == "pass") value = encrypt("Zgfr56gFe87jJOM", value);
             obj[id] = value;
-            if (ids[2] == "pass") {
-                value = encrypt("Zgfr56gFe87jJOM", value);
-            }
         } else if (ids.length === 2) {
             if (!obj[ids[0]]) obj[ids[0]] = {};
             obj[ids[0]][ids[1]] = value;
@@ -218,14 +229,24 @@
         </tr>
         <tr id="_url">
             <td class="translate">URL:</td>
-            <td><input type="checkbox" id="url" class="value"/></td>
+            <td><input type="text" id="url" class="value"/></td>
             <td></td>
         </tr>
 
         <tr>
             <td class="translate">Patterns:</td>
-            <td><input id="patterns" type="text" size="100" class="value"/></td>
+            <td><input id="patterns" type="text" size="50" class="value"/></td>
             <td class="translate">Divided by comma</td>
+        </tr>
+        <tr>
+            <td class="translate">Store only on change:</td>
+            <td><input id="onchange" type="checkbox" class="value"/></td>
+            <td class="translate"></td>
+        </tr>
+        <tr>
+            <td class="translate">Trace output for every message:</td>
+            <td><input id="debug" type="checkbox" class="value"/></td>
+            <td class="translate"></td>
         </tr>
     </table>
     <button id="test" class="translate">Test connection</button>

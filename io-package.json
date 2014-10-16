@@ -10,6 +10,7 @@
         "license":                  "MIT",
         "platform":                 "Javascript/Node.js",
         "mode":                     "daemon",
+        "messagebox":               true,
         "loglevel":                 "info",
         "icon":                     "mqtt.png",
         "keywords":                 ["notification", "mqtt", "message"],
@@ -21,7 +22,9 @@
         "user":     "",
         "pass":     "",
         "url":      "localhost",
-        "patterns": ["*"]
+        "patterns": "#",
+        "onchange": true,
+        "debug":    false
     },
     "objects": [
 
