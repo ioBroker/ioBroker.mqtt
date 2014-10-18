@@ -1,7 +1,7 @@
 {
     "common": {
         "name":                     "mqtt",
-        "version":                  "0.0.1",
+        "version":                  "0.0.2",
         "title":                    "mqtt Adapter",
         "desc":                     "This adapter allows to send and receive mqtt messages from ioBroker",
         "authors": [
@@ -17,14 +17,19 @@
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png"
     },
     "native": {
-        "type":     "client",
-        "port":     1883,
-        "user":     "",
-        "pass":     "",
-        "url":      "localhost",
-        "patterns": "#",
-        "onchange": true,
-        "debug":    false
+        "type":       "client",
+        "port":       1883,
+        "ssl":        false,
+        "user":       "",
+        "pass":       "",
+        "url":        "localhost",
+        "patterns":   "#",
+        "onchange":   true,
+        "debug":      false,
+        "publish":    "*",
+        "certPublic":  "",
+        "certPrivate": ""
+
     },
     "objects": [
 

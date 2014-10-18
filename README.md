@@ -5,9 +5,8 @@ ioBroker mqtt Adapter
 Send emails from ioBroker. 
 
 ## Changelog
-### 0.0.3 (2014-10-09)
-(Bluefox) support of daemon mode
-(Bluefox) add Gruntfile.js
+### 0.0.2 (2014-10-19)
+* (bluefox) support of server (actual no authentication)
 
 ## Install
 
@@ -18,78 +17,41 @@ Send emails from ioBroker.
 
 ## Usage
 
-To send email from ScriptEngine just write: 
-
-```javascript
-// send email to all instances of email adapter
-sendTo("email", "Email body");
-
-// send email to specific instance of email adapter
-sendTo("email.1", "Email body");
-
-// To specify subject or other options
-sendTo("email", {
-    from:    "iobroker@mydomain.com",
-    to:      "aabbcc@gmail.com",
-    subject: "Message from ioBroker",
-    text:    "This is test email to you!"
-});
-
-// To send attachments
-sendTo("email", {
-    attachments: [
-       // use file on disk as attachment
-       {path: "/pathToImage/picture1.jpg"},
-       {   // use URL as an attachment
-            filename: 'license.txt',
-            path: 'https://raw.github.com/andris9/Nodemailer/master/LICENSE'
-       }
-    ]
-});
-
-// To send in html format
-sendTo("email", {
-    html: "<p>Embedded image: <img src='cid:image1'/></p>",
-    attachments:[
-        {path: "path/to/file/image1.jpg", cid: "image1"}
-    ]
-});
-
-```
-
-To send email from other adapter use **adapter.sendTo** function.
 
 
-## Supported services
-- 1und1
-- AOL
-- DynectEmail
-- FastMail
-- Gmail
-- Godaddy
-- GodaddyAsia
-- GodaddyEurope
-- hot.ee
-- Hotmail
-- iCloud
-- mail.ee
-- Mail.ru
-- Mailgun
-- Mailjet
-- Mandrill
-- Postmark
-- QQ
-- QQex
-- SendCloud
-- SendGrid
-- SES
-- Yahoo
-- Yandex
-- Zoho
-- User specific (Server, port and security defined manually)
 
+## How to test mqtt client:
+- Set type to "Client".
+- Leave port on 1883.
+- Set URL as "broker.mqttdashboard.com"
+- To get absolutely all topics(messages) set pattern to "#".
+- To receive all topics for "/4MS" set pattern to "/4MS/#"
+- To receive all topics for "/MS and "/floorish" set pattern to "/4MS/#, /floorish/#"
 
-For other services see documentation of **Nodemailer**: https://github.com/andris9/Nodemailer
+##Examples of using wildcards
+The following examples on the use of wildcards, builds on the example provided in topic strings.
+
+- "Sport"
+- "Sport/Tennis"
+- "Sport/Basketball"
+- "Sport/Swimming"
+- "Sport/Tennis/Finals"
+- "Sport/Basketball/Finals"
+- "Sport/Swimming/Finals"
+
+If you want to subscribe to all Tennis topics, you can use the number sign '#', or the plus sign '+'.
+
+- "Sport/Tennis/#" (this will receive "Sport/Tennis" and "Sport/Tennis/Finals")
+- "Sport/Tennis/+" (this will receive "Sport/Tennis/Finals" but not "Sport/Tennis")
+
+For JMS topics, if you want to subscribe to all Finals topics, you can use the number sign '#', or the plus sign '+'.
+
+- "Sport/#/Finals"
+- "Sport/+/Finals"
+
+For MQTT topics, if you want to subscribe to all Finals topics, you can use the plus sign '+' .
+
+"Sport/+/Finals"
 
 ## License
 

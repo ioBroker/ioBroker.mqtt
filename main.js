@@ -14,6 +14,9 @@ var adapter = require(__dirname + '/../../lib/adapter.js')('mqtt');
 var client = null;
 var server = null;
 var values = {};
+var states = {};
+
+var messageboxLen = 11;// '.messagebox'.length;
 
 function decrypt(key, value) {
     var result = "";
@@ -30,7 +33,57 @@ adapter.on('message', function (obj) {
 
 adapter.on('ready', function () {
     adapter.config.pass = decrypt("Zgfr56gFe87jJOM", adapter.config.pass);
-    main();
+    if (adapter.config.ssl && adapter.config.type == 'server') {
+        // Read the certificates and store it under
+        // "adapter/mqtt/cert/privatekey.pem" and
+        // "adapter/mqtt/cert/certificate.pem"
+        // because mqtt does not support certificates not from file
+        adapter.getForeignObject('system.config', function (err, obj) {
+            if (err || !obj || !obj.common.certificates || !obj.common.certificates[adapter.config.certPublic] || !obj.common.certificates[adapter.config.certPrivate]) {
+                adapter.log.error('Cannot enable secure MQTT server, because no certificates found: ' + adapter.config.certPublic + ', ' + adapter.config.certPrivate);
+                setTimeout(function () {
+                    process.exit(1);
+                }, 500);
+            } else {
+                var fs = require('fs');
+                // Take care about flash disk and do not write the same
+                if (!fs.existsSync(__dirname + '/cert')) {
+                    fs.mkdirSync(__dirname + '/cert');
+                    fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.common.certificates[adapter.config.certPrivate]);
+                    fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.common.certificates[adapter.config.certPublic]);
+                } else {
+                    if (!fs.existsSync(__dirname + '/cert/privatekey.pem')) {
+                        fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.common.certificates[adapter.config.certPrivate]);
+                    } else {
+                        var cert = fs.readFileSync(__dirname + '/cert/privatekey.pem');
+                        if (cert != obj.common.certificates[adapter.config.certPrivate]) {
+                            fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.common.certificates[adapter.config.certPrivate]);
+                        }
+                    }
+                    if (!fs.existsSync(__dirname + '/cert/certificate.pem')) {
+                        fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.common.certificates[adapter.config.certPublic]);
+                    } else {
+                        var cert = fs.readFileSync(__dirname + '/cert/certificate.pem');
+                        if (cert != obj.common.certificates[adapter.config.certPublic]) {
+                            fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.common.certificates[adapter.config.certPublic]);
+                        }
+                    }
+                }
+
+                main();
+            }
+        });
+    } else {
+        if (fs.existsSync(__dirname + '/cert/privatekey.pem')) {
+            fs.unlinkSync(__dirname + '/cert/privatekey.pem');
+        }
+        if (fs.existsSync(__dirname + '/cert/certificate.pem')) {
+            fs.unlinkSync(__dirname + '/cert/certificate.pem');
+        }
+
+        if (fs.existsSync(__dirname + '/cert')) fs.rmdirSync(__dirname + '/cert');
+        main();
+    }
 });
 
 adapter.on('unload', function () {
@@ -40,11 +93,33 @@ adapter.on('unload', function () {
     }
 
     if (server) {
-        server.end();
+        for (var k in server.clients) {
+            server.clients[k].stream.end();
+        }
+        server.clients = {};
         server = null;
     }
 });
 
+
+// is called if a subscribed state changes
+adapter.on('stateChange', function (id, state) {
+    // you can use the ack flag to detect if state is desired or acknowledged
+    if (state.ack && (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox')) {
+        var old = states[id] ? states[id].val : null;
+        states[id] = state;
+        if (!adapter.config.onchange || old !== state.val) {
+            id = id.replace(/\./g, '/');
+            if (server) {
+                for (var k in server.clients) {
+                    server.clients[k].publish({topic: id, payload: state2string(state.val)});
+                }
+            } else if (client) {
+                client.publish(id, state2string(state.val));
+            }
+        }
+    }
+});
 
 function processMessage(obj) {
     if (!obj || !obj.command) return;
@@ -79,8 +154,13 @@ function processMessages() {
         }
     });
 }
-function createClient (url, port, user, pass, patterns) {
-    var _url = 'mqtt://' + (user ? (user + ':' + pass + '@') : '') + url + (port ? (':' + port) : '') + '?clientId=ioBroker.' + adapter.namespace;
+
+function state2string(val) {
+    return (val === null) ? 'null' : (val === undefined ? 'undefined' : val.toString());
+}
+
+function createClient(url, port, user, pass, patterns, ssl) {
+    var _url = ((!ssl) ? 'mqtt' : 'mqtts') + '://' + (user ? (user + ':' + pass + '@') : '') + url + (port ? (':' + port) : '') + '?clientId=ioBroker.' + adapter.namespace;
     adapter.log.info('Try to connect to ' + _url);
     client = mqtt.connect(_url);
     if (!patterns) patterns = '#';
@@ -92,11 +172,10 @@ function createClient (url, port, user, pass, patterns) {
         patterns[i] = patterns[i].trim();
         client.subscribe(patterns[i]);
     }
-//    client.publish('messages', 'hello me!');
+
     client.on('message', function(topic, message) {
         if (!topic) return;
-        if (adapter.config.debug)
-            adapter.log.debug(topic + ' : ' + message);
+        if (adapter.config.debug) adapter.log.info(topic + ' : ' + message);
 
         // Ignore message if value does not changed
         if (adapter.config.onchange) {
@@ -115,14 +194,131 @@ function createClient (url, port, user, pass, patterns) {
 
     client.on('connect', function () {
         adapter.log.info('Connected to ' + url);
+        for (var id in states) {
+            if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                client.publish(id.replace(/\//g, '.'), state2string(states[id].val));
+            }
+        }
     });
 }
 
-function main() {
-    if (adapter.config.type == 'client') {
-        createClient(adapter.config.url, adapter.config.port, adapter.config.user, adapter.config.pass, adapter.config.patterns);
+function createServer(ip, port, ssl) {
+    var cltFunction = function(client) {
+        var self = this;
+
+        if (!self.clients) self.clients = {};
+
+        client.on('connect', function(packet) {
+            adapter.log.info('Client [' + packet.clientId + '] connected');
+            client.connack({returnCode: 0});
+            client.id = packet.clientId;
+            self.clients[client.id] = client;
+
+            // Send all subscribed variables to client
+            for (var id in states) {
+                if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                    client.publish({topic: id.replace(/\./g, '/'), payload: state2string(states[id].val)});
+                }
+            }
+        });
+
+        client.on('publish', function(packet) {
+            if (adapter.config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + packet.topic + '": ' +  packet.payload);
+            for (var k in self.clients) {
+                self.clients[k].publish({topic: packet.topic, payload: packet.payload});
+            }
+
+            var topic = packet.topic.replace(/\//g, '.');
+            if (states[topic] === undefined) {
+                topic = adapter.namespace + ((topic[0] == '.') ? topic : ('.' + topic));
+            }
+
+            adapter.setState(topic, {val: packet.payload, ack: true});
+        });
+
+        client.on('subscribe', function(packet) {
+            var granted = [];
+            for (var i = 0; i < packet.subscriptions.length; i++) {
+                adapter.log.info('Client [' + client.id + '] subscribes on "' + packet.subscriptions[i].topic + '"');
+                granted.push(packet.subscriptions[i].qos);
+            }
+
+            client.suback({granted: granted, messageId: packet.messageId});
+        });
+
+        client.on('pingreq', function(packet) {
+            adapter.log.debug('Client [' + client.id + '] pingreq');
+            client.pingresp();
+        });
+
+        client.on('disconnect', function(packet) {
+            adapter.log.info('Client [' + client.id + '] disconnected');
+            client.stream.end();
+        });
+
+        client.on('close', function(err) {
+            adapter.log.info('Client [' + client.id + '] closed');
+            delete self.clients[client.id];
+        });
+
+        client.on('error', function(err) {
+            adapter.log.error('[' + client.id + '] ' + err);
+
+            if (!self.clients[client.id]) return;
+
+            delete self.clients[client.id];
+            client.stream.end();
+        });
+    };
+
+    if (!ssl) {
+        server = mqtt.createServer(cltFunction).listen(port || 1883);
     } else {
-        //createServer();
+        server = mqtt.createSecureServer(
+            __dirname + '/cert/privatekey.pem',
+            __dirname + '/cert/certificate.pem',
+            cltFunction).listen(port || 1883);
+    }
+}
+
+function main() {
+    var cnt = 0;
+
+    // Subscribe on own variables to publish it
+    if (adapter.config.publish) {
+        var parts = adapter.config.publish.split(',');
+        for (var t = 0; t < parts.length; t++) {
+            adapter.subscribeForeignStates(parts[t].trim());
+            cnt++;
+            adapter.getForeignStates(parts[t].trim(), function (err, res) {
+                if (!err && res) {
+                    if (!states) states = {};
+
+                    for (var id in res) {
+                        if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                            states[id] = res[id];
+                        }
+                    }
+                }
+                cnt--;
+                // If all patters answered, start client or server
+                if (!cnt) {
+                    if (adapter.config.type == 'client') {
+                        createClient(adapter.config.url, adapter.config.port, adapter.config.user, adapter.config.pass, adapter.config.patterns, adapter.config.ssl);
+                    } else {
+                        createServer('0.0.0.0', adapter.config.port, adapter.config.ssl);
+                    }
+                }
+            });
+        }
+    }
+    // If no subscription, start client or server
+    if (!cnt) {
+        if (adapter.config.type == 'client') {
+            createClient(adapter.config.url, adapter.config.port, adapter.config.user, adapter.config.pass, adapter.config.patterns, adapter.config.ssl);
+        } else {
+            createServer('0.0.0.0', adapter.config.port, adapter.config.ssl);
+        }
     }
 }
 
