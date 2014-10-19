@@ -25,6 +25,7 @@
         "url":        "localhost",
         "patterns":   "#",
         "onchange":   true,
+        "publishAllOnStart": true,
         "debug":      false,
         "publish":    "*",
         "certPublic":  "",

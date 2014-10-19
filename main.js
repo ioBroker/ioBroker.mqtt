@@ -20,7 +20,7 @@ var messageboxLen = 11;// '.messagebox'.length;
 
 function decrypt(key, value) {
     var result = "";
-    for(var i = 0; i < value.length; ++i) {
+    for (var i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
     }
     return result;
@@ -32,6 +32,7 @@ adapter.on('message', function (obj) {
 });
 
 adapter.on('ready', function () {
+    var fs = require('fs');
     adapter.config.pass = decrypt("Zgfr56gFe87jJOM", adapter.config.pass);
     if (adapter.config.ssl && adapter.config.type == 'server') {
         // Read the certificates and store it under
@@ -45,17 +46,17 @@ adapter.on('ready', function () {
                     process.exit(1);
                 }, 500);
             } else {
-                var fs = require('fs');
                 // Take care about flash disk and do not write the same
                 if (!fs.existsSync(__dirname + '/cert')) {
                     fs.mkdirSync(__dirname + '/cert');
                     fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.common.certificates[adapter.config.certPrivate]);
                     fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.common.certificates[adapter.config.certPublic]);
                 } else {
+                    var cert;
                     if (!fs.existsSync(__dirname + '/cert/privatekey.pem')) {
                         fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.common.certificates[adapter.config.certPrivate]);
                     } else {
-                        var cert = fs.readFileSync(__dirname + '/cert/privatekey.pem');
+                        cert = fs.readFileSync(__dirname + '/cert/privatekey.pem');
                         if (cert != obj.common.certificates[adapter.config.certPrivate]) {
                             fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.common.certificates[adapter.config.certPrivate]);
                         }
@@ -63,7 +64,7 @@ adapter.on('ready', function () {
                     if (!fs.existsSync(__dirname + '/cert/certificate.pem')) {
                         fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.common.certificates[adapter.config.certPublic]);
                     } else {
-                        var cert = fs.readFileSync(__dirname + '/cert/certificate.pem');
+                        cert = fs.readFileSync(__dirname + '/cert/certificate.pem');
                         if (cert != obj.common.certificates[adapter.config.certPublic]) {
                             fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.common.certificates[adapter.config.certPublic]);
                         }
@@ -74,6 +75,7 @@ adapter.on('ready', function () {
             }
         });
     } else {
+        // Delete certificates if they exist
         if (fs.existsSync(__dirname + '/cert/privatekey.pem')) {
             fs.unlinkSync(__dirname + '/cert/privatekey.pem');
         }
@@ -82,6 +84,8 @@ adapter.on('ready', function () {
         }
 
         if (fs.existsSync(__dirname + '/cert')) fs.rmdirSync(__dirname + '/cert');
+
+        // Start
         main();
     }
 });
@@ -123,7 +127,7 @@ adapter.on('stateChange', function (id, state) {
 
 function processMessage(obj) {
     if (!obj || !obj.command) return;
-    switch(obj.command) {
+    switch (obj.command) {
         case 'test': {
             // Try to connect to mqtt broker
             if (obj.callback && obj.message) {
@@ -159,26 +163,30 @@ function state2string(val) {
     return (val === null) ? 'null' : (val === undefined ? 'undefined' : val.toString());
 }
 
-function createClient(url, port, user, pass, patterns, ssl) {
-    var _url = ((!ssl) ? 'mqtt' : 'mqtts') + '://' + (user ? (user + ':' + pass + '@') : '') + url + (port ? (':' + port) : '') + '?clientId=ioBroker.' + adapter.namespace;
-    adapter.log.info('Try to connect to ' + _url);
+function createClient(config) {
+    var _url  = ((!config.ssl) ? 'mqtt' : 'mqtts') + '://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url + (config.port ? (':' + config.port) : '') + '?clientId=ioBroker.' + adapter.namespace;
+    var __url = ((!config.ssl) ? 'mqtt' : 'mqtts') + '://' + (config.user ? (config.user + ':*******************@') : '') + config.url + (config.port ? (':' + config.port) : '') + '?clientId=ioBroker.' + adapter.namespace;
+    adapter.log.info('Try to connect to ' + __url);
     client = mqtt.connect(_url);
-    if (!patterns) patterns = '#';
-    if (typeof patterns == 'string') {
-        patterns = patterns.split(',');
+
+    // By default subscribr on all topics
+    if (!config.patterns) config.patterns = '#';
+
+    if (typeof config.patterns == 'string') {
+        config.patterns = config.patterns.split(',');
     }
 
-    for (var i = 0; i < patterns.length; i++) {
-        patterns[i] = patterns[i].trim();
-        client.subscribe(patterns[i]);
+    for (var i = 0; i < config.patterns.length; i++) {
+        config.patterns[i] = config.patterns[i].trim();
+        client.subscribe(config.patterns[i]);
     }
 
-    client.on('message', function(topic, message) {
+    client.on('message', function (topic, message) {
         if (!topic) return;
-        if (adapter.config.debug) adapter.log.info(topic + ' : ' + message);
+        if (config.debug) adapter.log.info(topic + ' : ' + message);
 
         // Ignore message if value does not changed
-        if (adapter.config.onchange) {
+        if (config.onchange) {
             var oldValue = values[topic];
             if (oldValue !== undefined && oldValue == message) {
                 return;
@@ -193,37 +201,56 @@ function createClient(url, port, user, pass, patterns, ssl) {
     });
 
     client.on('connect', function () {
-        adapter.log.info('Connected to ' + url);
-        for (var id in states) {
-            if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
-                client.publish(id.replace(/\//g, '.'), state2string(states[id].val));
+        adapter.log.info('Connected to ' + config.url);
+        if (config.publishAllOnStart) {
+            for (var id in states) {
+                if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                    client.publish(id.replace(/\//g, '.'), state2string(states[id].val));
+                }
             }
         }
     });
+
+    client.on('error', function (err) {
+        adapter.log.error(err);
+    });
 }
 
-function createServer(ip, port, ssl) {
-    var cltFunction = function(client) {
+function createServer(config) {
+    var cltFunction = function (client) {
         var self = this;
 
         if (!self.clients) self.clients = {};
 
-        client.on('connect', function(packet) {
+        client.on('connect', function (packet) {
+            client.id = packet.clientId;
+            if (config.user) {
+                if (config.user != packet.username ||
+                    config.pass != packet.password) {
+                    adapter.log.warn('Client [' + packet.clientId + '] has invalid password(' + packet.password + ') or username(' + packet.username + ')');
+                    client.connack({returnCode: 4});
+                    if (self.clients[client.id]) delete self.clients[client.id];
+                    client.stream.end();
+                    return;
+                }
+            }
+
             adapter.log.info('Client [' + packet.clientId + '] connected');
             client.connack({returnCode: 0});
-            client.id = packet.clientId;
             self.clients[client.id] = client;
 
             // Send all subscribed variables to client
-            for (var id in states) {
-                if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
-                    client.publish({topic: id.replace(/\./g, '/'), payload: state2string(states[id].val)});
+            if (config.publishAllOnStart) {
+                for (var id in states) {
+                    if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                        client.publish({topic: id.replace(/\./g, '/'), payload: state2string(states[id].val)});
+                    }
                 }
             }
         });
 
-        client.on('publish', function(packet) {
-            if (adapter.config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + packet.topic + '": ' +  packet.payload);
+        client.on('publish', function (packet) {
+            if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + packet.topic + '": ' +  packet.payload);
             for (var k in self.clients) {
                 self.clients[k].publish({topic: packet.topic, payload: packet.payload});
             }
@@ -236,7 +263,7 @@ function createServer(ip, port, ssl) {
             adapter.setState(topic, {val: packet.payload, ack: true});
         });
 
-        client.on('subscribe', function(packet) {
+        client.on('subscribe', function (packet) {
             var granted = [];
             for (var i = 0; i < packet.subscriptions.length; i++) {
                 adapter.log.info('Client [' + client.id + '] subscribes on "' + packet.subscriptions[i].topic + '"');
@@ -246,22 +273,22 @@ function createServer(ip, port, ssl) {
             client.suback({granted: granted, messageId: packet.messageId});
         });
 
-        client.on('pingreq', function(packet) {
+        client.on('pingreq', function (packet) {
             adapter.log.debug('Client [' + client.id + '] pingreq');
             client.pingresp();
         });
 
-        client.on('disconnect', function(packet) {
+        client.on('disconnect', function (packet) {
             adapter.log.info('Client [' + client.id + '] disconnected');
             client.stream.end();
         });
 
-        client.on('close', function(err) {
+        client.on('close', function (err) {
             adapter.log.info('Client [' + client.id + '] closed');
             delete self.clients[client.id];
         });
 
-        client.on('error', function(err) {
+        client.on('error', function (err) {
             adapter.log.error('[' + client.id + '] ' + err);
 
             if (!self.clients[client.id]) return;
@@ -271,53 +298,59 @@ function createServer(ip, port, ssl) {
         });
     };
 
-    if (!ssl) {
-        server = mqtt.createServer(cltFunction).listen(port || 1883);
+    if (!config.ssl) {
+        adapter.log.info('Started MQTT ' + (config.user ? 'authenticated ' : '') + 'server on port ' + (config.port || 1883));
+        server = mqtt.createServer(cltFunction).listen(config.port || 1883);
     } else {
+        adapter.log.info('Started MQTTs security ' + (config.user ? 'authenticated ' : '') + 'server on port ' + (config.port || 1883));
         server = mqtt.createSecureServer(
             __dirname + '/cert/privatekey.pem',
             __dirname + '/cert/certificate.pem',
-            cltFunction).listen(port || 1883);
+            cltFunction).listen(config.port || 1883);
     }
 }
 
-function main() {
-    var cnt = 0;
+var cnt = 0;
+function readStatesForPattern(pattern) {
+    adapter.getForeignStates(pattern, function (err, res) {
+        if (!err && res) {
+            if (!states) states = {};
 
+            for (var id in res) {
+                if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                    states[id] = res[id];
+                }
+            }
+        }
+        cnt--;
+        // If all patters answered, start client or server
+        if (!cnt) {
+            if (adapter.config.type == 'client') {
+                createClient(adapter.config);
+            } else {
+                createServer(adapter.config);
+            }
+        }
+    });
+}
+
+function main() {
     // Subscribe on own variables to publish it
     if (adapter.config.publish) {
         var parts = adapter.config.publish.split(',');
         for (var t = 0; t < parts.length; t++) {
+            parts[t] = parts[t].trim();
             adapter.subscribeForeignStates(parts[t].trim());
             cnt++;
-            adapter.getForeignStates(parts[t].trim(), function (err, res) {
-                if (!err && res) {
-                    if (!states) states = {};
-
-                    for (var id in res) {
-                        if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
-                            states[id] = res[id];
-                        }
-                    }
-                }
-                cnt--;
-                // If all patters answered, start client or server
-                if (!cnt) {
-                    if (adapter.config.type == 'client') {
-                        createClient(adapter.config.url, adapter.config.port, adapter.config.user, adapter.config.pass, adapter.config.patterns, adapter.config.ssl);
-                    } else {
-                        createServer('0.0.0.0', adapter.config.port, adapter.config.ssl);
-                    }
-                }
-            });
+            readStatesForPattern(parts[t]);
         }
     }
     // If no subscription, start client or server
     if (!cnt) {
         if (adapter.config.type == 'client') {
-            createClient(adapter.config.url, adapter.config.port, adapter.config.user, adapter.config.pass, adapter.config.patterns, adapter.config.ssl);
+            createClient(adapter.config);
         } else {
-            createServer('0.0.0.0', adapter.config.port, adapter.config.ssl);
+            createServer(adapter.config);
         }
     }
 }
