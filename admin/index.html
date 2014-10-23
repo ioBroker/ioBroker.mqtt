@@ -16,26 +16,48 @@
     var isStarted =   null;
 
     systemDictionary = {
-        "MQTT adapter settings":  {"en": "MQTT adapter settings",  "de": "MQTT adapter settings",  "ru": "MQTT adapter settings"},
-        "Type:":                  {"en": "Type:",                  "de": "Type:",                  "ru": "Type:"},
-        "Port:":                  {"en": "Port:",                  "de": "Port:",                  "ru": "Port:"},
-        "User:":                  {"en": "User:",                  "de": "User:",                  "ru": "User:"},
-        "Password:":              {"en": "Password:",              "de": "Password:",              "ru": "Password:"},
-        "Password confirmation:": {"en": "Password confirmation:", "de": "Password confirmation:", "ru": "Password confirmation:"},
+        "MQTT adapter settings":  {"en": "MQTT adapter settings",  "de": "MQTT Adapter-Einstellungen",  "ru": "Настройки драйвера MQTT"},
+        "Type:":                  {"en": "Type:",                  "de": "Typ:",                   "ru": "Тип:"},
+        "Port:":                  {"en": "Port:",                  "de": "Port:",                  "ru": "Порт:"},
+        "User:":                  {"en": "User:",                  "de": "Username:",              "ru": "Имя пользователя:"},
+        "Password:":              {"en": "Password:",              "de": "Kennwort:",              "ru": "Пароль:"},
+        "Password confirmation:": {"en": "Password confirmation:", "de": "Kennwort-Wiederholung:", "ru": "Подтверждение пароля:"},
         "URL:":                   {"en": "URL:",                   "de": "URL:",                   "ru": "URL:"},
-        "Patterns:":              {"en": "Patterns:",              "de": "Patterns:",              "ru": "Patterns:"},
-        "Divided by comma":       {"en": "Divided by comma",       "de": "Divided by comma",       "ru": "Divided by comma"},
-        "Store only on change:":  {"en": "Store only on change:",  "de": "Store only on change:",  "ru": "Store only on change:"},
+        "Secure:":                {"en": "Secure:",                "de": "SSL:",                   "ru": "SSL:"},
+        "Public certificate:":    {"en": "Public certificate:",    "de": "Publikzertifikat:",                   "ru": "Public certificate:"},
+        "Private certificate:":   {"en": "Private certificate:",   "de": "Privatzertifikat:",      "ru": "Private certificate:"},
+        "Patterns:":              {"en": "Subscribe patterns:",    "de": "Subscribe patterns:",    "ru": "Patterns:"},
+        "Divided by comma":       {
+            "en": "Divided by comma, e.g. '/var/#,/event/#'",
+            "de": "Mit komme geteilt, z.B '/var/#,/event/#'",
+            "ru": "Использовать зарятую, как разделитеть. Например '/var/#,/event/#'"
+        },
+        "Store only on change:":  {"en": "Store states only on change:",  "de": "Neue Meldungen nur bei Änderung annehmen:",  "ru": "Сохранять только изменения:"},
         "Trace output for every message:": {
             "en": "Trace output for every message:",
             "de": "Trace output for every message:",
             "ru": "Trace output for every message:"
         },
-        "Test connection":        {"en": "Test connection",        "de": "Test connection",        "ru": "Test connection"},
-        "Result: ":               {"en": "Result: ",               "de": "Result: ",               "ru": "Result: "},
-        "connected":              {"en": "connected",              "de": "connected",              "ru": "connected"},
-        "Connection settings":   {"en": "Connection settings",     "de": "Connection settings",    "ru": "Connection settings"},
-        "Publish own states:":   {"en": "Publish own states:",     "de": "Publish own states:",    "ru": "Publish own states:"}
+        "Test connection":        {"en": "Test connection with Server", "de": "Teste Verbindung zum Server", "ru": "Проверить настройки"},
+        "Result: ":               {"en": "Result: ",               "de": "Ergebnis: ",             "ru": "Результат: "},
+        "connected":              {"en": "connected",              "de": "connected",              "ru": "успешно"},
+        "Main settings":          {"en": "Main settings",          "de": "Allgemeine Einstellungen","ru": "Основные настройки"},
+        "Connection settings":    {"en": "Connection settings",    "de": "Verbindungseinstellungen",    "ru": "Настройки соединения"},
+        "Authentication settings":{"en": "Authentication settings","de": "Authentication Einstellungen", "ru": "Настройки аутентификации"},
+        "Adapter settings":       {"en": "MQTT settings",          "de": "MQTT Einstellungen",     "ru": "Настройки MQTT"},
+        "Mask to publish own states:":    {
+            "en": "Mask to publish own states:",
+            "de": "Maske für Bekanntgeben eigene States:",
+            "ru": "Маска для собственных значений:"
+        },
+        "Publish all states at start:":    {
+            "en": "Publish own states on connect:",
+            "de": "Bekanntgeben eigene States beim Verbinden:",
+            "ru": "Выдавать собственные значения при старте:"
+        },
+        "Prefix for topics:":     {"en": "Prefix for all topics:", "de": "Prefix für alle Topics:","ru": "Префикс для всех значений:"},
+        "Server":                 {"en": "Server/broker",          "de": "Server/broker",          "ru": "Сервер/брокер"},
+        "Client":                 {"en": "Client/subscriber",      "de": "Client/subscriber",      "ru": "Клиент/подписчик"}
     };
 
     function encrypt(key, value) {
@@ -218,8 +240,8 @@
         <tr>
             <td class="translate">Type:</td>
             <td><select id="type" class="value">
-                <option value="client">Client</option>
-                <option value="server">Server</option>
+                <option value="client" class="translate">Client</option>
+                <option value="server" class="translate">Server</option>
             </select></td>
             <td></td>
         </tr>
@@ -278,7 +300,7 @@
             <td class="translate">Divided by comma</td>
         </tr>
         <tr>
-            <td class="translate">Publish own states:</td>
+            <td class="translate">Mask to publish own states:</td>
             <td><input id="publish" type="text" size="17" class="value"/></td>
             <td class="translate"></td>
         </tr>
@@ -288,8 +310,13 @@
             <td class="translate"></td>
         </tr>
         <tr>
-            <td class="translate">Publish all states on start:</td>
+            <td class="translate">Publish all states at start:</td>
             <td><input id="publishAllOnStart" type="checkbox" class="value"/></td>
+            <td class="translate"></td>
+        </tr>
+        <tr>
+            <td class="translate">Prefix for topics:</td>
+            <td><input id="prefix" type="text" size="17" class="value"/></td>
             <td class="translate"></td>
         </tr>
         <tr>

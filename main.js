@@ -116,10 +116,10 @@ adapter.on('stateChange', function (id, state) {
             id = id.replace(/\./g, '/');
             if (server) {
                 for (var k in server.clients) {
-                    server.clients[k].publish({topic: id, payload: state2string(state.val)});
+                    server.clients[k].publish({topic: adapter.config.prefix + id, payload: state2string(state.val)});
                 }
             } else if (client) {
-                client.publish(id, state2string(state.val));
+                client.publish(adapter.config.prefix + id, state2string(state.val));
             }
         }
     }
@@ -194,6 +194,8 @@ function createClient(config) {
                 values[topic] = message;
             }
         }
+        // Remove own prefix
+        if (config.prefix && topic.substring(0, config.prefix.length) == config.prefix) topic = topic.substring(config.prefix.length);
 
         topic = topic.replace(/\//g, '.');
         if (topic[0] == '.') topic = topic.substring(1);
@@ -205,7 +207,7 @@ function createClient(config) {
         if (config.publishAllOnStart) {
             for (var id in states) {
                 if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
-                    client.publish(id.replace(/\//g, '.'), state2string(states[id].val));
+                    client.publish(config.prefix + id.replace(/\./g, '/'), state2string(states[id].val));
                 }
             }
         }
@@ -243,7 +245,7 @@ function createServer(config) {
             if (config.publishAllOnStart) {
                 for (var id in states) {
                     if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
-                        client.publish({topic: id.replace(/\./g, '/'), payload: state2string(states[id].val)});
+                        client.publish({topic: config.prefix + id.replace(/\./g, '/'), payload: state2string(states[id].val)});
                     }
                 }
             }
@@ -254,8 +256,13 @@ function createServer(config) {
             for (var k in self.clients) {
                 self.clients[k].publish({topic: packet.topic, payload: packet.payload});
             }
+            var topic = packet.topic;
 
-            var topic = packet.topic.replace(/\//g, '.');
+            // Remove own prefix if
+            if (config.prefix && topic.substring(0, config.prefix.length) == config.prefix) topic = topic.substring(config.prefix.length);
+
+            topic = topic.replace(/\//g, '.');
+
             if (states[topic] === undefined) {
                 topic = adapter.namespace + ((topic[0] == '.') ? topic : ('.' + topic));
             }

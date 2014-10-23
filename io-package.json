@@ -1,9 +1,13 @@
 {
     "common": {
         "name":                     "mqtt",
-        "version":                  "0.0.2",
-        "title":                    "mqtt Adapter",
-        "desc":                     "This adapter allows to send and receive mqtt messages from ioBroker",
+        "version":                  "0.1.0",
+        "title":                    "MQTT Adapter",
+        "desc":                     {
+            "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
+            "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
+            "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера"
+        },
         "authors": [
             "bluefox <bluefox@ccu.io>"
         ],
@@ -13,7 +17,7 @@
         "messagebox":               true,
         "loglevel":                 "info",
         "icon":                     "mqtt.png",
-        "keywords":                 ["notification", "mqtt", "message"],
+        "keywords":                 ["notification", "MQTT", "message"],
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png"
     },
     "native": {
@@ -28,8 +32,9 @@
         "publishAllOnStart": true,
         "debug":      false,
         "publish":    "*",
-        "certPublic":  "",
-        "certPrivate": ""
+        "certPublic": "",
+        "certPrivate":"",
+        "prefix":     ""
 
     },
     "objects": [
