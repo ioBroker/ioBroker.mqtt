@@ -117,6 +117,21 @@
                 changed = true;
                 $('#save').button("enable");
             }).keyup(function() {
+                // Chack that only numbers entered
+                if ($(this).hasClass('number')) {
+                    var val = $(this).val();
+                    if (val) {
+                        var newVal = '';
+                        for (var i = 0; i < val.length; i++) {
+                            if (val[i] >= '0' && val[i] <= '9') {
+                                newVal += val[i];
+                            }
+                        }
+
+                        if (val != newVal) $(this).val(newVal);
+                    }
+                }
+
                 changed = true;
                 $('#save').button("enable");
             });
@@ -161,8 +176,8 @@
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
         init ();
-        fillSelectCertificates('#certPublic',  settings.certPublic);
-        fillSelectCertificates('#certPrivate', settings.certPrivate);
+        fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
+        fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
     }
 
     function test() {
@@ -218,7 +233,11 @@
             alert(_('Password confirmation is not equal with password'));
             return;
         }
-        // example: select elements with class=value and build settings object
+        if ($('#ssl').prop('checked') && $('#type').val() == 'server' && (!$('#certPrivate').val() || !$('#certPublic').val())) {
+            alert(_('Set certificates or load it first in the system settings (left top).'));
+            return;
+        }
+                // example: select elements with class=value and build settings object
         changed = false;
         callback(getSettings());
         $('#save').button("disable");
@@ -255,7 +274,7 @@
         </tr>
         <tr>
             <td class="translate">Port:</td>
-            <td><input id="port" type="text" size="5" class="value"/></td>
+            <td><input id="port" type="text" size="5" class="value number"/></td>
             <td></td>
         </tr>
         <tr>

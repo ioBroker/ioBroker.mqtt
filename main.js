@@ -40,7 +40,7 @@ adapter.on('ready', function () {
         // "adapter/mqtt/cert/certificate.pem"
         // because mqtt does not support certificates not from file
         adapter.getForeignObject('system.certificates', function (err, obj) {
-            if (err || !obj || !obj.certificates || !obj.certificates[adapter.config.certPublic] || !obj.certificates[adapter.config.certPrivate]) {
+            if (err || !obj || !obj.native || !obj.native.certificates || !obj.native.certificates[adapter.config.certPublic] || !obj.native.certificates[adapter.config.certPrivate]) {
                 adapter.log.error('Cannot enable secure MQTT server, because no certificates found: ' + adapter.config.certPublic + ', ' + adapter.config.certPrivate);
                 setTimeout(function () {
                     process.exit(1);
@@ -49,24 +49,24 @@ adapter.on('ready', function () {
                 // Take care about flash disk and do not write the same
                 if (!fs.existsSync(__dirname + '/cert')) {
                     fs.mkdirSync(__dirname + '/cert');
-                    fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.certificates[adapter.config.certPrivate]);
-                    fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.certificates[adapter.config.certPublic]);
+                    fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.native.certificates[adapter.config.certPrivate]);
+                    fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.native.certificates[adapter.config.certPublic]);
                 } else {
                     var cert;
                     if (!fs.existsSync(__dirname + '/cert/privatekey.pem')) {
-                        fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.certificates[adapter.config.certPrivate]);
+                        fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.native.certificates[adapter.config.certPrivate]);
                     } else {
                         cert = fs.readFileSync(__dirname + '/cert/privatekey.pem');
-                        if (cert != obj.certificates[adapter.config.certPrivate]) {
-                            fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.certificates[adapter.config.certPrivate]);
+                        if (cert != obj.native.certificates[adapter.config.certPrivate]) {
+                            fs.writeFileSync(__dirname + '/cert/privatekey.pem', obj.native.certificates[adapter.config.certPrivate]);
                         }
                     }
                     if (!fs.existsSync(__dirname + '/cert/certificate.pem')) {
-                        fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.certificates[adapter.config.certPublic]);
+                        fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.native.certificates[adapter.config.certPublic]);
                     } else {
                         cert = fs.readFileSync(__dirname + '/cert/certificate.pem');
-                        if (cert != obj.certificates[adapter.config.certPublic]) {
-                            fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.certificates[adapter.config.certPublic]);
+                        if (cert != obj.native.certificates[adapter.config.certPublic]) {
+                            fs.writeFileSync(__dirname + '/cert/certificate.pem', obj.native.certificates[adapter.config.certPublic]);
                         }
                     }
                 }
