@@ -183,11 +183,11 @@
     function test() {
         var newValue = JSON.stringify(getSettings());
         if (!common.enabled) {
-            showMessage("Enable first the adapter to test client.");
+            showMessage(_("Enable first the adapter to test client."));
             return;
         }
         if (changed) {
-            showMessage("First save the adapter");
+            showMessage(_("First save the adapter"));
             return;
         }
         sendTo('mqtt.' + instance, 'test', getSettings(), function (result) {

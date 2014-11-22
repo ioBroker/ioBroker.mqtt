@@ -105,7 +105,6 @@ adapter.on('unload', function () {
     }
 });
 
-
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
     // you can use the ack flag to detect if state is desired or acknowledged
@@ -199,8 +198,6 @@ function createClient(config) {
 
         topic = topic.replace(/\//g, '.');
         if (topic[0] == '.') topic = topic.substring(1);
-        // add io. at start, because all states have prefix io.
-        if (topic[0] != 'i' && topic[1] != 'i' && topic[2] != '.') topic = 'io.' + topic;
 
         adapter.setState(topic, {val: message, ack: true});
     });
@@ -267,7 +264,7 @@ function createServer(config) {
             topic = topic.replace(/\//g, '.');
 
             if (states[topic] === undefined) {
-                topic = 'io.' + adapter.namespace + ((topic[0] == '.') ? topic : ('.' + topic));
+                topic = adapter.namespace + ((topic[0] == '.') ? topic : ('.' + topic));
             }
 
             adapter.setState(topic, {val: packet.payload, ack: true});
