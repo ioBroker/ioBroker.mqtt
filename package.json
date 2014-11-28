@@ -1,10 +1,26 @@
 {
+  "name": "iobroker.mqtt",
+  "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
+  "version": "0.1.1",
+  "author": "bluefox <bluefox@ccu.io>",
+  "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository" : {
       "type" : "git",
       "url" : "https://github.com/ioBroker/ioBroker.mqtt"
   },
+  "licenses": [
+      {
+          "type": "MIT",
+          "url": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/LICENSE"
+      }
+  ],
+  "keywords": ["iobroker", "notification", "MQTT", "message"],
+  "readmeFilename": "README.md",
   "dependencies": {
     "mqtt": "~0.3.12"
+  },
+  "scripts": {
+      "install": "node ../../lib/setup.js install mqtt"
   },
   "devDependencies": {
       "grunt": "~0.4.4",
