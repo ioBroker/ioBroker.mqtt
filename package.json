@@ -1,33 +1,45 @@
 {
   "name": "iobroker.mqtt",
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": "bluefox <bluefox@ccu.io>",
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
-  "repository" : {
-      "type" : "git",
-      "url" : "https://github.com/ioBroker/ioBroker.mqtt"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioBroker/ioBroker.mqtt"
   },
   "licenses": [
-      {
-          "type": "MIT",
-          "url": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/LICENSE"
-      }
+    {
+      "type": "MIT",
+      "url": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/LICENSE"
+    }
   ],
-  "keywords": ["iobroker", "notification", "MQTT", "message"],
-  "readmeFilename": "README.md",
+  "keywords": [
+    "iobroker",
+    "notification",
+    "MQTT",
+    "message"
+  ],
   "dependencies": {
     "mqtt": "~0.3.12"
   },
   "devDependencies": {
-      "grunt": "~0.4.4",
-      "grunt-replace": "~0.7.6",
-      "grunt-contrib-jshint": "~0.10.0",
-      "grunt-jscs": "~0.6.1",
-      "grunt-http": "~1.4.1",
-      "grunt-contrib-clean": "~0.5.0",
-      "grunt-contrib-compress": "~0.8.0",
-      "grunt-contrib-copy": "~0.5.0",
-      "grunt-exec": "~0.4.5"
-  }
+    "grunt": "~0.4.4",
+    "grunt-replace": "~0.7.6",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-jscs": "~0.6.1",
+    "grunt-http": "~1.4.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-compress": "~0.8.0",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-exec": "~0.4.5"
+  },
+  "bugs": {
+    "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
+  },
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT"
 }
