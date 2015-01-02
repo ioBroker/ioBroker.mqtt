@@ -108,8 +108,19 @@ adapter.on('unload', function () {
 
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
+    if (!state) {
+        delete states[id];
+        id = id.replace(/\./g, '/');
+        if (server) {
+            for (var k in server.clients) {
+                server.clients[k].publish({topic: adapter.config.prefix + id, payload: null});
+            }
+        } else if (client) {
+            client.publish(adapter.config.prefix + id, null);
+        }
+    } else
     // you can use the ack flag to detect if state is desired or acknowledged
-    if (state.ack && (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox')) {
+    if (state.ack && !id.match(/\.messagebox$/)) {
         var old = states[id] ? states[id].val : null;
         states[id] = state;
         if (!adapter.config.onchange || old !== state.val) {
