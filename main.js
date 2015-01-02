@@ -9,7 +9,8 @@
  */
 
 var mqtt =    require('mqtt');
-var adapter = require(__dirname + '/../../lib/adapter.js')('mqtt');
+var utils =   require(__dirname + '/lib/utils'); // Get common adapter utils
+var adapter = utils.adapter('mqtt');
 
 var client = null;
 var server = null;
