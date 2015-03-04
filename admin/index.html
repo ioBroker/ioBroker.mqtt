@@ -24,8 +24,8 @@
         "Password confirmation:": {"en": "Password confirmation:", "de": "Kennwort-Wiederholung:", "ru": "Подтверждение пароля:"},
         "URL:":                   {"en": "URL:",                   "de": "URL:",                   "ru": "URL:"},
         "Secure:":                {"en": "Secure:",                "de": "SSL:",                   "ru": "SSL:"},
-        "Public certificate:":    {"en": "Public certificate:",    "de": "Publikzertifikat:",                   "ru": "Public certificate:"},
-        "Private certificate:":   {"en": "Private certificate:",   "de": "Privatzertifikat:",      "ru": "Private certificate:"},
+        "Public certificate:":    {"en": "Public certificate:",    "de": "Publikzertifikat:",      "ru": "'Public' сертификат:"},
+        "Private certificate:":   {"en": "Private certificate:",   "de": "Privatzertifikat:",      "ru": "'Private' сертификат:"},
         "Patterns:":              {"en": "Subscribe patterns:",    "de": "Subscribe patterns:",    "ru": "Patterns:"},
         "Divided by comma":       {
             "en": "Divided by comma, e.g. '/var/#,/event/#'",
@@ -55,11 +55,18 @@
             "de": "Bekanntgeben eigene States beim Verbinden:",
             "ru": "Выдавать собственные значения при старте:"
         },
+        "Set certificates or load it first in the system settings (right top).":    {
+            "en": "Set certificates or load it first in the system settings (right top).",
+            "de": "Setze Zertificate oder lade die erst unter System/Einstellungen (oben rechts).",
+            "ru": "Нужно выбрать сертификаты или сначала загрузить их в системных настройках (вверху справа)."
+        },
         "Prefix for topics:":     {"en": "Prefix for all topics:", "de": "Prefix für alle Topics:","ru": "Префикс для всех значений:"},
         "Server":                 {"en": "Server/broker",          "de": "Server/broker",          "ru": "Сервер/брокер"},
         "Client":                 {"en": "Client/subscriber",      "de": "Client/subscriber",      "ru": "Клиент/подписчик"}
     };
 
+	var onChange;
+	
     function encrypt(key, value) {
         var result="";
         for(var i = 0; i < value.length; ++i) {
@@ -102,20 +109,17 @@
         $('#type').change(showHideSettings);
         $('#ssl').change(showHideSettings);
         $('#test').button().click(test);
-        $('#save').button("disable");
     }
 
     function setValue(id, value) {
         // example: select elements with id=key and class=value and insert value
         if ($('#' + id + '.value').attr('type') == 'checkbox') {
             $('#' + id + '.value').prop('checked', value).change(function() {
-                changed = true;
-                $('#save').button("enable");
+                onChange();
             });
         } else {
             $('#' + id + '.value').val(value).change(function() {
-                changed = true;
-                $('#save').button("enable");
+                onChange();
             }).keyup(function() {
                 // Chack that only numbers entered
                 if ($(this).hasClass('number')) {
@@ -132,8 +136,7 @@
                     }
                 }
 
-                changed = true;
-                $('#save').button("enable");
+                onChange();
             });
         }
     }
@@ -172,12 +175,14 @@
     }
 
     // the function loadSettings has to exist ...
-    function load(settings) {
+    function load(settings, _onChange) {
+		onChange = _onChange;
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
-        init ();
+        init();
         fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
         fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
+		onChange(false);
     }
 
     function test() {
@@ -230,17 +235,16 @@
     // you have to make sure the callback is called with the settings object as first param!
     function save(callback) {
         if ($('#pass').val() != $('#pass_confirm').val()) {
-            alert(_('Password confirmation is not equal with password'));
+            showMessage(_('Password confirmation is not equal with password'));
             return;
         }
         if ($('#ssl').prop('checked') && $('#type').val() == 'server' && (!$('#certPrivate').val() || !$('#certPublic').val())) {
-            alert(_('Set certificates or load it first in the system settings (left top).'));
+            showMessage(_('Set certificates or load it first in the system settings (right top).'));
             return;
         }
-                // example: select elements with class=value and build settings object
-        changed = false;
+
+        // example: select elements with class=value and build settings object
         callback(getSettings());
-        $('#save').button("disable");
     }
 </script>
 

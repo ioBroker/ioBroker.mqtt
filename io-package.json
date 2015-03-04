@@ -1,7 +1,7 @@
 {
     "common": {
         "name":                     "mqtt",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "title":                    "MQTT Adapter",
         "desc":                     {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
@@ -15,6 +15,7 @@
         "platform":                 "Javascript/Node.js",
         "mode":                     "daemon",
         "messagebox":               true,
+        "readme":                   "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
         "loglevel":                 "info",
         "icon":                     "mqtt.png",
         "keywords":                 ["notification", "MQTT", "message"],
