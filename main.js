@@ -12,10 +12,11 @@ var mqtt =    require('mqtt');
 var utils =   require(__dirname + '/lib/utils'); // Get common adapter utils
 var adapter = utils.adapter('mqtt');
 
-var client = null;
-var server = null;
-var values = {};
-var states = {};
+var client  = null;
+var server  = null;
+var values  = {};
+var states  = {};
+var objects = [];
 
 var messageboxLen = 11;// '.messagebox'.length;
 
@@ -211,6 +212,25 @@ function createClient(config) {
         topic = topic.replace(/\//g, '.');
         if (topic[0] == '.') topic = topic.substring(1);
 
+        if (objects.indexOf(topic) == -1) {
+            objects.push(topic);
+            // Create object if exists
+            adapter.getObject(topic, function (err, obj) {
+                if (!obj) {
+                    adapter.setObject(topic, {
+                        common: {
+                            name: topic,
+                            type: 'value'
+                        },
+                        native: {},
+                        type: 'state'
+                    });
+                }
+            });
+        }
+        var f = parseFloat(message);
+        if (f.toString() == message) message = f;
+
         adapter.setState(topic, {val: message, ack: true});
     });
 
@@ -271,13 +291,37 @@ function createServer(config) {
             var topic = packet.topic;
 
             // Remove own prefix if
-            if (config.prefix && topic.substring(0, config.prefix.length) == config.prefix) topic = topic.substring(config.prefix.length);
+            if (config.prefix && topic.substring(0, config.prefix.length) == config.prefix) {
+                topic = topic.substring(config.prefix.length);
+            }
 
             topic = topic.replace(/\//g, '.');
 
+            // If foreign state, add "mqtt.0" prefix
             if (states[topic] === undefined) {
                 topic = adapter.namespace + ((topic[0] == '.') ? topic : ('.' + topic));
             }
+
+            if (objects.indexOf(topic) == -1) {
+                objects.push(topic);
+                // Create object if not exists
+                adapter.getObject(topic, function (err, obj) {
+                    if (!obj) {
+                        adapter.setObject(topic, {
+                            common: {
+                                name: topic,
+                                type: 'value'
+                            },
+                            native: {},
+                            type: 'state'
+                        });
+                    }
+                });
+            }
+
+            // Try to convert into float
+            var f = parseFloat(packet.payload);
+            if (f.toString() == packet.payload) packet.payload = f;
 
             adapter.setState(topic, {val: packet.payload, ack: true});
         });

@@ -1,7 +1,7 @@
 {
     "common": {
         "name":                     "mqtt",
-        "version": "0.1.6",
+        "version": "0.1.7",
         "title":                    "MQTT Adapter",
         "desc":                     {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
@@ -19,7 +19,8 @@
         "loglevel":                 "info",
         "icon":                     "mqtt.png",
         "keywords":                 ["notification", "MQTT", "message"],
-        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png"
+        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
+		"type":                     "communication"
     },
     "native": {
         "type":       "client",
