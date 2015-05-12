@@ -12,10 +12,10 @@ var mqtt =    require('mqtt');
 var utils =   require(__dirname + '/lib/utils'); // Get common adapter utils
 var adapter = utils.adapter('mqtt');
 
-var client  = null;
-var server  = null;
-var values  = {};
-var states  = {};
+var client = null;
+var server = null;
+var values = {};
+var states = {};
 var objects = [];
 
 var messageboxLen = 11;// '.messagebox'.length;
@@ -111,13 +111,15 @@ adapter.on('unload', function () {
 adapter.on('stateChange', function (id, state) {
     if (!state) {
         delete states[id];
-        id = id.replace(/\./g, '/');
+        var topic = id.replace(/\./g, '/');
         if (server) {
             for (var k in server.clients) {
-                server.clients[k].publish({topic: adapter.config.prefix + id, payload: null});
+                if (!server.clients[k]._subs || server.clients[k]._subs[id]) {
+                    server.clients[k].publish({topic: adapter.config.prefix + topic, payload: null});
+                }
             }
         } else if (client) {
-            client.publish(adapter.config.prefix + id, null);
+            client.publish(adapter.config.prefix + topic, null);
         }
     } else
     // you can use the ack flag to detect if state is desired or acknowledged
@@ -125,13 +127,15 @@ adapter.on('stateChange', function (id, state) {
         var old = states[id] ? states[id].val : null;
         states[id] = state;
         if (!adapter.config.onchange || old !== state.val) {
-            id = id.replace(/\./g, '/');
+            var topic = id.replace(/\./g, '/');
             if (server) {
                 for (var k in server.clients) {
-                    server.clients[k].publish({topic: adapter.config.prefix + id, payload: state2string(state.val)});
+                    if (!server.clients[k]._subs || server.clients[k]._subs[id] !== undefined) {
+                        server.clients[k].publish({topic: adapter.config.prefix + topic, payload: state2string(state.val)});
+                    }
                 }
             } else if (client) {
-                client.publish(adapter.config.prefix + id, state2string(state.val));
+                client.publish(adapter.config.prefix + topic, state2string(state.val));
             }
         }
     }
@@ -250,6 +254,23 @@ function createClient(config) {
     });
 }
 
+function topic2id(topic) {
+    topic = topic.replace(/\//g, '.');
+    if (topic[0] == '.') topic = topic.substring(1);
+    if (topic[topic.length - 1] == '.') topic = topic.substring(0, topic.length - 1);
+
+    // Remove own prefix if
+    if (adapter.config.prefix && topic.substring(0, config.prefix.length) == adapter.config.prefix) {
+        topic = topic.substring(adapter.config.prefix.length);
+    }
+
+    if (topic.substring(0, adapter.namespace.length) == adapter.namespace) {
+        topic = topic.substring(adapter.namespace.length + 1);
+    }
+
+    return topic;
+}
+
 function createServer(config) {
     var cltFunction = function (client) {
         var self = this;
@@ -284,53 +305,80 @@ function createServer(config) {
         });
 
         client.on('publish', function (packet) {
-            if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + packet.topic + '": ' +  packet.payload);
-            for (var k in self.clients) {
+            /*for (var k in self.clients) {
                 self.clients[k].publish({topic: packet.topic, payload: packet.payload});
-            }
-            var topic = packet.topic;
+            }*/
+            var topic = topic2id(packet.topic);
 
-            // Remove own prefix if
-            if (config.prefix && topic.substring(0, config.prefix.length) == config.prefix) {
-                topic = topic.substring(config.prefix.length);
-            }
+            var f = parseFloat(packet.payload);
 
-            topic = topic.replace(/\//g, '.');
+            // If state is unknown => create mqtt.X.topic
+            if (states[topic] === undefined && states[adapter.namespace + '.' + topic] === undefined) {
+                adapter.log.info('Create state ' + adapter.namespace + '.' + topic);
 
-            // If foreign state, add "mqtt.0" prefix
-            if (states[topic] === undefined) {
-                topic = adapter.namespace + ((topic[0] == '.') ? topic : ('.' + topic));
-            }
-
-            if (objects.indexOf(topic) == -1) {
-                objects.push(topic);
-                // Create object if not exists
-                adapter.getObject(topic, function (err, obj) {
-                    if (!obj) {
-                        adapter.setObject(topic, {
-                            common: {
-                                name: topic,
-                                type: 'value'
-                            },
-                            native: {},
-                            type: 'state'
-                        });
-                    }
+                adapter.createState('', '', topic, {
+                    name:  packet.topic,
+                    write: true,
+                    read:  true,
+                    role:  'variable',
+                    desc:  'mqtt variable',
+                    type:  (f.toString() == packet.payload) ? 'number' : 'string'
+                }, {
+                    origin: client.id
                 });
+                topic = adapter.namespace + '.' + topic;
+                states[topic] = {};
             }
 
             // Try to convert into float
-            var f = parseFloat(packet.payload);
             if (f.toString() == packet.payload) packet.payload = f;
 
-            adapter.setState(topic, {val: packet.payload, ack: true});
+            if (states[topic]) {
+                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + topic + '": ' +  packet.payload);
+                adapter.setForeignState(topic, {val: packet.payload, ack: true}, function (id) {
+                    states[id] = {val: packet.payload, ack: true};
+                });
+            } else {
+                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + adapter.namespace + '.' + topic + '": ' +  packet.payload);
+                adapter.setState(topic, {val: packet.payload, ack: true}, function (id) {
+                    states[id] = {val: packet.payload, ack: true};
+                });
+            }
         });
 
         client.on('subscribe', function (packet) {
             var granted = [];
+            if (!client._subs) client._subs = {};
+
             for (var i = 0; i < packet.subscriptions.length; i++) {
-                adapter.log.info('Client [' + client.id + '] subscribes on "' + packet.subscriptions[i].topic + '"');
                 granted.push(packet.subscriptions[i].qos);
+
+                var topic = topic2id(packet.subscriptions[i].topic);
+
+                // If state is unknown => create mqtt.X.topic
+                if (states[topic] === undefined && states[adapter.namespace + '.' + topic] === undefined) {
+                    adapter.log.info('Create state ' + adapter.namespace + '.' + topic + ' for subscribe');
+                    adapter.createState('', '', topic, {
+                        name:  packet.topic,
+                        write: true,
+                        read:  true,
+                        role:  'variable',
+                        desc:  'mqtt variable',
+                        type:  'string',
+                        def:   null
+                    }, {
+                        origin: client.id
+                    });
+                    topic = adapter.namespace + '.' + topic;
+                }
+
+                if (states[topic]) {
+                    client._subs[packet.subscriptions[i].topic] = packet.subscriptions[i].qos;
+                    adapter.log.info('Client [' + client.id + '] subscribes on "' + packet.subscriptions[i].topic + '"');
+                } else {
+                    client._subs[adapter.namespace + '.' + packet.subscriptions[i].topic] = packet.subscriptions[i].qos;
+                    adapter.log.info('Client [' + client.id + '] subscribes on "' + adapter.namespace + '.' + packet.subscriptions[i].topic + '"');
+                }
             }
 
             client.suback({granted: granted, messageId: packet.messageId});

@@ -12,8 +12,12 @@ Historically, the 'MQ' in 'MQTT' came from IBM's MQ message queuing product line
 This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 
 ## Changelog
+### 0.1.8 (2015-05-12)
+* (bluefox) fix topic names in server mode
+* (bluefox) implement subscribe
+
 ### 0.1.7 (2015-03-24)
-* (bluefox) create objects if new state recived
+* (bluefox) create objects if new state received
 * (bluefox) update mqtt library
 
 ### 0.1.6 (2015-03-04)
