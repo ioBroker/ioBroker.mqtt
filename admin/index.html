@@ -55,6 +55,11 @@
             "de": "Maske für Bekanntgeben eigene States:",
             "ru": "Маска для собственных значений:"
         },
+        "Send states (ack=true) too:":    {
+            "en": "Send states (ack=true) too:",
+            "de": "Sende auch Zustände (ack=true):",
+            "ru": "Посылать не только команды, но и состояния (ack=true):"
+        },
         "Publish all states at start:":    {
             "en": "Publish own states on connect:",
             "de": "Bekanntgeben eigene States beim Verbinden:",
@@ -184,7 +189,7 @@
     // the function loadSettings has to exist ...
     function load(settings, _onChange) {
 		onChange = _onChange;
-        settings.sendNotAck = settings.sendNotAck || false;
+        settings.sendAckToo = settings.sendAckToo || false;
         settings.webSocket  = settings.webSocket || false;
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
@@ -361,8 +366,8 @@
             <td class="translate"></td>
         </tr>
         <tr>
-            <td class="translate">Send commands (not ack) too:</td>
-            <td><input id="sendNotAck" type="checkbox" class="value"/></td>
+            <td class="translate">Send states (ack=true) too:</td>
+            <td><input id="sendAckToo" type="checkbox" class="value"/></td>
             <td class="translate"></td>
         </tr>
     </table>

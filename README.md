@@ -25,7 +25,7 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Publish own states on connect** - by every client connection the all known states will be sent to client (defined by state mask), to say him which states has the ioBroker.
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g if prefix "iobroker/" all states will have names like "**iobroker**/mqtt/0/connected"
 - **Trace output for every message** - Debug outputs.
-- **Send commands (not ack) too** - Normally only states with ack=false (commands) will be sent to partner. If this flag is set every state ack=true/false will be sent to partner. 
+- **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like "localhost".
@@ -40,7 +40,7 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Publish all states at start** - Publish all states (defined by state mask) every time by connection establishment to announce own available states and their values.
 - **Prefix for topics** - The prefix can be defined for own states. Like "/var/ioBroker/". Name of topics will be for example published with the name "/var/ioBroker/ping/192-168-1-5".
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
-- **Send commands (not ack) too** - Normally only states with ack=false (commands) will be sent to partner. If this flag is set every state ack=true/false will be sent to partner. 
+- **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
  
 ## Install
 
@@ -83,6 +83,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 0.1.9 (2015-05-13)
+* (bluefox) translations and rename config sendNoAck=>sendAckToo
+
 ### 0.1.8 (2015-05-13)
 * (bluefox) fix topic names in server mode
 * (bluefox) implement subscribe
