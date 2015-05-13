@@ -83,8 +83,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
-### 0.1.9 (2015-05-13)
+### 0.2.0 (2015-05-13)
 * (bluefox) translations and rename config sendNoAck=>sendAckToo
+* (bluefox) lets create server not only on localhost
 
 ### 0.1.8 (2015-05-13)
 * (bluefox) fix topic names in server mode

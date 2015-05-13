@@ -575,14 +575,14 @@ function createServer(config) {
     var serverConfig = {};
 
     if (serverConfig.ssl) {
-        serverConfig.mqtts = 'ssl://:' + (config.port || 1883);
+        serverConfig.mqtts = 'ssl://0.0.0.0:' + (config.port || 1883);
         if (serverConfig.webSocket) {
-            serverConfig.mqtwss = 'wss://:'  + ((config.port || 1883) + 1);
+            serverConfig.mqtwss = 'wss://0.0.0.0:'  + ((config.port || 1883) + 1);
         }
     } else {
-        serverConfig.mqtts = 'tcp://:' + (config.port || 1883);
+        serverConfig.mqtts = 'tcp://0.0.0.0:' + (config.port || 1883);
         if (serverConfig.webSocket) {
-            serverConfig.mqtwss = 'ws://:'  + ((config.port || 1883) + 1);
+            serverConfig.mqtwss = 'ws://0.0.0.0:'  + ((config.port || 1883) + 1);
         }
     }
 
