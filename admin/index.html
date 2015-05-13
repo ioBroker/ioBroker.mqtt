@@ -28,11 +28,16 @@
         "Private certificate:":   {"en": "Private certificate:",   "de": "Privatzertifikat:",      "ru": "'Private' сертификат:"},
         "Patterns:":              {"en": "Subscribe patterns:",    "de": "Subscribe patterns:",    "ru": "Patterns:"},
         "Divided by comma":       {
-            "en": "Divided by comma, e.g. '/var/#,/event/#'",
-            "de": "Mit komme geteilt, z.B '/var/#,/event/#'",
-            "ru": "Использовать зарятую, как разделитеть. Например '/var/#,/event/#'"
+            "en": "Divided by comma, e.g. 'mqtt/0/#,javascript/#'",
+            "de": "Mit komme geteilt, z.B 'mqtt/0/#,javascript/#'",
+            "ru": "Использовать зарятую, как разделитеть. Например 'mqtt/0/#,javascript/#'"
         },
-        "Store only on change:":  {"en": "Store states only on change:",  "de": "Neue Meldungen nur bei Änderung annehmen:",  "ru": "Сохранять только изменения:"},
+        "Mask to publish":       {
+            "en": "e.g. 'mqtt.0.*,javascript.*'",
+            "de": "z.B 'mqtt.0.*,javascript.*'",
+            "ru": "Использовать зарятую, как разделитеть. Например 'mqtt.0.*,javascript.*'"
+        },
+        "Store only on change:":  {"en": "Publish only on change:",  "de": "Publish nur bei Änderung:",  "ru": "Отсылать только изменения:"},
         "Trace output for every message:": {
             "en": "Trace output for every message:",
             "de": "Trace output for every message:",
@@ -90,10 +95,12 @@
             $('#_patterns').show();
             $('#_certPublic').hide();
             $('#_certPrivate').hide();
+            $('#_webSocket').hide();
         }else {
             $('#_url').hide();
             $('#test').hide();
             $('#_patterns').hide();
+            $('#_webSocket').show();
             if ($('#ssl').prop('checked')) {
                 $('#_certPublic').show();
                 $('#_certPrivate').show();
@@ -177,6 +184,8 @@
     // the function loadSettings has to exist ...
     function load(settings, _onChange) {
 		onChange = _onChange;
+        settings.sendNotAck = settings.sendNotAck || false;
+        settings.webSocket  = settings.webSocket || false;
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
         init();
@@ -268,7 +277,11 @@
             </select></td>
             <td></td>
         </tr>
-        <tr>
+        <tr id="_webSocket">
+            <td class="translate">Use WebSockets:</td>
+            <td><input type="checkbox" id="webSocket" class="value"/></td>
+            <td></td>
+        </tr>        <tr>
             <td colspan='3'><h4 class="translate">Connection settings</h4></td>
         </tr>
         <tr id="_url">
@@ -325,7 +338,7 @@
         <tr>
             <td class="translate">Mask to publish own states:</td>
             <td><input id="publish" type="text" size="17" class="value"/></td>
-            <td class="translate"></td>
+            <td class="translate">Mask to publish</td>
         </tr>
         <tr>
             <td class="translate">Store only on change:</td>
@@ -345,6 +358,11 @@
         <tr>
             <td class="translate">Trace output for every message:</td>
             <td><input id="debug" type="checkbox" class="value"/></td>
+            <td class="translate"></td>
+        </tr>
+        <tr>
+            <td class="translate">Send commands (not ack) too:</td>
+            <td><input id="sendNotAck" type="checkbox" class="value"/></td>
             <td class="translate"></td>
         </tr>
     </table>

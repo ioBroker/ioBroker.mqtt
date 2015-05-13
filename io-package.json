@@ -1,6 +1,9 @@
 {
     "common": {
         "name":                     "mqtt",
+        "require": {
+            "js-controller": ">0.6.6"
+        },
         "version": "0.1.8",
         "title":                    "MQTT Adapter",
         "desc":                     {
@@ -20,7 +23,13 @@
         "icon":                     "mqtt.png",
         "keywords":                 ["notification", "MQTT", "message"],
         "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
-		"type":                     "communication"
+		"type":                     "communication",
+        "config": {
+            "width" :    800,
+            "height" :   800,
+            "minWidth":  400,
+            "minHeight": 400
+        }
     },
     "native": {
         "type":       "client",
@@ -36,8 +45,9 @@
         "publish":    "*",
         "certPublic": "",
         "certPrivate":"",
-        "prefix":     ""
-
+        "prefix":     "",
+        "sendNotAck": false,
+        "webSocket":  false
     },
     "objects": [
 
