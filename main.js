@@ -17,7 +17,7 @@ var clients = {};
 var states  = {};
 var objects = [];
 
-var messageboxLen = 11;// '.messagebox'.length;
+var messageboxRegex = new RegExp("\.messagebox$");
 
 function decrypt(key, value) {
     var result = "";
@@ -78,9 +78,6 @@ adapter.on('unload', function () {
 
 
 function checkPattern(patterns, id) {
-    if (id.substring(0, 'mqtt.0.'.length) == 'mqtt.0.') {
-        console.log('test');
-    }
     for (var pattern in patterns) {
         if (patterns[pattern].regex.test(id)) return patterns[pattern];
     }
@@ -177,66 +174,66 @@ function topic2id(topic, dontCutNamespace) {
     return topic;
 }
 
+function send2Client(client, id, state) {
+    if (messageboxRegex.test(id)) return;
+
+    if (!client._subsID ||
+        client._subsID[id] !== undefined) {
+        var topic = (client._subsID) ? client._subsID[id].pattern : config.prefix + id.replace(/\./g, '/');
+
+        if (adapter.config.debug) adapter.log.info('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
+        client.publish({topic: topic, payload: (state ? state2string(state.val) : null)});
+
+    } else
+    //  Check patterns
+    if (client._subs) {
+        var pattern = checkPattern(client._subs, id);
+
+        if (pattern) {
+            var topic = id2topic(id, pattern.pattern);
+            // Cache the value
+            client._subsID[id] = {
+                qos: pattern,
+                pattern: topic
+            };
+            if (adapter.config.debug) adapter.log.info('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
+            client.publish({topic: topic, payload: (state ? state2string(state.val) : null)});
+        }
+    }
+}
+
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
+
+    // State deleted
     if (!state) {
         delete states[id];
+        // If SEVRER
         if (servers) {
             for (var k in clients) {
-                // check names
-                if (!clients[k]._subsID ||
-                    clients[k]._subsID[id] !== undefined) {
-                    if (adapter.config.debug) adapter.log.info('Send to client [' + clients[k].id + '] "' + clients[k]._subsID[id].pattern + '": deleted');
-                    clients[k].publish({topic: clients[k]._subsID[id].pattern, payload: null});
-                } else
-                // Check patterns
-                if (clients[k]._subs) {
-                    var pattern = checkPattern(clients[k]._subs, id);
-
-                    if (pattern) {
-                        var topic = id2topic(id, pattern.pattern);
-                        if (adapter.config.debug) adapter.log.info('Send to client [' + clients[k].id + '] "' + topic + '": deleted');
-                        clients[k].publish({topic: topic, payload: null});
-                    }
-                }
+                send2Client(clients[k], id, state);
             }
-        } else if (client) {
+        } else
+        // if CLIENT
+        if (client) {
             var topic = id.replace(/\./g, '/');
             if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": deleted');
             client.publish(adapter.config.prefix + topic, null);
         }
     } else
     // you can use the ack flag to detect if state is desired or acknowledged
-    if ((adapter.config.sendNotAck || state.ack) && !id.match(/\.messagebox$/)) {
+    if ((adapter.config.sendAckToo || !state.ack) && !messageboxRegex.test(id)) {
         var old = states[id] ? states[id].val : null;
         states[id] = state;
+
+        // If value realy changed
         if (!adapter.config.onchange || old !== state.val) {
-            var topic = id.replace(/\./g, '/');
             if (servers) {
                 for (var k in clients) {
-                    // check names
-                    if (!clients[k]._subsID ||
-                        clients[k]._subsID[id] !== undefined) {
-                        if (adapter.config.debug) adapter.log.info('Send to client [' + clients[k].id + '] "' + clients[k]._subsID[id].pattern + '": ' + state2string(state.val));
-                        clients[k].publish({topic: clients[k]._subsID[id].pattern, payload: state2string(state.val)});
-                    } else
-                    //  Check patterns
-                    if (clients[k]._subs) {
-                        var pattern = checkPattern(clients[k]._subs, id);
-
-                        if (pattern) {
-                            var topic = id2topic(id, pattern.pattern);
-                            // Cache the value
-                            clients[k]._subsID[id] = {
-                                qos: pattern,
-                                pattern: topic
-                            };
-                            if (adapter.config.debug) adapter.log.info('Send to client [' + clients[k].id + '] "' + topic + '": ' + state2string(state.val));
-                            clients[k].publish({topic: topic, payload: state2string(state.val)});
-                        }
-                    }
+                    send2Client(clients[k], id, state);
                 }
-            } else if (client) {
+            } else
+            if (client) {
                 var topic = id.replace(/\./g, '/');
                 if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": ' + state2string(state.val));
                 client.publish(adapter.config.prefix + topic, state2string(state.val));
@@ -361,7 +358,7 @@ function createClient(config) {
         adapter.log.info('Connected to ' + config.url);
         if (config.publishAllOnStart) {
             for (var id in states) {
-                if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                if (!messageboxRegex.test(id)) {
                     client.publish(config.prefix + id.replace(/\./g, '/'), state2string(states[id].val));
                 }
             }
@@ -398,11 +395,15 @@ function createServer(config) {
 
             // Send all subscribed variables to client
             if (config.publishAllOnStart) {
-                for (var id in states) {
-                    if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
-                        client.publish({topic: config.prefix + id.replace(/\./g, '/'), payload: state2string(states[id].val)});
+
+                // Give to client 2 seconds to send subscribe
+                client._sendOnStart = setTimeout(function () {
+                    client._sendOnStart = null;
+                    // If client still connected
+                    for (var id in states) {
+                        send2Client(client, id, states[id]);
                     }
-                }
+                }, 2000);
             }
         });
 
@@ -553,16 +554,28 @@ function createServer(config) {
         });
 
         client.on('disconnect', function (packet) {
+            if (client._sendOnStart) {
+                clearTimeout(client._sendOnStart);
+                client._sendOnStart = null;
+            }
             adapter.log.info('Client [' + client.id + '] disconnected');
             client.stream.end();
         });
 
         client.on('close', function (err) {
+            if (client._sendOnStart) {
+                clearTimeout(client._sendOnStart);
+                client._sendOnStart = null;
+            }
             adapter.log.info('Client [' + client.id + '] closed');
             delete clients[client.id];
         });
 
         client.on('error', function (err) {
+            if (client._sendOnStart) {
+                clearTimeout(client._sendOnStart);
+                client._sendOnStart = null;
+            }
             adapter.log.error('[' + client.id + '] ' + err);
 
             if (!clients[client.id]) return;
@@ -620,7 +633,7 @@ function readStatesForPattern(pattern) {
             if (!states) states = {};
 
             for (var id in res) {
-                if (id.length <= messageboxLen || id.substring(id.length - messageboxLen) != '.messagebox') {
+                if (!messageboxRegex.test(id)) {
                     states[id] = res[id];
                 }
             }
