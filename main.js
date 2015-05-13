@@ -166,7 +166,7 @@ function topic2id(topic, dontCutNamespace) {
     if (topic[topic.length - 1] == '.') topic = topic.substring(0, topic.length - 1);
 
     // Remove own prefix if
-    if (adapter.config.prefix && topic.substring(0, config.prefix.length) == adapter.config.prefix) {
+    if (adapter.config.prefix && topic.substring(0, adapter.config.prefix.length) == adapter.config.prefix) {
         topic = topic.substring(adapter.config.prefix.length);
     }
 

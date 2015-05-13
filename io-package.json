@@ -4,7 +4,7 @@
         "require": {
             "js-controller": ">0.6.6"
         },
-        "version": "0.2.0",
+        "version": "0.2.1",
         "title":                    "MQTT Adapter",
         "desc":                     {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
