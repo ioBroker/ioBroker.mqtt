@@ -242,6 +242,16 @@ adapter.on('stateChange', function (id, state) {
     }
 });
 
+function updateClients() {
+    var text = '';
+    if (clients) {
+        for (var id in clients) {
+            text += (text ? ',' : '') + id;
+        }
+    }
+
+    adapter.setState('clients', {val: text, ack: true});
+}
 function processMessage(obj) {
     if (!obj || !obj.command) return;
     switch (obj.command) {
@@ -385,6 +395,7 @@ function createServer(config) {
                     client.connack({returnCode: 4});
                     if (clients[client.id]) delete clients[client.id];
                     client.stream.end();
+                    updateClients();
                     return;
                 }
             }
@@ -392,6 +403,7 @@ function createServer(config) {
             adapter.log.info('Client [' + packet.clientId + '] connected');
             client.connack({returnCode: 0});
             clients[client.id] = client;
+            updateClients();
 
             // Send all subscribed variables to client
             if (config.publishAllOnStart) {
@@ -494,7 +506,7 @@ function createServer(config) {
                         adapter.setObject(topic, {
                             type: 'state',
                             common: {
-                                name:  packet.topic,
+                                name:  packet.subscriptions[i].topic,
                                 write: true,
                                 read:  true,
                                 role:  'variable',
@@ -505,22 +517,31 @@ function createServer(config) {
                             native: {
                                 origin: client.id
                             }
+                        }, function (err, obj) {
+                            states[obj.id] = {val: null, ack: true};
+                            adapter.setState(obj.id, {val: null, ack: true});
                         });
                         topic = adapter.namespace + '.' + topic;
-                    }
-
-                    if (states[topic]) {
-                        client._subsID[packet.subscriptions[i].topic] = {
-                            qos:     packet.subscriptions[i].qos,
-                            pattern: packet.subscriptions[i].topic
-                        };
-                        adapter.log.info('Client [' + client.id + '] subscribes on "' + packet.subscriptions[i].topic + '"');
-                    } else {
-                        client._subsID[adapter.namespace + '.' + packet.subscriptions[i].topic] = {
+                        client._subsID[topic] = {
                             qos:     packet.subscriptions[i].qos,
                             pattern: packet.subscriptions[i].topic
                         }
-                        adapter.log.info('Client [' + client.id + '] subscribes on "' + adapter.namespace + '.' + packet.subscriptions[i].topic + '"');
+                        adapter.log.info('Client [' + client.id + '] subscribes on "' + topic + '"');
+                    } else {
+                        if (states[topic]) {
+                            client._subsID[topic] = {
+                                qos:     packet.subscriptions[i].qos,
+                                pattern: packet.subscriptions[i].topic
+                            };
+                            adapter.log.info('Client [' + client.id + '] subscribes on "' + topic + '"');
+                        } else {
+                            client._subsID[adapter.namespace + '.' + topic] = {
+                                qos:     packet.subscriptions[i].qos,
+                                pattern: packet.subscriptions[i].topic
+                            };
+                            adapter.log.info('Client [' + client.id + '] subscribes on "' + adapter.namespace + '.' + topic + '"');
+                        }
+
                     }
                 } else {
                     var topic = pattern2RegEx(packet.subscriptions[i].topic);
@@ -569,6 +590,7 @@ function createServer(config) {
             }
             adapter.log.info('Client [' + client.id + '] closed');
             delete clients[client.id];
+            updateClients();
         });
 
         client.on('error', function (err) {
@@ -576,11 +598,12 @@ function createServer(config) {
                 clearTimeout(client._sendOnStart);
                 client._sendOnStart = null;
             }
-            adapter.log.error('[' + client.id + '] ' + err);
+            adapter.log.warn('[' + client.id + '] ' + err);
 
             if (!clients[client.id]) return;
 
             delete clients[client.id];
+            updateClients();
             client.stream.end();
         });
     };
