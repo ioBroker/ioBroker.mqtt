@@ -179,7 +179,7 @@ function send2Client(client, id, state) {
 
     if (!client._subsID ||
         client._subsID[id] !== undefined) {
-        var topic = (client._subsID) ? client._subsID[id].pattern : config.prefix + id.replace(/\./g, '/');
+        var topic = (client._subsID) ? client._subsID[id].pattern : adapter.config.prefix + id.replace(/\./g, '/');
 
         if (adapter.config.debug) adapter.log.info('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
         client.publish({topic: topic, payload: (state ? state2string(state.val) : null)});

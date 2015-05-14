@@ -83,6 +83,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 0.2.3 (2015-05-14)
+* (bluefox) fix some errors
+
 ### 0.2.2 (2015-05-13)
 * (bluefox) fix some errors with sendOnStart and fix flag sendAckToo
 
