@@ -91,10 +91,10 @@ function id2topic(id, pattern) {
         topic = adapter.config.prefix + id;
     } else if (pattern.substring(0, adapter.namespace.length) == adapter.namespace) {
         topic = id;
-    } else if (pattern.substring(0, adapter.config.prefix.length) == adapter.config.prefix) {
-        topic = adapter.config.prefix + id.substring(adapter.namespace.length + 1);
+    } else if (adapter.config.prefix && pattern.substring(0, adapter.config.prefix.length) == adapter.config.prefix) {
+        topic = adapter.config.prefix + id;//.substring(adapter.namespace.length + 1);
     } else {
-        topic = id.substring(adapter.namespace.length + 1);
+        topic = id;
     }
     topic = topic.replace(/\./g, '/');
     return topic;
@@ -683,6 +683,10 @@ function main() {
             cnt++;
             readStatesForPattern(parts[t]);
         }
+    } else {
+        // subscribe for all variables
+        adapter.subscribeForeignStates('*');
+        readStatesForPattern('*');
     }
     // If no subscription, start client or server
     if (!cnt) {

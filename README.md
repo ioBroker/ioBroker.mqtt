@@ -83,6 +83,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 0.2.5 (2015-05-15)
+* (bluefox) subscribe to all states if no mask defined
+
 ### 0.2.4 (2015-05-14)
 * (bluefox) add state "clients" to server with the list of clients
 
