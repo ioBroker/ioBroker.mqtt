@@ -1,7 +1,7 @@
 {
   "name": "iobroker.mqtt",
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "author": "bluefox <bluefox@ccu.io>",
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository": {

@@ -83,6 +83,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 0.2.7 (2015-05-16)
+* (bluefox) fix test button
+
 ### 0.2.6 (2015-05-16)
 * (bluefox) fix names if from mqtt adapter
 

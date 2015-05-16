@@ -11,6 +11,8 @@
 var utils   = require(__dirname + '/lib/utils'); // Get common adapter utils
 var adapter = utils.adapter('mqtt');
 
+var mqtt    = null;
+
 var client  = null;
 var servers = null;
 var clients = {};
@@ -254,12 +256,14 @@ function updateClients() {
 
     adapter.setState('clients', {val: text, ack: true});
 }
+
 function processMessage(obj) {
     if (!obj || !obj.command) return;
     switch (obj.command) {
         case 'test': {
             // Try to connect to mqtt broker
             if (obj.callback && obj.message) {
+                mqtt = mqtt || require('mqtt');
                 var _url = 'mqtt://' + (obj.message.user ? (obj.message.user + ':' + obj.message.pass + '@') : '') + obj.message.url + (obj.message.port ? (':' + obj.message.port) : '') + '?clientId=ioBroker.' + adapter.namespace;
                 var _client = mqtt.connect(_url);
                 // Set timeout for connection
@@ -289,7 +293,7 @@ function processMessages() {
 }
 
 function createClient(config) {
-    var mqtt = require('mqtt');
+    mqtt = mqtt || require('mqtt');
 
     var _url  = ((!config.ssl) ? 'mqtt' : 'mqtts') + '://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url + (config.port ? (':' + config.port) : '') + '?clientId=ioBroker.' + adapter.namespace;
     var __url = ((!config.ssl) ? 'mqtt' : 'mqtts') + '://' + (config.user ? (config.user + ':*******************@') : '') + config.url + (config.port ? (':' + config.port) : '') + '?clientId=ioBroker.' + adapter.namespace;

@@ -9,14 +9,14 @@ client.on('connect', function () {
     client.publish('test/in/testMessage3',  'Roger3');
     client.publish('test/in/testMessage4',  'Roger4');*/
 
-    client.publish('arduino/kitchen/out/temperature',  '10.1');
+    /*client.publish('arduino/kitchen/out/temperature',  '10.1');
     client.publish('arduino/kitchen/out/humidity',  '56');
     // Current light state
     client.publish('arduino/kitchen/in/lightActor',  'false');
 
-    client.subscribe('arduino/kitchen/in/#');
+    client.subscribe('arduino/kitchen/in/#');*/
     //client.subscribe('arduino/kitchen/in/updateInterval');
-    client.subscribe('system/adapter/web/0/#');
+    client.subscribe('hm-rpc/0/#');
 });
 
 client.on('message', function (topic, message) {
