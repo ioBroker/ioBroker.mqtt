@@ -93,6 +93,8 @@ function id2topic(id, pattern) {
         topic = id;
     } else if (adapter.config.prefix && pattern.substring(0, adapter.config.prefix.length) == adapter.config.prefix) {
         topic = adapter.config.prefix + id;//.substring(adapter.namespace.length + 1);
+    } else if (id.substring(0, adapter.namespace.length) == adapter.namespace) {
+        topic = id.substring(adapter.namespace.length + 1);
     } else {
         topic = id;
     }
