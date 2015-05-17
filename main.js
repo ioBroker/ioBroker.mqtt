@@ -431,7 +431,22 @@ function createServer(config) {
             }*/
             var topic = topic2id(packet.topic);
 
-            if (typeof packet.payload == 'object') packet.payload = packet.payload.toString();
+            //adapter.log.info('Type: ' + typeof packet.payload);
+
+            if (typeof packet.payload == 'object') packet.payload = packet.payload.toString('utf8');
+
+            // try to convert 101,124,444,... To utf8 string
+            if (typeof packet.payload == 'string' && packet.payload.match(/(\d)+,\s?(\d)+,\s?(\d)+/)) {
+                //adapter.log.info('Try to convert ' + packet.payload);
+
+                var parts = packet.payload.split(',');
+                var str = '';
+                for (var p = 0; p < parts.length; p++) {
+                    str += String.fromCharCode(parseInt(parts.trim(), 10));
+                }
+                packet.payload = str;
+                //adapter.log.info('Converted ' + packet.payload);
+            }
 
             var f = parseFloat(packet.payload);
 
@@ -460,7 +475,7 @@ function createServer(config) {
             // Try to convert into float
             if (f.toString() == packet.payload) packet.payload = f;
 
-            if (typeof packet.payload == 'string' && packet.payload[0] == '{') {
+            /*if (typeof packet.payload == 'string' && packet.payload[0] == '{') {
                 try {
                     packet.payload = JSON.parse(packet.payload);
 
@@ -481,14 +496,14 @@ function createServer(config) {
                 } catch (e) {
                     adapter.log.warn('Cannot parse "' + topic + '": ' + packet.payload);
                 }
-            }
+            }*/
             if (states[topic]) {
-                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + topic + '": ' +  packet.payload);
+                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + topic + '" (' + typeof packet.payload + '): ' +  packet.payload);
                 adapter.setForeignState(topic, {val: packet.payload, ack: true}, function (id) {
                     states[id] = {val: packet.payload, ack: true};
                 });
             } else {
-                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + adapter.namespace + '.' + topic + '": ' +  packet.payload);
+                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + adapter.namespace + '.' + topic + '"(' + typeof packet.payload + '): ' +  packet.payload);
                 adapter.setState(topic, {val: packet.payload, ack: true}, function (id) {
                     states[id] = {val: packet.payload, ack: true};
                 });
