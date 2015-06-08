@@ -212,7 +212,7 @@ adapter.on('stateChange', function (id, state) {
     // State deleted
     if (!state) {
         delete states[id];
-        // If SEVRER
+        // If SERVER
         if (servers) {
             for (var k in clients) {
                 send2Client(clients[k], id, state);
@@ -230,13 +230,15 @@ adapter.on('stateChange', function (id, state) {
         var old = states[id] ? states[id].val : null;
         states[id] = state;
 
-        // If value realy changed
+        // If value really changed
         if (!adapter.config.onchange || old !== state.val) {
+            // If SERVER
             if (servers) {
                 for (var k in clients) {
                     send2Client(clients[k], id, state);
                 }
             } else
+            // if CLIENT
             if (client) {
                 var topic = id.replace(/\./g, '/');
                 if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": ' + state2string(state.val));
