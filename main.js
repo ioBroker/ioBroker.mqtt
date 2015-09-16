@@ -162,6 +162,8 @@ function pattern2RegEx(pattern) {
 }
 
 function topic2id(topic, dontCutNamespace) {
+    if (!topic) return topic;
+
     topic = topic.replace(/\//g, '.');
     if (topic[0] == '.') topic = topic.substring(1);
     if (topic[topic.length - 1] == '.') topic = topic.substring(0, topic.length - 1);
@@ -433,6 +435,11 @@ function createServer(config) {
             }*/
             var topic = topic2id(packet.topic);
 
+            if (!topic) {
+                adapter.log.error('Invalid topic name: ' + JSON.stringify(topic));
+                return;
+            }
+
             //adapter.log.info('Type: ' + typeof packet.payload);
 
             if (typeof packet.payload == 'object') packet.payload = packet.payload.toString('utf8');
@@ -521,6 +528,11 @@ function createServer(config) {
                 granted.push(packet.subscriptions[i].qos);
 
                 var topic = topic2id(packet.subscriptions[i].topic);
+
+                if (!topic) {
+                    adapter.log.error('Invalid topic name: ' + JSON.stringify(topic));
+                    continue;
+                }
 
                 if (topic.indexOf('*') == -1 && topic.indexOf('#') == -1 && topic.indexOf('+') == -1) {
                     // If state is unknown => create mqtt.X.topic
