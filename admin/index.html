@@ -71,6 +71,7 @@
             "ru": "Нужно выбрать сертификаты или сначала загрузить их в системных настройках (вверху справа)."
         },
         "Prefix for topics:":     {"en": "Prefix for all topics:", "de": "Prefix für alle Topics:","ru": "Префикс для всех значений:"},
+        "Max topic length:":      {"en": "Max topic name length:", "de": "Maximale Topicnamelänge","ru": "Максимальная длина имени топика:"},
         "Server":                 {"en": "Server/broker",          "de": "Server/broker",          "ru": "Сервер/брокер"},
         "Client":                 {"en": "Client/subscriber",      "de": "Client/subscriber",      "ru": "Клиент/подписчик"}
     };
@@ -368,6 +369,11 @@
         <tr>
             <td class="translate">Send states (ack=true) too:</td>
             <td><input id="sendAckToo" type="checkbox" class="value"/></td>
+            <td class="translate"></td>
+        </tr>
+        <tr>
+            <td class="translate">Max topic length:</td>
+            <td><input id="maxTopicLength" class="value" size="17"/></td>
             <td class="translate"></td>
         </tr>
     </table>

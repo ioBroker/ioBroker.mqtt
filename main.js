@@ -37,6 +37,7 @@ adapter.on('message', function (obj) {
 adapter.on('ready', function () {
     var fs = require('fs');
     adapter.config.pass = decrypt("Zgfr56gFe87jJOM", adapter.config.pass);
+    adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
     if (adapter.config.ssl && adapter.config.type == 'server') {
         // Read the certificates and store it under
         // "adapter/mqtt/cert/privatekey.pem" and
@@ -332,6 +333,11 @@ function createClient(config) {
 
         if (typeof message == 'object') message = message.toString();
 
+        if (topic.length > adapter.config.maxTopicLength) {
+            adapter.log.warn('[' + client.id + '] Topic name is too long: ' + topic.substring(0, 100) + '...');
+            return;
+        }
+
         var f = parseFloat(message);
 
         if (objects.indexOf(topic) == -1) {
@@ -358,6 +364,8 @@ function createClient(config) {
         }
 
         if (f.toString() == message) message = f;
+        if (message === 'true')  message = true;
+        if (message === 'false') message = false;
 
         if (config.debug) adapter.log.info('Server publishes "' + adapter.namespace + '.' + topic + '": ' + message);
 
@@ -460,6 +468,11 @@ function createServer(config) {
             var f = parseFloat(packet.payload);
 
             // If state is unknown => create mqtt.X.topic
+            if ((adapter.namespace + '.' + topic).length > adapter.config.maxTopicLength) {
+                adapter.log.warn('Topic name is too long: ' + topic.substring(0, 100) + '...');
+                return;
+            }
+
             if (states[topic] === undefined && states[adapter.namespace + '.' + topic] === undefined) {
                 adapter.log.info('Create state ' + adapter.namespace + '.' + topic);
 
@@ -482,7 +495,9 @@ function createServer(config) {
             }
 
             // Try to convert into float
-            if (f.toString() == packet.payload) packet.payload = f;
+            if (f.toString() === packet.payload) packet.payload = f;
+            if (packet.payload === 'true') packet.payload = true;
+            if (packet.payload === 'false') packet.payload = false;
 
             /*if (typeof packet.payload == 'string' && packet.payload[0] == '{') {
                 try {
