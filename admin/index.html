@@ -65,6 +65,11 @@
             "de": "Bekanntgeben eigene States beim Verbinden:",
             "ru": "Выдавать собственные значения при старте:"
         },
+        "Publish states on subscribe:":    {
+            "en": "Publish states on subscribe:",
+            "de": "Bekanntgeben von States bei Subscribe:",
+            "ru": "Publish states on subscribe:"
+        },
         "Set certificates or load it first in the system settings (right top).":    {
             "en": "Set certificates or load it first in the system settings (right top).",
             "de": "Setze Zertificate oder lade die erst unter System/Einstellungen (oben rechts).",
@@ -102,6 +107,7 @@
             $('#_certPublic').hide();
             $('#_certPrivate').hide();
             $('#_webSocket').hide();
+            $('#_publishOnSubscribe').hide();
         }else {
             $('#_url').hide();
             $('#test').hide();
@@ -114,6 +120,7 @@
                 $('#_certPublic').hide();
                 $('#_certPrivate').hide();
             }
+            $('#_publishOnSubscribe').show();
         }
     }
 
@@ -354,6 +361,11 @@
         <tr>
             <td class="translate">Publish all states at start:</td>
             <td><input id="publishAllOnStart" type="checkbox" class="value"/></td>
+            <td class="translate"></td>
+        </tr>
+        <tr id ="_publishOnSubscribe">
+            <td class="translate">Publish states on subscribe:</td>
+            <td><input id="publishOnSubscribe" type="checkbox" class="value"/></td>
             <td class="translate"></td>
         </tr>
         <tr>

@@ -83,6 +83,10 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+
+### 0.2.12 (2015-11-14)
+* (Pmant) send last known value on subscription (server)
+
 ### 0.2.11 (2015-10-17)
 * (bluefox) set maximal length of topic name
 * (bluefox) convert "true" and "false" to boolean values
