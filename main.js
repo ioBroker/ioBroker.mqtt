@@ -575,7 +575,7 @@ function createServer(config) {
                         client._subsID[topic] = {
                             qos:     packet.subscriptions[i].qos,
                             pattern: packet.subscriptions[i].topic
-                        }
+                        };
                         adapter.log.info('Client [' + client.id + '] subscribes on "' + topic + '"');
                     } else {
                         if (states[topic]) {
@@ -584,6 +584,12 @@ function createServer(config) {
                                 pattern: packet.subscriptions[i].topic
                             };
                             adapter.log.info('Client [' + client.id + '] subscribes on "' + topic + '"');
+                            if (adapter.config.publishOnSubscribe){
+                                if (!client._subsID[topic2id(topic)]){
+                                    adapter.log.info('publishOnSubscribe');
+                                    send2Client(client, topic2id(topic), states[topic]);
+                                }
+                            }
                         } else {
                             client._subsID[adapter.namespace + '.' + topic] = {
                                 qos:     packet.subscriptions[i].qos,
@@ -591,7 +597,6 @@ function createServer(config) {
                             };
                             adapter.log.info('Client [' + client.id + '] subscribes on "' + adapter.namespace + '.' + topic + '"');
                         }
-
                     }
                 } else {
                     var topic = pattern2RegEx(packet.subscriptions[i].topic);
@@ -605,6 +610,15 @@ function createServer(config) {
                         pattern: pattern
                     };
                     adapter.log.info('Client [' + client.id + '] subscribes on "' + topic2id(packet.subscriptions[i].topic) + '" with regex /' + topic + '/');
+
+                    if (adapter.config.publishOnSubscribe){
+                        adapter.log.info('publishOnSubscribe send all known states');
+                        for(var savedId in states){
+                            if (!client._subsID[topic2id(savedId)]){
+                                send2Client(client, savedId, states[savedId]);
+                            }
+                        }
+                    }
 
                     topic = adapter.namespace + '.' + topic2id(packet.subscriptions[i].topic);
                     client._subs[topic] = {
@@ -728,7 +742,7 @@ function main() {
     if (adapter.config.publish) {
         var parts = adapter.config.publish.split(',');
         for (var t = 0; t < parts.length; t++) {
-            parts[t] = parts[t].trim();
+            //parts[t] = parts[t].trim();
             adapter.subscribeForeignStates(parts[t].trim());
             cnt++;
             readStatesForPattern(parts[t]);
