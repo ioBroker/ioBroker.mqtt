@@ -72,7 +72,7 @@ adapter.on('unload', function () {
 
     if (servers) {
         // to release all resources
-        servers.destroy(function(){
+        servers.destroy(function () {
             console.log('all gone!');
         });
         servers = null;
@@ -182,11 +182,12 @@ function topic2id(topic, dontCutNamespace) {
 }
 
 function send2Client(client, id, state) {
+    var topic;
     if (messageboxRegex.test(id)) return;
 
     if (!client._subsID ||
         client._subsID[id] !== undefined) {
-        var topic = (client._subsID) ? client._subsID[id].pattern : adapter.config.prefix + id.replace(/\./g, '/');
+        topic = (client._subsID) ? client._subsID[id].pattern : adapter.config.prefix + id.replace(/\./g, '/');
 
         if (adapter.config.debug) adapter.log.info('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
         client.publish({topic: topic, payload: (state ? state2string(state.val) : null)});
@@ -197,7 +198,7 @@ function send2Client(client, id, state) {
         var pattern = checkPattern(client._subs, id);
 
         if (pattern) {
-            var topic = id2topic(id, pattern.pattern);
+            topic = id2topic(id, pattern.pattern);
             // Cache the value
             client._subsID[id] = {
                 qos: pattern,
@@ -211,7 +212,7 @@ function send2Client(client, id, state) {
 
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
-
+    var topic;
     // State deleted
     if (!state) {
         delete states[id];
@@ -223,7 +224,7 @@ adapter.on('stateChange', function (id, state) {
         } else
         // if CLIENT
         if (client) {
-            var topic = id.replace(/\./g, '/');
+            topic = id.replace(/\./g, '/');
             if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": deleted');
             client.publish(adapter.config.prefix + topic, null);
         }
@@ -237,13 +238,13 @@ adapter.on('stateChange', function (id, state) {
         if (!adapter.config.onchange || old !== state.val) {
             // If SERVER
             if (servers) {
-                for (var k in clients) {
-                    send2Client(clients[k], id, state);
+                for (var u in clients) {
+                    send2Client(clients[u], id, state);
                 }
             } else
             // if CLIENT
             if (client) {
-                var topic = id.replace(/\./g, '/');
+                topic = id.replace(/\./g, '/');
                 if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": ' + state2string(state.val));
                 client.publish(adapter.config.prefix + topic, state2string(state.val));
             }
@@ -584,8 +585,8 @@ function createServer(config) {
                                 pattern: packet.subscriptions[i].topic
                             };
                             adapter.log.info('Client [' + client.id + '] subscribes on "' + topic + '"');
-                            if (adapter.config.publishOnSubscribe){
-                                if (!client._subsID[topic2id(topic)]){
+                            if (adapter.config.publishOnSubscribe) {
+                                if (!client._subsID[topic2id(topic)]) {
                                     adapter.log.info('publishOnSubscribe');
                                     send2Client(client, topic2id(topic), states[topic]);
                                 }
@@ -599,8 +600,6 @@ function createServer(config) {
                         }
                     }
                 } else {
-                    var topic = pattern2RegEx(packet.subscriptions[i].topic);
-
                     var pattern = packet.subscriptions[i].topic.replace(/\//g, '.');
                     if (pattern[0] == '.') pattern = pattern.substring(1);
 
@@ -611,10 +610,10 @@ function createServer(config) {
                     };
                     adapter.log.info('Client [' + client.id + '] subscribes on "' + topic2id(packet.subscriptions[i].topic) + '" with regex /' + topic + '/');
 
-                    if (adapter.config.publishOnSubscribe){
+                    if (adapter.config.publishOnSubscribe) {
                         adapter.log.info('publishOnSubscribe send all known states');
-                        for(var savedId in states){
-                            if (!client._subsID[topic2id(savedId)]){
+                        for (var savedId in states) {
+                            if (!client._subsID[topic2id(savedId)]) {
                                 send2Client(client, savedId, states[savedId]);
                             }
                         }

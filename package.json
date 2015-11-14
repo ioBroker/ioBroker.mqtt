@@ -21,7 +21,7 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^1.4.3",
+    "mqtt": "^1.5.0 ",
     "create-stream-server": "^0.1.1",
     "mqtt-connection": "^2.1.1"
   },
