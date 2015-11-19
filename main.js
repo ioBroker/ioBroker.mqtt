@@ -525,12 +525,12 @@ function createServer(config) {
             if (states[topic]) {
                 if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + topic + '" (' + typeof packet.payload + '): ' +  packet.payload);
                 adapter.setForeignState(topic, {val: packet.payload, ack: true}, function (id) {
-                    states[id] = {val: packet.payload, ack: true};
+                    states[topic] = {val: packet.payload, ack: true};
                 });
             } else {
                 if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + adapter.namespace + '.' + topic + '"(' + typeof packet.payload + '): ' +  packet.payload);
                 adapter.setState(topic, {val: packet.payload, ack: true}, function (id) {
-                    states[id] = {val: packet.payload, ack: true};
+                    states[topic] = {val: packet.payload, ack: true};
                 });
             }
         });
