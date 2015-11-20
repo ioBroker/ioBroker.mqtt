@@ -84,6 +84,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 ## Changelog
 
+### 0.2.13 (2015-11-20)
+* (Pmant) fix error with wrong variable name 
+
 ### 0.2.12 (2015-11-14)
 * (Pmant) send last known value on subscription (server)
 
