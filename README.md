@@ -84,6 +84,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 ## Changelog
 
+### 0.2.14 (2015-11-21)
+* (bluefox) fix error with wrong variable names 
+
 ### 0.2.13 (2015-11-20)
 * (Pmant) fix error with wrong variable name 
 
