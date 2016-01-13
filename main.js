@@ -17,7 +17,7 @@ var client  = null;
 var servers = null;
 var clients = {};
 var states  = {};
-var objects = [];
+var objects = {};
 
 var messageboxRegex = new RegExp("\.messagebox$");
 
@@ -298,6 +298,18 @@ function processMessages() {
     });
 }
 
+function publishAllStates(config, toPublish) {
+    if (!toPublish || !toPublish.length) return;
+
+    var id = toPublish.pop();
+    client.publish(config.prefix + id.replace(/\./g, '/'), state2string(states[id].val), function (err) {
+        if (err) adapter.log.error(err);
+        setTimeout(function () {
+            publishAllStates(config, toPublish);
+        }, 0);
+    });
+}
+
 function createClient(config) {
     mqtt = mqtt || require('mqtt');
 
@@ -320,6 +332,7 @@ function createClient(config) {
 
     client.on('message', function (topic, message) {
         if (!topic) return;
+        var originalTopic = topic;
 
         // Ignore message if value does not changed
         if (config.onchange) {
@@ -341,8 +354,8 @@ function createClient(config) {
 
         var f = parseFloat(message);
 
-        if (objects.indexOf(topic) == -1) {
-            objects.push(topic);
+        if (!objects[topic]) {
+            objects[topic] = originalTopic;
             // Create object if exists
             adapter.getObject(topic, function (err, obj) {
                 if (!obj) {
@@ -356,7 +369,8 @@ function createClient(config) {
                                 desc:  'mqtt client variable',
                                 type:  (f.toString() == message) ? 'number' : 'string'
                             }, {
-                                origin: adapter.namespace
+                                origin: adapter.namespace,
+                                topic:  originalTopic
                             });
                         }
                     });
@@ -386,11 +400,13 @@ function createClient(config) {
     client.on('connect', function () {
         adapter.log.info('Connected to ' + config.url);
         if (config.publishAllOnStart) {
+            var toPublish = [];
             for (var id in states) {
                 if (!messageboxRegex.test(id)) {
-                    client.publish(config.prefix + id.replace(/\./g, '/'), state2string(states[id].val));
+                    toPublish.push(id);
                 }
             }
+            publishAllStates(config, toPublish);
         }
     });
 
@@ -488,6 +504,7 @@ function createServer(config) {
                         type:  (f.toString() == packet.payload) ? 'number' : 'string'
                     },
                     native: {
+                        topic:  packet.topic,
                         origin: client.id
                     }
                 });
@@ -497,7 +514,7 @@ function createServer(config) {
 
             // Try to convert into float
             if (f.toString() === packet.payload) packet.payload = f;
-            if (packet.payload === 'true') packet.payload = true;
+            if (packet.payload === 'true')  packet.payload = true;
             if (packet.payload === 'false') packet.payload = false;
 
             /*if (typeof packet.payload == 'string' && packet.payload[0] == '{') {
@@ -566,6 +583,7 @@ function createServer(config) {
                                 def:   null
                             },
                             native: {
+                                topic:  packet.subscriptions[i].topic,
                                 origin: client.id
                             }
                         }, function (err, obj) {

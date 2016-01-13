@@ -84,6 +84,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 ## Changelog
 
+### 0.3.0 (2016-01-13)
+* (bluefox) try to fix event emitter
+
 ### 0.2.15 (2015-11-23)
 * (Pmant) fix publish on subscribe
 
