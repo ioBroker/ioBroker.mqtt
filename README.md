@@ -84,6 +84,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 ## Changelog
 
+### 0.3.1 (2016-01-14)
+* (bluefox) change creation of states by client
+
 ### 0.3.0 (2016-01-13)
 * (bluefox) try to fix event emitter
 

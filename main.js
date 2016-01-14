@@ -189,7 +189,7 @@ function send2Client(client, id, state) {
         client._subsID[id] !== undefined) {
         topic = (client._subsID) ? client._subsID[id].pattern : adapter.config.prefix + id.replace(/\./g, '/');
 
-        if (adapter.config.debug) adapter.log.info('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
+        if (adapter.config.debug) adapter.log.debug('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
         client.publish({topic: topic, payload: (state ? state2string(state.val) : null)});
 
     } else
@@ -204,7 +204,7 @@ function send2Client(client, id, state) {
                 qos: pattern,
                 pattern: topic
             };
-            if (adapter.config.debug) adapter.log.info('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
+            if (adapter.config.debug) adapter.log.debug('Send to client [' + client.id + '] "' + topic + '": ' + (state ? state2string(state.val) : 'deleted'));
             client.publish({topic: topic, payload: (state ? state2string(state.val) : null)});
         }
     }
@@ -225,7 +225,7 @@ adapter.on('stateChange', function (id, state) {
         // if CLIENT
         if (client) {
             topic = id.replace(/\./g, '/');
-            if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": deleted');
+            if (adapter.config.debug) adapter.log.debug('Send to server "' + adapter.config.prefix + topic + '": deleted');
             client.publish(adapter.config.prefix + topic, null);
         }
     } else
@@ -245,7 +245,7 @@ adapter.on('stateChange', function (id, state) {
             // if CLIENT
             if (client) {
                 topic = id.replace(/\./g, '/');
-                if (adapter.config.debug) adapter.log.info('Send to server "' + adapter.config.prefix + topic + '": ' + state2string(state.val));
+                if (adapter.config.debug) adapter.log.debug('Send to server "' + adapter.config.prefix + topic + '": ' + state2string(state.val));
                 client.publish(adapter.config.prefix + topic, state2string(state.val));
             }
         }
@@ -332,69 +332,116 @@ function createClient(config) {
 
     client.on('message', function (topic, message) {
         if (!topic) return;
-        var originalTopic = topic;
-
-        // Ignore message if value does not changed
-        if (config.onchange) {
-            var oldValue = states[topic];
-            if (oldValue !== undefined && oldValue == message) {
-                return;
-            } else {
-                states[topic] = message;
-            }
-        }
+        var name = topic;
         topic = topic2id(topic);
-
-        if (typeof message == 'object') message = message.toString();
 
         if (topic.length > adapter.config.maxTopicLength) {
             adapter.log.warn('[' + client.id + '] Topic name is too long: ' + topic.substring(0, 100) + '...');
             return;
         }
 
-        var f = parseFloat(message);
+        if (typeof message == 'object') message = message.toString();
 
-        if (!objects[topic]) {
-            objects[topic] = originalTopic;
-            // Create object if exists
-            adapter.getObject(topic, function (err, obj) {
-                if (!obj) {
-                    adapter.getForeignObject(topic, function (err, obj) {
-                        if (!obj) {
-                            adapter.createState('', '', topic, {
-                                name:  topic,
-                                write: true,
-                                read:  true,
-                                role:  'variable',
-                                desc:  'mqtt client variable',
-                                type:  (f.toString() == message) ? 'number' : 'string'
-                            }, {
-                                origin: adapter.namespace,
-                                topic:  originalTopic
-                            });
-                        }
-                    });
-                }
-            });
-        }
+        var f = parseFloat(message);
 
         if (f.toString() == message) message = f;
         if (message === 'true')  message = true;
         if (message === 'false') message = false;
 
-        if (config.debug) adapter.log.info('Server publishes "' + adapter.namespace + '.' + topic + '": ' + message);
+        if (config.debug) adapter.log.debug('Server publishes "' + topic + '": ' + message);
 
-        if (typeof message == 'string' && message[0] == '{') {
+        if (typeof message === 'string' && message[0] === '{') {
             try {
                 message = JSON.parse(message);
-                adapter.setState(topic, message);
-                return;
             } catch (e) {
                 adapter.log.warn('Cannot parse "' + topic + '": ' + message);
             }
         }
 
-        adapter.setState(topic, {val: message, ack: true});
+        if (!objects[topic]) {
+            objects[topic] = {id: null, message: message};
+
+            // Create object if not exists
+            adapter.getObject(topic, function (err, obj) {
+                if (!obj) {
+                    adapter.getForeignObject(topic, function (err, obj) {
+                        if (!obj) {
+                            // create state
+                            obj = {
+                                common: {
+                                    name:  name,
+                                    write: true,
+                                    read:  true,
+                                    role:  'variable',
+                                    desc:  'mqtt client variable',
+                                    type:  typeof objects[topic].message
+                                }
+                            };
+
+                            if (obj.common.type === 'object' && objects[topic].message.val !== undefined) {
+                                obj.common.type = typeof objects[topic].message.val;
+                            }
+
+                            objects[topic].id = adapter.namespace + '.' + topic;
+
+                            adapter.setForeignObject(objects[topic].id, obj, function (err) {
+                                if (err) adapter.log.error(err);
+                            });
+
+                            if (config.debug) adapter.log.debug('Client received "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+
+                            // write
+                            if (typeof objects[topic].message === 'object') {
+                                adapter.setState(objects[topic].id, objects[topic].message);
+                            } else {
+                                adapter.setState(objects[topic].id, {val: objects[topic].message, ack: true});
+                            }
+                        } else {
+                            // this is topic from other adapter
+                            objects[topic].id = topic;
+
+                            if (config.debug) adapter.log.debug('Client received "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+
+                            if (typeof objects[topic].message === 'object') {
+                                adapter.setState(objects[topic].id, objects[topic].message);
+                            } else {
+                                adapter.setState(objects[topic].id, {val: objects[topic].message, ack: true});
+                            }
+                        }
+                    });
+                } else {
+                    // this is topic from this adapter
+                    objects[topic].id = adapter.namespace + '.' + topic;
+
+                    if (config.debug) adapter.log.debug('Client received "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+
+                    if (typeof objects[topic].message === 'object') {
+                        adapter.setState(objects[topic].id, objects[topic].message);
+                    } else {
+                        adapter.setState(objects[topic].id, {val: objects[topic].message, ack: true});
+                    }
+                }
+            });
+        } else if (objects[topic].id === null) {
+            if (config.debug) adapter.log.debug('Client received (but in process) "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+            objects[topic].message = message;
+        } else {
+            if (typeof message === 'object') {
+                if (!adapter.config.onchange || JSON.stringify(objects[topic].message) != JSON.stringify(message)) {
+                    if (config.debug) adapter.log.debug('Client received "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+                    adapter.setState(objects[topic].id, message);
+                } else {
+                    if (config.debug) adapter.log.debug('Client received (but ignored) "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+                }
+            } else {
+                if (!adapter.config.onchange || objects[topic].message != message) {
+                    if (config.debug) adapter.log.debug('Client received "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+                    adapter.setState(objects[topic].id, {val: message, ack: true});
+                } else {
+                    if (config.debug) adapter.log.debug('Client received (but ignored) "' + topic + '" (' + typeof objects[topic].message + '): ' + objects[topic].message);
+                }
+            }
+        }
     });
 
     client.on('connect', function () {
@@ -522,13 +569,13 @@ function createServer(config) {
                     packet.payload = JSON.parse(packet.payload);
 
                     if (states[topic]) {
-                        if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + topic + '": ' + JSON.stringify(packet.payload));
+                        if (config.debug) adapter.log.debug('Client [' + client.id + '] publishes "' + topic + '": ' + JSON.stringify(packet.payload));
 
                         adapter.setForeignState(topic, packet.payload, function (id) {
                             states[id] = packet.payload;
                         });
                     } else {
-                        if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + adapter.namespace + '.' + topic + '": ' + JSON.stringify(packet.payload));
+                        if (config.debug) adapter.log.debug('Client [' + client.id + '] publishes "' + adapter.namespace + '.' + topic + '": ' + JSON.stringify(packet.payload));
 
                         adapter.setState(topic, packet.payload, function (id) {
                             states[id] = packet.payload;
@@ -540,12 +587,12 @@ function createServer(config) {
                 }
             }*/
             if (states[topic]) {
-                if (config.debug) adapter.log.info('Client [' + client.id + '] publishes "' + topic + '" (' + typeof packet.payload + '): ' +  packet.payload);
+                if (config.debug) adapter.log.debug('Client [' + client.id + '] publishes "' + topic + '" (' + typeof packet.payload + '): ' +  packet.payload);
                 adapter.setForeignState(topic, {val: packet.payload, ack: true}, function (err, id) {
                     states[id] = {val: packet.payload, ack: true};
                 });
             } else {
-                if (config.debug) adapter.log.info('Client [' + client.id + '] _publishes "' + adapter.namespace + '.' + topic + '"(' + typeof packet.payload + '): ' +  packet.payload);
+                if (config.debug) adapter.log.debug('Client [' + client.id + '] _publishes "' + adapter.namespace + '.' + topic + '"(' + typeof packet.payload + '): ' +  packet.payload);
                 adapter.setState(topic, {val: packet.payload, ack: true}, function (err, id) {
                     states[id] = {val: packet.payload, ack: true};
                 });
