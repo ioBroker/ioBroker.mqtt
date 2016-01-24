@@ -50,7 +50,7 @@ var port = 1883;
 
 if (process.argv[2] == 'ssl') {
     serverConfig.mqtts  = 'ssl://0.0.0.0:' + (port || 1883);
-    serverConfig.mqtwss = 'wss://0.0.0.0:'  + ((port || 1883) + 1);
+    serverConfig.mqtwss = 'wss://0.0.0.0:' + ((port || 1883) + 1);
 } else {
     serverConfig.mqtts  = 'tcp://0.0.0.0:' + (port || 1883);
     serverConfig.mqtwss = 'ws://0.0.0.0:'  + ((port || 1883) + 1);
