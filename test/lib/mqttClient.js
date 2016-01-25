@@ -1,12 +1,13 @@
 var mqtt    = require('mqtt');
-var client  = mqtt.connect('mqtt://localhost');
 
-function Client(cb) {
-    this.client = client;
+function Client(cb, cbConnected) {
+    var that = this;
+    this.client = mqtt.connect('mqtt://localhost');
 
-    client.on('connect', function () {
+    this.client.on('connect', function () {
         console.log((new Date()) + ' test client connected to localhost');
 
+        that.client.publish('mqtt/0/test', 'Roger1');
         /*client.publish('test/out/testMessage1', 'Roger1');
          client.publish('test/out/testMessage2', 'Roger2');
          client.publish('test/in/testMessage3',  'Roger3');
@@ -19,27 +20,32 @@ function Client(cb) {
 
          client.subscribe('arduino/kitchen/in/#');*/
         //client.subscribe('arduino/kitchen/in/updateInterval');
-        client.subscribe('#');
+        that.client.subscribe('#');
+        if (cbConnected) cbConnected();
     });
 
-    client.on('message', function (topic, message) {
+    this.client.on('message', function (topic, message) {
         // message is Buffer
         console.log((new Date()) + ' ' + topic + ': ' + message.toString());
         if (cb) cb(topic, message);
     });
 
     this.publish = function (topic, message) {
-        client.publish(topic,  message);
+        that.client.publish(topic,  message);
     };
 
     this.destroy = function () {
-        if (client) {
-            client.end();
-            client = null;
+        if (that.client) {
+            that.client.end();
+            that.client = null;
         }
     };
 
     return this;
 }
 
-module.exports = Client;
+if (typeof module !== 'undefined' && module.parent) {
+    module.exports = Client;
+} else {
+    new Client();
+}

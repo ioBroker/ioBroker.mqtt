@@ -1,10 +1,12 @@
 var createStreamServer  = require('create-stream-server');
 var mqtt = require('mqtt-connection');
+var clients = {};
 
 var cltFunction = function (client) {
 
     client.on('connect', function (packet) {
         client.id = packet.clientId;
+        clients[client.id] = client;
 
         console.log('Client [' + packet.clientId + '] connected: user - ' + packet.username + ', pass - ' + packet.password);
         client.connack({returnCode: 0});
@@ -13,7 +15,10 @@ var cltFunction = function (client) {
     });
 
     client.on('publish', function (packet) {
-        console.log('Client [' + client.id + '] publishes "' + packet.topic + '": ' +  packet.payload);
+        console.log('Client [' + client.id + '] publishes "' + packet.topic + '": ' + packet.payload);
+        for (var k in clients) {
+            clients[k].publish({topic: packet.topic, payload: packet.payload});
+        }
     });
 
     client.on('subscribe', function (packet) {
@@ -31,15 +36,18 @@ var cltFunction = function (client) {
     });
 
     client.on('disconnect', function (packet) {
+        if (clients[client.id]) delete clients[client.id];
         console.log('Client [' + client.id + '] disconnected');
         client.stream.end();
     });
 
     client.on('close', function (err) {
+        if (clients[client.id]) delete clients[client.id];
         console.log('Client [' + client.id + '] closed');
     });
 
     client.on('error', function (err) {
+        if (clients[client.id]) delete clients[client.id];
         console.log('[' + client.id + '] ' + err);
         client.stream.end();
     });

@@ -103,10 +103,12 @@ function States(cb, stateChange) {
                     if (id.substring(0, 4) == 'log.') {
                         console.log("LOG");
                     }
-                    // emit 'stateChange' event instantly
-                    setTimeout(function () {
-                        that.emit('stateChange', id, state);
-                    }, 0);
+                    if (that.emit) {
+                        // emit 'stateChange' event instantly
+                        setTimeout(function () {
+                            that.emit('stateChange', id, state);
+                        }, 0);
+                    }
                 }
             }
         },

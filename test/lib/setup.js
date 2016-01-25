@@ -3,9 +3,12 @@ var fs              = require('fs');
 var path            = require('path');
 var child_process   = require('child_process');
 var rootDir         = path.normalize(__dirname + '/../../');
+var debug           = typeof v8debug === 'object';
 
 var adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName = adapterName[adapterName.length - 2];
+
+var pid = null;
 
 function copyFileSync(source, target) {
 
@@ -58,16 +61,18 @@ if (!fs.existsSync(rootDir + 'tmp')) {
 
 function storeOriginalFiles() {
     var f = fs.readFileSync(rootDir + 'tmp/iobroker-data/objects.json');
-    fs.writeFileSnyc(rootDir + 'tmp/iobroker-data/objects.json.original', f);
+    var objects = JSON.parse(f.toString());
+    objects['system.adapter.admin.0'].common.enabled = false;
+    fs.writeFileSync(rootDir + 'tmp/iobroker-data/objects.json.original', JSON.stringify(objects));
     f = fs.readFileSync(rootDir + 'tmp/iobroker-data/states.json');
-    fs.writeFileSnyc(rootDir + 'tmp/iobroker-data/states.json.original', f);
+    fs.writeFileSync(rootDir + 'tmp/iobroker-data/states.json.original', f);
 }
 
 function restoreOriginalFiles() {
     var f = fs.readFileSync(rootDir + 'tmp/iobroker-data/objects.json.original');
-    fs.writeFileSnyc(rootDir + 'tmp/iobroker-data/objects.json', f);
+    fs.writeFileSync(rootDir + 'tmp/iobroker-data/objects.json', f);
     f = fs.readFileSync(rootDir + 'tmp/iobroker-data/states.json.original');
-    fs.writeFileSnyc(rootDir + 'tmp/iobroker-data/states.json', f);
+    fs.writeFileSync(rootDir + 'tmp/iobroker-data/states.json', f);
 }
 
 function installAdapter() {
@@ -78,31 +83,46 @@ function installAdapter() {
     });
 }
 
-function installJsController() {
+function installJsController(cb) {
     if (!fs.existsSync(rootDir + 'tmp/node_modules/iobroker.js-controller')) {
-        child_process.execSync('npm install iobroker.js-controller --prefix ./', {
-            cwd:   rootDir + 'tmp/',
-            stdio: [0, 1, 2]
+        // TODO check if port 9000 is free, else admin adapter will be added to running instance
+        var client = new require('net').Socket();
+        client.connect(9000, '127.0.0.1', function() {
+            console.error('One instance of ioBroker is running on this PC');
+            process.exit(0);
         });
 
-        // change ports for object and state DBs
-        var config = require(rootDir + 'tmp/iobroker-data/iobroker.json');
-        config.objects.port   = 19001;
-        config.objects.states = 19000;
-        fs.writeFileSync(rootDir + 'tmp/iobroker-data/iobroker.json', JSON.stringify(config, null, 2));
+        setTimeout(function () {
+            client.destroy();
 
-        // stop admin adapter
-        child_process.execSync('node node_modules/iobroker.js-controller/iobroker.js stop admin', {
-            cwd:   rootDir + 'tmp',
-            stdio: [0, 1, 2]
-        });
+            child_process.execSync('npm install iobroker.js-controller --prefix ./', {
+                cwd:   rootDir + 'tmp/',
+                stdio: [0, 1, 2]
+            });
 
-        copyAdapterToController();
-        installAdapter();
-        storeOriginalFiles();
-        return true;
+            // let npm install admin and run setup
+            setTimeout(function () {
+                child_process.execSync('node node_modules/iobroker.js-controller/iobroker.js stop', {
+                    cwd:   rootDir + 'tmp',
+                    stdio: [0, 1, 2]
+                });
+
+                // change ports for object and state DBs
+                var config = require(rootDir + 'tmp/iobroker-data/iobroker.json');
+                config.objects.port = 19001;
+                config.states.port  = 19000;
+                fs.writeFileSync(rootDir + 'tmp/iobroker-data/iobroker.json', JSON.stringify(config, null, 2));
+
+                copyAdapterToController();
+                installAdapter();
+                storeOriginalFiles();
+                if (cb) cb(true);
+            }, 4000);
+        }, 1000);
     } else {
-        return false;
+        setTimeout(function () {
+            if (cb) cb(false);
+        }, 0);
     }
 }
 
@@ -112,25 +132,89 @@ function copyAdapterToController() {
     console.log('Adapter copied.');
 }
 
-function startController() {
-    // make first install
-    child_process.execSync('node node_modules/iobroker.js-controller/iobroker.js start', {
-        cwd:   rootDir + 'tmp',
-        stdio: [0, 1, 2]
+function clearControllerLog() {
+    var dirPath = rootDir + 'tmp/log';
+    var files;
+    try {
+        files = fs.readdirSync(dirPath); }
+    catch(e) {
+        console.error('Cannot read "' + dirPath + '"');
+        return;
+    }
+    if (files.length > 0) {
+        for (var i = 0; i < files.length; i++) {
+            var filePath = dirPath + '/' + files[i];
+            fs.unlinkSync(filePath);
+        }
+    }
+}
+
+function setupController(cb) {
+    installJsController(function (isInited) {
+        if (!isInited) {
+            restoreOriginalFiles();
+            copyAdapterToController();
+            clearControllerLog();
+        }
+        if (cb) cb();
     });
 }
 
-function stopController() {
-    // make first install
-    child_process.execSync('node node_modules/iobroker.js-controller/iobroker.js stop', {
-        cwd:   rootDir + 'tmp',
-        stdio: [0, 1, 2]
-    });
+function startController(cb) {
+    if (pid) {
+        console.error('Controller is already started!');
+    } else {
+        try {
+            if (debug) {
+                // start controller
+                pid = child_process.exec('node node_modules/iobroker.js-controller/controller.js', {
+                    cwd:   rootDir + 'tmp',
+                    stdio: [0, 1, 2]
+                });
+            } else {
+                // start controller
+                pid = child_process.fork(rootDir + 'tmp/node_modules/iobroker.js-controller/controller.js', {
+                    cwd:   rootDir + 'tmp',
+                    stdio: [0, 1, 2]
+                });
+            }
+
+        } catch (error) {
+            console.log(JSON.stringify(error));
+        }
+    }
+
+    if (cb) {
+        setTimeout(function () {
+            cb();
+        }, 0);
+    }
 }
 
-if (!installJsController()) {
-    restoreOriginalFiles();
-    copyAdapterToController();
+function stopController(cb) {
+    if (!pid) {
+        console.error('Controller is not running!');
+        if (cb) {
+            setTimeout(function () {
+                cb();
+            }, 0);
+        }
+    } else {
+        pid.on('close', function (code, signal) {
+            console.log('child process terminated due to receipt of signal ' + signal);
+            if (cb) {
+                cb();
+                cb = null;
+            }
+        });
+        pid.kill('SIGTERM');
+        setTimeout(function () {
+            if (cb) {
+                cb();
+                cb = null;
+            }
+        }, 2000);
+    }
 }
 
 // Setup the adapter
@@ -154,4 +238,5 @@ if (typeof module !== undefined && module.parent) {
     module.exports.setAdapterConfig = setAdapterConfig;
     module.exports.startController  = startController;
     module.exports.stopController   = stopController;
+    module.exports.setupController  = setupController;
 }
