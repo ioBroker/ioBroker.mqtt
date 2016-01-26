@@ -4,13 +4,74 @@ var setup  = require(__dirname + '/lib/setup');
 var objects = null;
 var states  = null;
 var mqttClient = null;
-
 var connected = false;
+var lastReceivedTopic;
+var lastReceivedMessage;
+
+var rules = {
+    '/mqtt/0/test1': 'mqtt.0.test1',
+    'mqtt/0/test2':  'mqtt.0.test2',
+    'test3':         'mqtt.0.test3',
+    'te s t4':       'mqtt.0.te_s_t4',
+    'system/adapter/admin/upload':  'system.adapter.admin.upload',
+    '/system/adapter/admin/upload': 'system.adapter.admin.upload'
+};
+
+function checkMqtt2Adapter(id, _expectedId, _it, _done) {
+    _it.timeout(1000);
+    var value = 'Roger' + Math.round(Math.random() * 100);
+    var mqttid = id;
+    if (!_expectedId) {
+        id = id.replace(/\//g, '.').replace(/\s/g, '_');
+        if (id[0] == '.') id = id.substring(1);
+    } else {
+        id = _expectedId;
+    }
+    if (id.indexOf('.') == -1) id = 'mqtt.0.' + id;
+
+    mqttClient.publish(mqttid, value);
+
+    setTimeout(function () {
+        objects.getObject(id, function (err, obj) {
+            expect(obj).to.be.not.null.and.not.undefined;
+            expect(obj._id).to.be.equal(id);
+            if (mqttid.indexOf('mqtt') != -1) {
+                expect(obj.native.topic).to.be.equal(mqttid);
+            }
+
+            states.getState(id, function (err, state) {
+                expect(state).to.be.not.null.and.not.undefined;
+                expect(state.val).to.be.equal(value);
+                expect(state.ack).to.be.true;
+                _done();
+            });
+        });
+    }, 200);
+}
+
+function checkAdapter2Mqtt(id, mqttid, _it, _done) {
+    var value = 'NewRoger' + Math.round(Math.random() * 100);
+    _it.timeout(5000);
+
+    console.log('Send ' + id);
+
+    states.setState(id, {
+        val: value,
+        ack: false
+    }, function (err, id) {
+        setTimeout(function () {
+            expect(lastReceivedTopic).to.be.equal(mqttid);
+            expect(lastReceivedMessage).to.be.equal(value);
+            _done();
+        }, 200);
+    });
+}
 
 function checkConnection(done) {
-    states.getForeignState('system.adapter.mqtt.0.connected', function (err, state) {
+    states.getState('system.adapter.mqtt.0.connected', function (err, state) {
         if (err) console.error(err);
-        if (state.val) {
+        if (state && state.val) {
+            connected = true;
             done();
         } else {
             setTimeout(function () {
@@ -22,7 +83,7 @@ function checkConnection(done) {
 
 describe('Test mqtt client', function() {
     before('Start js-controller', function (_done) {
-        this.timeout(600000);
+        this.timeout(600000); // because of first install from npm
         var clientConnected = false;
         var brokerStarted   = false;
 
@@ -34,29 +95,14 @@ describe('Test mqtt client', function() {
             config.native.publish  = 'mqtt.0.*';
             setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController(function () {
-                var Objects = require(__dirname + '/lib/objects');
-                var States  = require(__dirname + '/lib/states');
-                objects = new Objects(function (error) {
-                    expect(error).to.be.undefined;
-
-                    states = new States(function (error) {
-                        expect(error).to.be.undefined;
-                        states.subscribeForeignStates('*');
-                    }, function (id, state) {
-                        if (id == 'mqtt.0.testServer.connected' && state.val) {
-                            connected = true;
-                        }
-
-                        console.log('New state "' + id + '":' + JSON.stringify(state));
-                        brokerStarted = true;
-                        if (_done && brokerStarted && clientConnected) {
-                            console.log('Everything OK!');
-                            _done();
-                            _done = null;
-                        }
-                    });
-                });
+            setup.startController(function (_objects, _states) {
+                objects = _objects;
+                states  = _states;
+                brokerStarted = true;
+                if (_done && clientConnected) {
+                    _done();
+                    _done = null;
+                }
             });
         });
 
@@ -66,20 +112,23 @@ describe('Test mqtt client', function() {
 
         // Start client to emit topics
         mqttClient = new MqttClient(function () {
-
-        }, function () {
-            console.log('Connected!!!');
+            // on connected
+            //console.log('Test MQTT Client is connected to MQTT broker');
             clientConnected = true;
             if (_done && brokerStarted && clientConnected) {
-                console.log('Everything OK!!');
                 _done();
                 _done = null;
             }
+        }, function (topic, message) {
+            //console.log('Test MQTT Client received "' + topic + '": ' + message);
+            // on receive
+            lastReceivedTopic   = topic;
+            lastReceivedMessage = message ? message.toString() : null;
         });
     });
 
     it('Check if connected to MQTT broker', function (done) {
-        this.timeout(5000);
+        this.timeout(2000);
         if (!connected) {
             checkConnection(done);
         } else {
@@ -87,26 +136,23 @@ describe('Test mqtt client', function() {
         }
     });
 
-    it('Must receive topics', function (done) {
-        this.timeout(5000);
-        console.log('SEND!!!');
-        var id = '/mqtt/0/test' + Math.round(Math.random() * 100);
-        mqttClient.publish(id, 'Roger');
-        id = id.replace(/\//g, '.').substring(1);
-
-        setTimeout(function () {
-            objects.getForeignObject(id, function (err, obj) {
-                expect(obj).to.be.not.null;
-                expect(obj._id).to.be.equal(id);
-                states.getForeignState(id, function (err, state) {
-                    expect(state).to.be.not.null;
-                    expect(state.val).to.be.equal('Roger');
-                    expect(state.ack).to.be.true;
-                    done();
-                });
+    for (var r in rules) {
+        (function(id, topic) {
+            it('Check receive ' + id, function (done) {
+                checkMqtt2Adapter(id, topic, this, done);
             });
-        }, 1000);
-    });
+        })(r, rules[r]);
+    }
+
+    for (var r in rules) {
+        (function(id, topic) {
+            if (topic.indexOf('mqtt') != -1) {
+                it('Check receive ' + topic, function (done) {
+                    checkAdapter2Mqtt(topic, id, this, done);
+                });
+            }
+        })(r, rules[r]);
+    }
 
     after('Stop js-controller', function (done) {
         this.timeout(5000);

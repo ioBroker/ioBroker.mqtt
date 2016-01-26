@@ -68,6 +68,7 @@ adapter.on('unload', function () {
 
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
+    adapter.log.info('stateChange ' + id + ': ' + JSON.stringify(state));
     var topic;
     // State deleted
     if (!state) {
@@ -155,7 +156,10 @@ function main() {
     if (adapter.config.publish) {
         var parts = adapter.config.publish.split(',');
         for (var t = 0; t < parts.length; t++) {
-            parts[t] = parts[t].trim();
+            if (parts[t].indexOf('#') !== -1) {
+                adapter.log.warn('Used MQTT notation for ioBroker in pattern "' + parts[t] + '": use "' + parts[t].replace(/#/g, '*') + ' notation');
+                parts[t] = parts[t].replace(/#/g, '*');
+            }
             adapter.subscribeForeignStates(parts[t].trim());
             cnt++;
             readStatesForPattern(parts[t]);

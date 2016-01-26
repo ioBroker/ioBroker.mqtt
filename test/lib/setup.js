@@ -8,6 +8,9 @@ var debug           = typeof v8debug === 'object';
 var adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName = adapterName[adapterName.length - 2];
 
+var objects;
+var states;
+
 var pid = null;
 
 function copyFileSync(source, target) {
@@ -160,11 +163,34 @@ function setupController(cb) {
     });
 }
 
-function startController(cb) {
+function startAdapter(objects, states, callback) {
+    var pkg = require(__dirname + '/../../package.json');
+
+    try {
+        if (debug) {
+            // start controller
+            pid = child_process.exec('node node_modules/' + pkg.name + '/' + pkg.main, {
+                cwd:   rootDir + 'tmp',
+                stdio: [0, 1, 2]
+            });
+        } else {
+            // start controller
+            pid = child_process.fork(rootDir + 'tmp/node_modules/' + pkg.name + '/' + pkg.main, {
+                cwd:   rootDir + 'tmp',
+                stdio: [0, 1, 2]
+            });
+        }
+    } catch (error) {
+        console.log(JSON.stringify(error));
+    }
+    if (callback) callback(objects, states);
+}
+
+function startController(callback) {
     if (pid) {
         console.error('Controller is already started!');
     } else {
-        try {
+        /*try {
             if (debug) {
                 // start controller
                 pid = child_process.exec('node node_modules/iobroker.js-controller/controller.js', {
@@ -181,17 +207,83 @@ function startController(cb) {
 
         } catch (error) {
             console.log(JSON.stringify(error));
-        }
-    }
+        }*/
+        var isObjectConnected;
+        var isStatesConnected;
 
-    if (cb) {
-        setTimeout(function () {
-            cb();
-        }, 0);
+        var Objects = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/objects/objectsInMemServer');
+        objects = new Objects({
+            connection: {
+                "type" : "file",
+                "host" : "127.0.0.1",
+                "port" : 19001,
+                "user" : "",
+                "pass" : "",
+                "noFileCache": false,
+                "connectTimeout": 2000
+            },
+            logger: {
+                debug: function (msg) {
+                    console.log(msg);
+                },
+                info: function (msg) {
+                    console.log(msg);
+                },
+                warn: function (msg) {
+                    console.warn(msg);
+                },
+                error: function (msg) {
+                    console.error(msg);
+                }
+            },
+            connected: function () {
+                isObjectConnected = true;
+                if (isStatesConnected) startAdapter(objects, states, callback);
+            }
+        });
+
+        // Just open in memory DB itself
+        var States = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/states/statesInMemServer');
+        states = new States({
+            connection: {
+                "type" : "file",
+                "host" : "127.0.0.1",
+                "port" : 19000,
+                "options" : {
+                    "auth_pass" : null,
+                    "retry_max_delay" : 15000
+                }
+            },
+            logger: {
+                debug: function (msg) {
+                },
+                info: function (msg) {
+                },
+                warn: function (msg) {
+                    console.log(msg);
+                },
+                error: function (msg) {
+                    console.log(msg);
+                }
+            },
+            connected: function () {
+                isStatesConnected = true;
+                if (isObjectConnected) startAdapter(objects, states, callback);
+            }
+        });
     }
 }
 
 function stopController(cb) {
+    if (objects) {
+        objects.destroy();
+        objects = null;
+    }
+    if (states) {
+        states.destroy();
+        states = null;
+    }
+
     if (!pid) {
         console.error('Controller is not running!');
         if (cb) {
