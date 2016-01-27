@@ -1,8 +1,8 @@
 var mqtt    = require('mqtt');
 
-function Client(cbConnected, cbChanged) {
+function Client(cbConnected, cbChanged, name) {
     var that = this;
-    this.client = mqtt.connect('mqtt://localhost');
+    this.client = mqtt.connect('mqtt://localhost'  + (name ? '?clientId=' + name : ''));
 
     this.client.on('connect', function () {
         console.log((new Date()) + ' test client connected to localhost');
@@ -26,12 +26,15 @@ function Client(cbConnected, cbChanged) {
 
     this.client.on('message', function (topic, message) {
         // message is Buffer
-        console.log((new Date()) + ' ' + topic + ': ' + message.toString());
-        if (cbChanged) cbChanged(topic, message);
+        if (cbChanged) {
+            cbChanged(topic, message);
+        } else {
+            console.log('Test MQTT Client received "' + topic + '": ' + message.toString());
+        }
     });
 
-    this.publish = function (topic, message) {
-        that.client.publish(topic,  message);
+    this.publish = function (topic, message, cb) {
+        that.client.publish(topic,  message, cb);
     };
 
     this.destroy = function () {

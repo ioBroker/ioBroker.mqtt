@@ -68,7 +68,7 @@ adapter.on('unload', function () {
 
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {
-    adapter.log.info('stateChange ' + id + ': ' + JSON.stringify(state));
+    adapter.log.debug('stateChange ' + id + ': ' + JSON.stringify(state));
     var topic;
     // State deleted
     if (!state) {
@@ -80,11 +80,12 @@ adapter.on('stateChange', function (id, state) {
     } else
     // you can use the ack flag to detect if state is desired or acknowledged
     if ((adapter.config.sendAckToo || !state.ack) && !messageboxRegex.test(id)) {
-        var old = states[id] ? states[id].val : null;
+        var oldVal = states[id] ? states[id].val : null;
+        var oldAck = states[id] ? states[id].ack : null;
         states[id] = state;
 
         // If value really changed
-        if (!adapter.config.onchange || old !== state.val) {
+        if (!adapter.config.onchange || oldVal !== state.val || oldAck !== state.ack) {
             // If SERVER
             if (server) server.onStateChange(id, state);
             // if CLIENT

@@ -68,7 +68,7 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
 }
 
 function checkConnection(done) {
-    states.getState('system.adapter.mqtt.0.connected', function (err, state) {
+    states.getState('mqtt.0.clients', function (err, state) {
         if (err) console.error(err);
         if (state && state.val) {
             connected = true;
@@ -81,7 +81,7 @@ function checkConnection(done) {
     });
 }
 
-describe('Test mqtt client', function() {
+describe('Test mqtt server', function() {
     before('Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
         var clientConnected = false;
@@ -93,6 +93,7 @@ describe('Test mqtt client', function() {
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
             config.native.publish  = 'mqtt.0.*';
+            config.native.type     = 'server';
             setup.setAdapterConfig(config.common, config.native);
 
             setup.startController(function (_objects, _states) {
@@ -106,29 +107,25 @@ describe('Test mqtt client', function() {
             });
         });
 
-        // start mqtt server
-        var mqttServer = require(__dirname + '/lib/mqttServer.js');
         var MqttClient = require(__dirname + '/lib/mqttClient.js');
 
         // Start client to emit topics
         mqttClient = new MqttClient(function () {
-            // on connected
-            //console.log('Test MQTT Client is connected to MQTT broker');
+            //on connected
             clientConnected = true;
             if (_done && brokerStarted && clientConnected) {
                 _done();
                 _done = null;
             }
         }, function (topic, message) {
-            console.log((new Date()).getTime() + ' emitter received ' + topic + ': ' + message.toString());
             //console.log('Test MQTT Client received "' + topic + '": ' + message);
             // on receive
             lastReceivedTopic   = topic;
             lastReceivedMessage = message ? message.toString() : null;
-        }, 'Emitter');
+        });
     });
 
-    it('Check if connected to MQTT broker', function (done) {
+    it('Check if test client connected', function (done) {
         this.timeout(2000);
         if (!connected) {
             checkConnection(done);
@@ -142,16 +139,6 @@ describe('Test mqtt client', function() {
             it('Check receive ' + id, function (done) {
                 checkMqtt2Adapter(id, topic, this, done);
             });
-        })(r, rules[r]);
-    }
-
-    for (var r in rules) {
-        (function(id, topic) {
-            if (topic.indexOf('mqtt') != -1) {
-                it('Check send ' + topic, function (done) {
-                    checkAdapter2Mqtt(topic, id, this, done);
-                });
-            }
         })(r, rules[r]);
     }
 
