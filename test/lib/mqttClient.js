@@ -44,6 +44,8 @@ function Client(cbConnected, cbChanged, name) {
         }
     };
 
+    this.stop = this.destroy;
+
     return this;
 }
 

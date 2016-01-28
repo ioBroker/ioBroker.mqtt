@@ -2,7 +2,9 @@
 var fs              = require('fs');
 var path            = require('path');
 var child_process   = require('child_process');
+
 var rootDir         = path.normalize(__dirname + '/../../');
+var pkg             = require(rootDir + 'package.json');
 var debug           = typeof v8debug === 'object';
 
 var adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
@@ -88,7 +90,7 @@ function installAdapter() {
 
 function installJsController(cb) {
     if (!fs.existsSync(rootDir + 'tmp/node_modules/iobroker.js-controller')) {
-        // TODO check if port 9000 is free, else admin adapter will be added to running instance
+        // check if port 9000 is free, else admin adapter will be added to running instance
         var client = new require('net').Socket();
         client.connect(9000, '127.0.0.1', function() {
             console.error('One instance of ioBroker is running on this PC');
@@ -164,8 +166,6 @@ function setupController(cb) {
 }
 
 function startAdapter(objects, states, callback) {
-    var pkg = require(__dirname + '/../../package.json');
-
     try {
         if (debug) {
             // start controller
@@ -275,37 +275,62 @@ function startController(callback) {
 }
 
 function stopController(cb) {
-    if (objects) {
-        objects.destroy();
-        objects = null;
-    }
-    if (states) {
-        states.destroy();
-        states = null;
-    }
-
     if (!pid) {
         console.error('Controller is not running!');
         if (cb) {
             setTimeout(function () {
-                cb();
+                cb(false);
             }, 0);
         }
     } else {
+        if (objects) {
+            console.log('Set system.adapter.' + pkg.name + '.0');
+            objects.setObject('system.adapter.' + pkg.name + '.0', {
+                common:{
+                    enabled: false
+                }
+            });
+        }
         pid.on('close', function (code, signal) {
             console.log('child process terminated due to receipt of signal ' + signal);
+
+            if (objects) {
+                objects.destroy();
+                objects = null;
+            }
+            if (states) {
+                states.destroy();
+                states = null;
+            }
+
             if (cb) {
-                cb();
+                cb(true);
                 cb = null;
             }
+            pid = null;
         });
+
         pid.kill('SIGTERM');
+
         setTimeout(function () {
+            console.log('child process NOT terminated');
+
+            if (objects) {
+                objects.destroy();
+                objects = null;
+            }
+            if (states) {
+                states.destroy();
+                states = null;
+            }
+
+
             if (cb) {
-                cb();
+                cb(false);
                 cb = null;
             }
-        }, 2000);
+            pid = null;
+        }, 5000);
     }
 }
 
