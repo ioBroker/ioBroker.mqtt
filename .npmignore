@@ -3,3 +3,4 @@ tasks
 test
 tmp
 .idea
+.travis.yml

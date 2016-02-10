@@ -1,7 +1,7 @@
 {
   "name": "iobroker.mqtt",
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "author": "bluefox <bluefox@ccu.io>",
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository": {
@@ -39,7 +39,7 @@
   },
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node node_modules/mocha/bin/mocha"
   },
   "license": "MIT"
 }

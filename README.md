@@ -83,6 +83,10 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 0.4.2 (2016-02-10)
+(bluefox) create object "info.connection"
+(bluefox) add reconnection tests
+
 ### 0.4.1 (2016-02-04)
 (bluefox) fix error with states creation
 
@@ -178,7 +182,7 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 The MIT License (MIT)
 
-Copyright (c) 2014, bluefox
+Copyright (c) 2014-2016, bluefox<dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

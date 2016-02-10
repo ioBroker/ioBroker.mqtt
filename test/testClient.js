@@ -3,6 +3,7 @@ var setup  = require(__dirname + '/lib/setup');
 
 var objects = null;
 var states  = null;
+var MqttServer;
 var mqttClient = null;
 var mqttServer = null;
 var connected = false;
@@ -70,15 +71,41 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
     });
 }
 
-function checkConnection(done) {
+function checkConnectionOfAdapter(cb, counter) {
+    counter = counter || 0;
+    if (counter > 20) {
+        cb && cb('Cannot check connection');
+        return;
+    }
+
     states.getState('system.adapter.mqtt.0.connected', function (err, state) {
         if (err) console.error(err);
         if (state && state.val) {
-            connected = true;
-            done();
+            connected = state.val;
+            cb && cb();
         } else {
             setTimeout(function () {
-                checkConnection(done);
+                checkConnectionOfAdapter(cb, counter + 1);
+            }, 1000);
+        }
+    });
+}
+
+function checkConnectionToServer(value, cb, counter) {
+    counter = counter || 0;
+    if (counter > 20) {
+        cb && cb('Cannot check connection to server for ' + value);
+        return;
+    }
+
+    states.getState('mqtt.0.info.connection', function (err, state) {
+        if (err) console.error(err);
+        if (state && state.val == value) {
+            connected = state.val;
+            cb && cb();
+        } else {
+            setTimeout(function () {
+                checkConnectionToServer(value, cb, counter + 1);
             }, 1000);
         }
     });
@@ -110,7 +137,7 @@ describe('Test MQTT client', function() {
         });
 
         // start mqtt server
-        var MqttServer = require(__dirname + '/lib/mqttServer.js');
+        MqttServer = require(__dirname + '/lib/mqttServer.js');
         var MqttClient = require(__dirname + '/lib/mqttClient.js');
 
         mqttServer = new MqttServer();
@@ -136,7 +163,7 @@ describe('Test MQTT client', function() {
     it('MQTT client: Check if connected to MQTT broker', function (done) {
         this.timeout(2000);
         if (!connected) {
-            checkConnection(done);
+            checkConnectionOfAdapter(done);
         } else {
             done();
         }
@@ -159,6 +186,21 @@ describe('Test MQTT client', function() {
             }
         })(r, rules[r]);
     }
+
+    it('MQTT client: check reconnect if server is down', function (done) {
+        this.timeout(20000);
+        mqttServer.stop();
+        connected = false;
+
+        checkConnectionToServer(false, function (error) {
+            expect(error).to.be.not.ok;
+            mqttServer = new MqttServer();
+            checkConnectionToServer(true, function (error) {
+                expect(error).to.be.not.ok;
+                done();
+            });
+        });
+    });
 
     after('MQTT client: Stop js-controller', function (done) {
         this.timeout(6000);
