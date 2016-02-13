@@ -86,7 +86,7 @@ function checkConnectionOfAdapter(cb, counter) {
         } else {
             setTimeout(function () {
                 checkConnectionOfAdapter(cb, counter + 1);
-            }, 1000);
+            }, 500);
         }
     });
 }
@@ -161,7 +161,7 @@ describe('Test MQTT client', function() {
     });
 
     it('MQTT client: Check if connected to MQTT broker', function (done) {
-        this.timeout(2000);
+        this.timeout(3000);
         if (!connected) {
             checkConnectionOfAdapter(done);
         } else {
