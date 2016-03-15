@@ -90,16 +90,20 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 0.5.0 (2016-03-15)
+* (bluefox) fix web sockets
+* (bluefox) fix SSL
+
 ### 0.4.2 (2016-02-10)
-(bluefox) create object "info.connection"
-(bluefox) add reconnection tests
+* (bluefox) create object "info.connection"
+* (bluefox) add reconnection tests
 
 ### 0.4.1 (2016-02-04)
-(bluefox) fix error with states creation
+* (bluefox) fix error with states creation
 
 ### 0.4.0 (2016-01-27)
-(bluefox) add tests
-(bluefox) client and server run
+* (bluefox) add tests
+* (bluefox) client and server run
 
 ### 0.3.1 (2016-01-14)
 * (bluefox) change creation of states by client
@@ -169,7 +173,6 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 ### 0.1.4 (2015-01-02)
 * (bluefox) support of npm install
 
-
 ### 0.1.2 (2014-11-28)
 * (bluefox) support of npm install
 
@@ -183,7 +186,6 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 ### 0.0.2 (2014-10-19)
 * (bluefox) support of server (actual no authentication)
-
 
 ## License
 
