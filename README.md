@@ -22,8 +22,8 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Type** - Select "Client" (If you want to receive and send messages to other broker) or "Server" if you want create own MQTT broker.
 
 ### Server settings
-- **WebSockets** - if parallely to TCP Server, the WebSocket MQTT Server should run.
-- **Port** - Port where the server will run (Default 1883). WebSockets will always run on port+1 (Default 1884)
+- **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
+- **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
 - **SSL** - If TCP and WebSockets should run as secure server.
 - **Authentication/User name** - If authentication required, you can specify username. It is suggested to always use SSL with authentication to not send passwords over unsequre connection.  
 - **Authentication/Password** - Password for user.
@@ -90,6 +90,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.0.0 (2016-04-22)
+* (bluefox) Fix error with direct publish in server
+
 ### 0.5.0 (2016-03-15)
 * (bluefox) fix web sockets
 * (bluefox) fix SSL

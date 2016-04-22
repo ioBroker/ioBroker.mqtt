@@ -4,7 +4,7 @@
         "require": {
             "js-controller": ">0.6.6"
         },
-        "version": "0.5.0",
+        "version": "1.0.0",
         "title":                    "MQTT Adapter",
         "desc":                     {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
@@ -32,24 +32,29 @@
         }
     },
     "native": {
-        "type":       "client",
-        "port":       1883,
-        "ssl":        false,
-        "user":       "",
-        "pass":       "",
-        "url":        "localhost",
-        "patterns":   "#",
-        "onchange":   true,
-        "publishAllOnStart": true,
-        "debug":      false,
-        "publish":    "*",
-        "certPublic": "",
+        "type":                 "client",
+        "port":                 1883,
+        "ssl":                  false,
+        "user":                 "",
+        "pass":                 "",
+        "url":                  "localhost",
+        "patterns":             "#",
+        "onchange":             true,
+        "publishAllOnStart":    true,
+        "debug":                false,
+        "publish":              "*",
+        "certPublic":           "",
         "certPrivate":"",
-        "prefix":     "",
-        "sendAckToo": false,
-        "webSocket":  false,
-        "maxTopicLength": 100,
-        "publishOnSubscribe": true
+        "prefix":               "",
+        "sendAckToo":           false,
+        "webSocket":            false,
+        "maxTopicLength":       100,
+        "publishOnSubscribe":   true,
+
+        "keepalive":            1000,
+        "reconnectPeriod":      10,
+        "connectTimeout":       30,
+        "clean":                false
     },
     "objects": [
 

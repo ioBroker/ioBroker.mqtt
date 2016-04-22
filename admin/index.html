@@ -185,7 +185,7 @@
                 if (typeof settings[key] != 'object') {
                     if (key == "pass") {
                         settings[key] = decrypt("Zgfr56gFe87jJOM", settings[key]);
-                    };
+                    }
                     setValue(key, settings[key]);
                 } else {
                     loadHelper(settings, key);
