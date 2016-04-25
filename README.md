@@ -90,6 +90,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.0.1 (2016-04-25)
+* (bluefox) Fix translations in admin
+
 ### 1.0.0 (2016-04-22)
 * (bluefox) Fix error with direct publish in server
 
