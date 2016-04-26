@@ -58,6 +58,7 @@ function startClients(_done) {
         // on receive
         lastReceivedTopic2   = topic;
         lastReceivedMessage2 = message ? message.toString() : null;
+        console.log(JSON.stringify(lastReceivedMessage2));
     }, 'Detector');
 }
 

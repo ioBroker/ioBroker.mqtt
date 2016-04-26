@@ -90,6 +90,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.0.2 (2016-04-26)
+* (bluefox) update mqtt module
+
 ### 1.0.1 (2016-04-25)
 * (bluefox) Fix translations in admin
 

@@ -50,7 +50,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
                 _done();
             });
         });
-    }, 200);
+    }, 500);
 }
 
 function checkAdapter2Mqtt(id, mqttid, _it, _done) {
@@ -167,6 +167,13 @@ describe('Test MQTT client', function() {
         } else {
             done();
         }
+    });
+
+    it('MQTT client: wait', function (done) {
+        this.timeout(4000);
+        setTimeout(function () {
+            done();
+        }, 1000);
     });
 
     for (var r in rules) {
