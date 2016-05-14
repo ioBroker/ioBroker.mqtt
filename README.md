@@ -90,6 +90,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.0.3 (2016-05-14)
+* (cdjm) change client protocolID
+
 ### 1.0.2 (2016-04-26)
 * (bluefox) update mqtt module
 
