@@ -26,6 +26,7 @@
         "Secure:":                {"en": "Secure:",                "de": "SSL:",                   "ru": "SSL:"},
         "Public certificate:":    {"en": "Public certificate:",    "de": "Publikzertifikat:",      "ru": "'Public' сертификат:"},
         "Private certificate:":   {"en": "Private certificate:",   "de": "Privatzertifikat:",      "ru": "'Private' сертификат:"},
+        "Chained certificate:":   {"en": "Chained certificate:",    "de": "Kettenzertifikat:",       "ru": "'Chained' сертификат:"},
         "Patterns:":              {"en": "Subscribe patterns:",    "de": "Subscribe patterns:",    "ru": "Patterns:"},
         "Divided by comma":       {
             "en": "Divided by comma, e.g. 'mqtt/0/#,javascript/#'",
@@ -106,6 +107,7 @@
             $('#_patterns').show();
             $('#_certPublic').hide();
             $('#_certPrivate').hide();
+            $('#_certChained').hide();
             $('#_webSocket').hide();
             $('#_publishOnSubscribe').hide();
         }else {
@@ -116,9 +118,11 @@
             if ($('#ssl').prop('checked')) {
                 $('#_certPublic').show();
                 $('#_certPrivate').show();
+                $('#_certChained').show();
             } else {
                 $('#_certPublic').hide();
                 $('#_certPrivate').hide();
+                $('#_certChained').hide();
             }
             $('#_publishOnSubscribe').show();
         }
@@ -204,6 +208,7 @@
         init();
         fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
         fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
+        fillSelectCertificates('#certChained', 'chained', settings.certChained);
 		onChange(false);
     }
 
@@ -320,6 +325,11 @@
         <tr id="_certPrivate">
             <td class="translate">Private certificate:</td>
             <td><select id="certPrivate" class="value"></select></td>
+            <td></td>
+        </tr>
+        <tr id="_certChained">
+            <td class="translate">Chained certificate:</td>
+            <td><select id="certChained" class="value"></select></td>
             <td></td>
         </tr>
         <tr>

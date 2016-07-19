@@ -90,6 +90,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.0.4 (2016-07-19)
+* (bluefox) convert values like "+58,890" into numbers too
+
 ### 1.0.3 (2016-05-14)
 * (cdjm) change client protocolID
 

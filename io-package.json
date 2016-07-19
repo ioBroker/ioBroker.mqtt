@@ -2,9 +2,16 @@
     "common": {
         "name":                     "mqtt",
         "require": {
-            "js-controller": ">0.6.6"
+            "js-controller": ">=0.10.0"
         },
-        "version": "1.0.3",
+        "version": "1.0.4",
+        "news": {
+            "1.0.4": {
+                "en": "convert values like +58,890 into numbers too",
+                "de": "convert values like +58,890 into numbers too",
+                "ru": "convert values like +58,890 into numbers too"
+            }
+        },
         "title":                    "MQTT Adapter",
         "desc":                     {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
@@ -44,7 +51,8 @@
         "debug":                false,
         "publish":              "*",
         "certPublic":           "",
-        "certPrivate":"",
+        "certPrivate":          "",
+        "certChained":          "",
         "prefix":               "",
         "sendAckToo":           false,
         "webSocket":            false,

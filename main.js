@@ -31,28 +31,13 @@ adapter.on('message', function (obj) {
 });
 
 adapter.on('ready', function () {
-    var fs = require('fs');
-    adapter.config.pass = decrypt("Zgfr56gFe87jJOM", adapter.config.pass);
+    adapter.config.pass = decrypt('Zgfr56gFe87jJOM', adapter.config.pass);
     adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
-    if (adapter.config.ssl && adapter.config.type == 'server') {
-        // Read the certificates and store it under
-        // "adapter/mqtt/cert/privatekey.pem" and
-        // "adapter/mqtt/cert/certificate.pem"
-        // because mqtt does not support certificates not from file
-        adapter.getForeignObject('system.certificates', function (err, obj) {
-            if (err || !obj || !obj.native || !obj.native.certificates || !obj.native.certificates[adapter.config.certPublic] || !obj.native.certificates[adapter.config.certPrivate]) {
-                adapter.log.error('Cannot enable secure MQTT server, because no certificates found: ' + adapter.config.certPublic + ', ' + adapter.config.certPrivate);
-                setTimeout(function () {
-                    process.exit(1);
-                }, 500);
-            } else {
-                adapter.config.certificates = {
-                    key:  obj.native.certificates[adapter.config.certPrivate],
-                    cert: obj.native.certificates[adapter.config.certPublic]
-                };
-
-                main();
-            }
+    if (adapter.config.ssl && adapter.config.type === 'server') {
+        // Load certificates
+        adapter.getCertificates(function (err, certificates) {
+            adapter.config.certificates = certificates;
+            main();
         });
     } else {
         // Start
