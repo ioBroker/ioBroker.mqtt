@@ -4,8 +4,13 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.0.4",
+        "version": "1.1.0",
         "news": {
+            "1.1.0": {
+                "en": "add new setting: Use different topic names for set and get",
+                "de": "add new setting: Use different topic names for set and get",
+                "ru": "add new setting: Use different topic names for set and get"
+            },
             "1.0.4": {
                 "en": "convert values like +58,890 into numbers too",
                 "de": "convert values like +58,890 into numbers too",
@@ -58,6 +63,7 @@
         "webSocket":            false,
         "maxTopicLength":       100,
         "publishOnSubscribe":   true,
+        "extraSet":             false,
 
         "keepalive":            1000,
         "reconnectPeriod":      10,

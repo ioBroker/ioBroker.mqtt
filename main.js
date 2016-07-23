@@ -15,10 +15,10 @@ var server   = null;
 var client   = null;
 var states   = {};
 
-var messageboxRegex = new RegExp("\.messagebox$");
+var messageboxRegex = new RegExp('\.messagebox$');
 
 function decrypt(key, value) {
-    var result = "";
+    var result = '';
     for (var i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
     }
@@ -49,7 +49,6 @@ adapter.on('unload', function () {
     if (client) client.destroy();
     if (server) server.destroy();
 });
-
 
 // is called if a subscribed state changes
 adapter.on('stateChange', function (id, state) {

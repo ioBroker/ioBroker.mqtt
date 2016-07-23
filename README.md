@@ -33,6 +33,7 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g if prefix "iobroker/" all states will have names like "**iobroker**/mqtt/0/connected"
 - **Trace output for every message** - Debug outputs.
 - **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
+- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true). The client will receive sent messages back in this mode.
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like "localhost".
@@ -48,6 +49,7 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Prefix for topics** - The prefix can be defined for own states. Like "/var/ioBroker/". Name of topics will be for example published with the name "/var/ioBroker/ping/192-168-1-5".
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
 - **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
+- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true).
  
 ## Install
 
@@ -90,6 +92,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.1.0 (2016-07-23)
+* (bluefox) add new setting: Use different topic names for set and get
+
 ### 1.0.4 (2016-07-19)
 * (bluefox) convert values like "+58,890" into numbers too
 
