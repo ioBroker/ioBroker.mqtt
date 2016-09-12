@@ -92,6 +92,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.1.1 (2016-09-12)
+* (bluefox) do not parse JSON states, that do not have attribute "val" to support other systems
+
 ### 1.1.0 (2016-07-23)
 * (bluefox) add new setting: Use different topic names for set and get
 
