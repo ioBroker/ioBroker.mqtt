@@ -123,6 +123,8 @@ describe('Test MQTT client', function() {
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
             config.native.publish  = 'mqtt.0.*';
+            config.native.user     = 'user';
+            config.native.pass     = '*\u0006\u0015\u0001\u0004';
             setup.setAdapterConfig(config.common, config.native);
 
             setup.startController(function (_objects, _states) {
@@ -140,7 +142,7 @@ describe('Test MQTT client', function() {
         MqttServer = require(__dirname + '/lib/mqttServer.js');
         var MqttClient = require(__dirname + '/lib/mqttClient.js');
 
-        mqttServer = new MqttServer();
+        mqttServer = new MqttServer({user: 'user', pass: 'pass1'});
 
         // Start client to emit topics
         mqttClient = new MqttClient(function () {
@@ -157,7 +159,7 @@ describe('Test MQTT client', function() {
             // on receive
             lastReceivedTopic   = topic;
             lastReceivedMessage = message ? message.toString() : null;
-        }, 'Emitter');
+        }, {name: 'Emitter', user: 'user', pass: 'pass1'});
     });
 
     it('MQTT client: Check if connected to MQTT broker', function (done) {

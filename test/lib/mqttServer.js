@@ -1,19 +1,29 @@
-"use strict";
+'use strict';
 
 var createStreamServer  = require('create-stream-server');
 var mqtt                = require('mqtt-connection');
 
-function Server() {
+function Server(config) {
     var that = this;
     var clients = {};
     var server;
+    config = config || {};
 
     var cltFunction = function (client) {
 
         client.on('connect', function (packet) {
             client.id = packet.clientId;
             clients[client.id] = client;
-
+            if (config.user) {
+                if (config.user !== packet.username ||
+                    config.pass !== packet.password.toString()) {
+                    console.error('Client [' + packet.clientId + '] has invalid password(' + packet.password + ') or username(' + packet.username + ')');
+                    client.connack({returnCode: 4});
+                    if (clients[client.id]) delete clients[client.id];
+                    client.stream.end();
+                    return;
+                }
+            }
             console.log('Client [' + packet.clientId + '] connected: user - ' + packet.username + ', pass - ' + packet.password);
             client.connack({returnCode: 0});
 

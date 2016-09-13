@@ -4,8 +4,13 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.1.1",
+        "version": "1.1.2",
         "news": {
+            "1.1.2": {
+                "en": "fix authentication in server",
+                "de": "Korregiere Kennwortprüfung im Broker",
+                "ru": "Исправлена проверка пароля"
+            },
             "1.1.1": {
                 "en": "do not parse JSON states, that do not have attribute val to support other systems",
                 "de": "Parse die JSON Meldungen nicht, falls die kein val beinhalten. Um andere Systeme zu unterstützen",

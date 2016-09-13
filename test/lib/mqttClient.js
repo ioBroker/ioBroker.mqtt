@@ -1,8 +1,11 @@
 var mqtt    = require('mqtt');
 
-function Client(cbConnected, cbChanged, name) {
+function Client(cbConnected, cbChanged, config) {
     var that = this;
-    this.client = mqtt.connect('mqtt://localhost'  + (name ? '?clientId=' + name : ''));
+    if (typeof config === 'string') config = {name: config};
+    config = config || {};
+    config.url = config.url || 'localhost';
+    this.client = mqtt.connect('mqtt://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url  + (config.name ? '?clientId=' + config.name : ''));
 
     this.client.on('connect', function () {
         console.log((new Date()) + ' test client connected to localhost');

@@ -92,6 +92,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.1.2 (2016-09-13)
+* (bluefox) fix authentication in server
+
 ### 1.1.1 (2016-09-12)
 * (bluefox) do not parse JSON states, that do not have attribute "val" to support other systems
 
