@@ -92,6 +92,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 
 ## Changelog
+### 1.2.1 (2016-11-06)
+* (bluefox) fix publish on start
+
 ### 1.2.0 (2016-09-27)
 * (bluefox) implementation of LWT for server
 * (bluefox) update mqtt package version

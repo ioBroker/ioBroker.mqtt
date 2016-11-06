@@ -4,8 +4,13 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.2.0",
+        "version": "1.2.1",
         "news": {
+            "1.2.1": {
+                "en": "fix publish on start",
+                "de": "Korregiere Publish beim Start",
+                "ru": "Исправлен publish при старте"
+            },
             "1.2.0": {
                 "en": "implementation of LWT for server\nupdate mqtt package version",
                 "de": "Implementierung von LWT für Sevrer\nBenutzung von neuem MQTT Paket",

@@ -9,7 +9,7 @@
  */
 
 var utils    = require(__dirname + '/lib/utils'); // Get common adapter utils
-var adapter  = utils.adapter('mqtt');
+var adapter  = new utils.Adapter('mqtt');
 
 var server   = null;
 var client   = null;
