@@ -4,8 +4,13 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.2.1",
+        "version": "1.2.2",
         "news": {
+            "1.2.2": {
+                "en": "additional debug output",
+                "de": "Debug-Ausgaben hinzugefügt",
+                "ru": "Добавлена отладочная информация"
+            },
             "1.2.1": {
                 "en": "fix publish on start",
                 "de": "Korregiere Publish beim Start",
