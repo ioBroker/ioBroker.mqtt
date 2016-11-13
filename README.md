@@ -91,7 +91,7 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 "Sport/+/Finals"
 
 ## Changelog
-### 1.2.2 (2016-11-08)
+### 1.2.3 (2016-11-13)
 * (bluefox) additional debug output
 
 ### 1.2.1 (2016-11-06)
