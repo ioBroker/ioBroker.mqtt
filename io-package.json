@@ -4,9 +4,9 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.2.3",
+        "version": "1.2.4",
         "news": {
-            "1.2.3": {
+            "1.2.4": {
                 "en": "additional debug output",
                 "de": "Debug-Ausgaben hinzugefügt",
                 "ru": "Добавлена отладочная информация"
