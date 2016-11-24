@@ -4,8 +4,13 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.2.4",
+        "version": "1.2.5",
         "news": {
+            "1.2.5": {
+                "en": "Fix server publishing",
+                "de": "Korregiere ServerPublish",
+                "ru": "Исправлен publish сервера"
+            },
             "1.2.4": {
                 "en": "additional debug output",
                 "de": "Debug-Ausgaben hinzugefügt",
