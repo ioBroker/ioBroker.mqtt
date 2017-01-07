@@ -7,9 +7,9 @@
         "version": "1.3.0",
         "news": {
             "1.3.0": {
-                "en": "Update mqtt package",
-                "de": "Update mqtt Packet",
-                "ru": "Обновлён mqtt модуль"
+                "en": "Update mqtt package\nconfigurable client ID",
+                "de": "Update mqtt Packet\nEinstellbares Client ID",
+                "ru": "Обновлён mqtt модуль\nНастраиваемый Client ID"
             },
             "1.2.5": {
                 "en": "Fix server publishing",
@@ -80,6 +80,7 @@
     },
     "native": {
         "type":                 "client",
+        "clientId":             "",
         "port":                 1883,
         "ssl":                  false,
         "user":                 "",

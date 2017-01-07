@@ -90,7 +90,7 @@
 	var onChange;
 	
     function encrypt(key, value) {
-        var result="";
+        var result = '';
         for(var i = 0; i < value.length; ++i) {
             result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
         }
@@ -98,7 +98,7 @@
     }
 
     function decrypt(key, value) {
-        var result = "";
+        var result = '';
         for(var i = 0; i < value.length; ++i) {
             result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
         }
@@ -106,7 +106,8 @@
     }
 
     function showHideSettings() {
-        if ($('#type').val() == 'client') {
+        if ($('#type').val() === 'client') {
+            $('#_clientId').show();
             $('#_url').show();
             $('#test').show();
             $('#_patterns').show();
@@ -116,6 +117,7 @@
             $('#_webSocket').hide();
             $('#_publishOnSubscribe').hide();
         }else {
+            $('#_clientId').hide();
             $('#_url').hide();
             $('#test').hide();
             $('#_patterns').hide();
@@ -142,7 +144,7 @@
 
     function setValue(id, value) {
         // example: select elements with id=key and class=value and insert value
-        if ($('#' + id + '.value').attr('type') == 'checkbox') {
+        if ($('#' + id + '.value').attr('type') === 'checkbox') {
             $('#' + id + '.value').prop('checked', value).change(function() {
                 onChange();
             });
@@ -150,7 +152,7 @@
             $('#' + id + '.value').val(value).change(function() {
                 onChange();
             }).keyup(function() {
-                // Chack that only numbers entered
+                // Check that only numbers entered
                 if ($(this).hasClass('number')) {
                     var val = $(this).val();
                     if (val) {
@@ -175,15 +177,15 @@
 
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
-                if (typeof settings[param][subparam][key] != 'object') {
+                if (typeof settings[param][subparam][key] !== 'object') {
                     setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
                 } else {
-                    alert("4th level is not supported");
+                    alert('4th level is not supported');
                 }
             }
         } else if (param) {
             for (var key in settings[param]) {
-                if (typeof settings[param][key] != 'object') {
+                if (typeof settings[param][key] !== 'object') {
                     setValue(param + '_' + key, settings[param][key]);
                 } else {
                     loadHelper(settings, param, key);
@@ -191,9 +193,9 @@
             }
         } else {
             for (var key in settings) {
-                if (typeof settings[key] != 'object') {
-                    if (key == "pass") {
-                        settings[key] = decrypt("Zgfr56gFe87jJOM", settings[key]);
+                if (typeof settings[key] !== 'object') {
+                    if (key === 'pass') {
+                        settings[key] = decrypt('Zgfr56gFe87jJOM', settings[key]);
                     }
                     setValue(key, settings[key]);
                 } else {
@@ -207,7 +209,8 @@
     function load(settings, _onChange) {
 		onChange = _onChange;
         settings.sendAckToo = settings.sendAckToo || false;
-        settings.webSocket  = settings.webSocket || false;
+        settings.webSocket  = settings.webSocket  || false;
+        settings.clientId   = settings.clientId   || '';
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
         init();
@@ -220,11 +223,11 @@
     function test() {
         var newValue = JSON.stringify(getSettings());
         if (!common.enabled) {
-            showMessage(_("Enable first the adapter to test client."));
+            showMessage(_('Enable first the adapter to test client.'));
             return;
         }
         if (changed) {
-            showMessage(_("First save the adapter"));
+            showMessage(_('First save the adapter'));
             return;
         }
         sendTo('mqtt.' + instance, 'test', getSettings(), function (result) {
@@ -236,7 +239,7 @@
         var ids = id.split('_');
 
         if (ids.length === 1) {
-            if (ids[0] == "pass") value = encrypt("Zgfr56gFe87jJOM", value);
+            if (ids[0] === 'pass') value = encrypt('Zgfr56gFe87jJOM', value);
             obj[id] = value;
         } else if (ids.length === 2) {
             if (!obj[ids[0]]) obj[ids[0]] = {};
@@ -254,7 +257,7 @@
             var $this = $(this);
             var id = $this.attr('id');
 
-            if ($this.attr('type') == 'checkbox') {
+            if ($this.attr('type') === 'checkbox') {
                 obj = saveHelper(obj, id, $this.prop('checked'))
             } else {
                 obj = saveHelper(obj, id, $this.val())
@@ -266,11 +269,11 @@
     // ... and the function save has to exist.
     // you have to make sure the callback is called with the settings object as first param!
     function save(callback) {
-        if ($('#pass').val() != $('#pass_confirm').val()) {
+        if ($('#pass').val() !== $('#pass_confirm').val()) {
             showMessage(_('Password confirmation is not equal with password'));
             return;
         }
-        if ($('#ssl').prop('checked') && $('#type').val() == 'server' && (!$('#certPrivate').val() || !$('#certPublic').val())) {
+        if ($('#ssl').prop('checked') && $('#type').val() === 'server' && (!$('#certPrivate').val() || !$('#certPublic').val())) {
             showMessage(_('Set certificates or load it first in the system settings (right top).'));
             return;
         }
@@ -406,6 +409,11 @@
         <tr>
             <td class="translate">Max topic length:</td>
             <td><input id="maxTopicLength" class="value" size="17"/></td>
+            <td class="translate"></td>
+        </tr>
+        <tr id="_clientId">
+            <td class="translate">Client ID:</td>
+            <td><input id="clientId" class="value" size="17"/></td>
             <td class="translate"></td>
         </tr>
     </table>

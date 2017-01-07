@@ -94,6 +94,7 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 ## Changelog
 ### 1.3.0 (2017-01-07)
 * (bluefox) Update mqtt packages
+* (bluefox) configurable client ID
 
 ### 1.2.5 (2016-11-24)
 * (bluefox) Fix server publishing
