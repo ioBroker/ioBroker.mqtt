@@ -2,7 +2,7 @@
  *
  *      ioBroker mqtt Adapter
  *
- *      (c) 2014-2015 bluefox
+ *      (c) 2014-2017 bluefox
  *
  *      MIT License
  *

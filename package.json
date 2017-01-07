@@ -1,7 +1,7 @@
 {
   "name": "iobroker.mqtt",
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
-  "version": "1.2.5",
+  "version": "1.3.0",
   "author": "bluefox <dogafox@gmail.com>",
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository": {
@@ -21,9 +21,9 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^2.0.1",
+    "mqtt": "^2.2.0",
     "create-stream-server": "^0.1.1",
-    "mqtt-connection": "^2.1.1"
+    "mqtt-connection": "^3.0.0"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
@@ -41,5 +41,6 @@
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha"
   },
+  "engines" : { "node" : ">=4.0.0" },
   "license": "MIT"
 }

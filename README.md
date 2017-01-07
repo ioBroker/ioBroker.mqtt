@@ -8,6 +8,7 @@ ioBroker MQTT Adapter
 
 [![NPM](https://nodei.co/npm/iobroker.mqtt.png?downloads=true)](https://nodei.co/npm/iobroker.mqtt/)
 
+Requires node.js 4.0 or higher.
 
 # MQ Telemetry Transport for ioBroker (MQTT).
 
@@ -91,6 +92,9 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 "Sport/+/Finals"
 
 ## Changelog
+### 1.3.0 (2017-01-07)
+* (bluefox) Update mqtt packages
+
 ### 1.2.5 (2016-11-24)
 * (bluefox) Fix server publishing
 
@@ -229,7 +233,7 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2016, bluefox<dogafox@gmail.com>
+Copyright (c) 2014-2017, bluefox<dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
