@@ -21,8 +21,10 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^2.2.0",
-    "create-stream-server": "^0.1.1",
+    "mqtt": "^2.3.0",
+    "websocket-stream": "^3.3.3",
+    "async": "^2.1.4",
+    "ws": "^1.1.1",
     "mqtt-connection": "^3.0.0"
   },
   "devDependencies": {
