@@ -4,7 +4,6 @@ var createStreamServer  = require(__dirname + '/../../lib/streamServer');
 var mqtt                = require('mqtt-connection');
 
 function Server(config) {
-    var that = this;
     var clients = {};
     var server;
     config = config || {};
@@ -90,9 +89,9 @@ function Server(config) {
 
     this.start = function () {
         server = createStreamServer(serverConfig, options, function (clientStream) {
-            cltFunction(mqtt(clientStream/*, {
+            cltFunction(mqtt(clientStream, {
                 notData: !options.emitEvents
-            }*/));
+            }));
         });
 
         // to start
@@ -108,7 +107,7 @@ function Server(config) {
     };
 
     this.stop = function () {
-        server.close();
+        server.destroy();
         server = null;
     };
 
