@@ -1,5 +1,5 @@
 <html>
-
+<head>
 <!-- these 4 files always have to be included -->
 <link rel="stylesheet" type="text/css" href="../../lib/css/themes/jquery-ui/redmond/jquery-ui.min.css"/>
 <script type="text/javascript" src="../../lib/js/jquery-1.11.1.min.js"></script>
@@ -26,8 +26,20 @@
         "Secure:":                {"en": "Secure:",                "de": "SSL:",                   "ru": "SSL:"},
         "Public certificate:":    {"en": "Public certificate:",    "de": "Publikzertifikat:",      "ru": "'Public' сертификат:"},
         "Private certificate:":   {"en": "Private certificate:",   "de": "Privatzertifikat:",      "ru": "'Private' сертификат:"},
-        "Chained certificate:":   {"en": "Chained certificate:",    "de": "Kettenzertifikat:",       "ru": "'Chained' сертификат:"},
+        "Chained certificate:":   {"en": "Chained certificate:",   "de": "Kettenzertifikat:",       "ru": "'Chained' сертификат:"},
         "Patterns:":              {"en": "Subscribe patterns:",    "de": "Subscribe patterns:",    "ru": "Patterns:"},
+        "Use WebSockets:":        {"en": "Use WebSockets too:",    "de": "Benutze auch WebSockets:", "ru": "Сервер WebSockets тоже:"},
+        "Connection":             {"en": "Connection",             "de": "Verbindung",              "ru": "Соединение"},
+        "MQTT Settings":          {"en": "MQTT Settings",          "de": "MQTT Einstellungen",     "ru": "Настройки MQTT"},
+        "Client ID:":             {"en": "Client ID:",             "de": "Client ID:",             "ru": "ID Клиента:"},
+        "chars":                  {"en": "chars",                  "de": "Symbolen",               "ru": "символов"},
+        "ms":                     {"en": "ms",                     "de": "ms",                     "ru": "мс"},
+        "Interval before send topics by connection:": {
+            "en": "Interval before send topics by connection:",
+            "de": "Interval vom Senden von allen Topics bei der verbindung:",
+            "ru": "Интервал перед отсылкой всей топиков после соединения:"
+        },
+        "Send interval:":         {"en": "Send interval:",         "de": "Sendeintervall:",        "ru": "Интервал между пакетами:"},
         "Divided by comma":       {
             "en": "Divided by comma, e.g. 'mqtt/0/#,javascript/#'",
             "de": "Mit Komma getrennt, z.B 'mqtt/0/#,javascript/#'",
@@ -207,9 +219,12 @@
 
     // the function loadSettings has to exist ...
     function load(settings, _onChange) {
+        $('#tabs').tabs();
 		onChange = _onChange;
         settings.sendAckToo = settings.sendAckToo || false;
         settings.webSocket  = settings.webSocket  || false;
+        if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
+        if (settings.sendInterval === undefined) settings.sendInterval = 10;
         settings.clientId   = settings.clientId   || '';
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
@@ -282,142 +297,163 @@
         callback(getSettings());
     }
 </script>
-
+</head>
+<body>
 <!-- you have to put your config page in a div with id adapter-container -->
 <div id="adapter-container">
-
     <table><tr>
         <td><img src="mqtt.png"></td>
         <td style="padding-top: 20px;padding-left: 10px"><h3 class="translate">MQTT adapter settings</h3></td>
     </tr></table>
-
-    <table>
-        <tr>
-            <td colspan='3'><h4 class="translate">Main settings</h4></td>
-        </tr>
-        <tr>
-            <td class="translate">Type:</td>
-            <td><select id="type" class="value">
-                <option value="client" class="translate">Client</option>
-                <option value="server" class="translate">Server</option>
-            </select></td>
-            <td></td>
-        </tr>
-        <tr id="_webSocket">
-            <td class="translate">Use WebSockets:</td>
-            <td><input type="checkbox" id="webSocket" class="value"/></td>
-            <td></td>
-        </tr>        <tr>
-            <td colspan='3'><h4 class="translate">Connection settings</h4></td>
-        </tr>
-        <tr id="_url">
-            <td class="translate">URL:</td>
-            <td><input type="text" id="url" class="value"/></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="translate">Port:</td>
-            <td><input id="port" type="text" size="5" class="value number"/></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="translate">Secure:</td>
-            <td><input id="ssl" type="checkbox" class="value"/></td>
-            <td></td>
-        </tr>
-        <tr id="_certPublic">
-            <td class="translate">Public certificate:</td>
-            <td><select id="certPublic" class="value"></select></td>
-            <td></td>
-        </tr>
-        <tr id="_certPrivate">
-            <td class="translate">Private certificate:</td>
-            <td><select id="certPrivate" class="value"></select></td>
-            <td></td>
-        </tr>
-        <tr id="_certChained">
-            <td class="translate">Chained certificate:</td>
-            <td><select id="certChained" class="value"></select></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td colspan='3'><h4 class="translate">Authentication settings</h4></td>
-        </tr>
-        <tr>
-            <td class="translate">User:</td>
-            <td><input id="user" type="text" size="17" class="value"/></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="translate">Password:</td>
-            <td><input id="pass" type="password" size="17" class="value"/></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td class="translate">Password confirmation:</td>
-            <td><input id="pass_confirm" type="password" size="17"/></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td colspan='3'><h4 class="translate">Adapter settings</h4></td>
-        </tr>
-        <tr id="_patterns">
-            <td class="translate">Patterns:</td>
-            <td><input id="patterns" type="text" size="17" class="value"/></td>
-            <td class="translate">Divided by comma</td>
-        </tr>
-        <tr>
-            <td class="translate">Mask to publish own states:</td>
-            <td><input id="publish" type="text" size="17" class="value"/></td>
-            <td class="translate">Mask to publish</td>
-        </tr>
-        <tr>
-            <td class="translate">Store only on change:</td>
-            <td><input id="onchange" type="checkbox" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr>
-            <td class="translate">Publish all states at start:</td>
-            <td><input id="publishAllOnStart" type="checkbox" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr id ="_publishOnSubscribe">
-            <td class="translate">Publish states on subscribe:</td>
-            <td><input id="publishOnSubscribe" type="checkbox" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr>
-            <td class="translate">Prefix for topics:</td>
-            <td><input id="prefix" type="text" size="17" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr>
-            <td class="translate">Trace output for every message:</td>
-            <td><input id="debug" type="checkbox" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr>
-            <td class="translate">Send states (ack=true) too:</td>
-            <td><input id="sendAckToo" type="checkbox" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr>
-            <td class="translate">Use different topic names for set and get:</td>
-            <td><input id="extraSet" type="checkbox" class="value"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr>
-            <td class="translate">Max topic length:</td>
-            <td><input id="maxTopicLength" class="value" size="17"/></td>
-            <td class="translate"></td>
-        </tr>
-        <tr id="_clientId">
-            <td class="translate">Client ID:</td>
-            <td><input id="clientId" class="value" size="17"/></td>
-            <td class="translate"></td>
-        </tr>
-    </table>
-    <button id="test" class="translate">Test connection</button>
-
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabs-1" class="translate">Connection</a></li>
+            <li><a href="#tabs-2" class="translate">MQTT Settings</a></li>
+        </ul>
+        <div id="tabs-1">
+            <table>
+                <tr>
+                    <td colspan='3'><h4 class="translate">Main settings</h4></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="type">Type:</label></td>
+                    <td><select id="type" class="value">
+                        <option value="client" class="translate">Client</option>
+                        <option value="server" class="translate">Server</option>
+                    </select></td>
+                    <td></td>
+                </tr>
+                <tr id="_webSocket">
+                    <td><label class="translate" for="webSocket">Use WebSockets:</label></td>
+                    <td><input type="checkbox" id="webSocket" class="value"/></td>
+                    <td></td>
+                </tr>        <tr>
+                    <td colspan='3'><h4 class="translate">Connection settings</h4></td>
+                </tr>
+                <tr id="_url">
+                    <td><label class="translate" for="url">URL:</label></td>
+                    <td><input type="text" id="url" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="port">Port:</label></td>
+                    <td><input id="port" type="text" size="5" class="value number"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="ssl">Secure:</label></td>
+                    <td><input id="ssl" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr id="_certPublic">
+                    <td><label class="translate" for="certPublic">Public certificate:</label></td>
+                    <td><select id="certPublic" class="value"></select></td>
+                    <td></td>
+                </tr>
+                <tr id="_certPrivate">
+                    <td><label class="translate" for="certPrivate">Private certificate:</label></td>
+                    <td><select id="certPrivate" class="value"></select></td>
+                    <td></td>
+                </tr>
+                <tr id="_certChained">
+                    <td><label class="translate" for="certChained">Chained certificate:</label></td>
+                    <td><select id="certChained" class="value"></select></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan='3'><h4 class="translate">Authentication settings</h4></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="user">User:</label></td>
+                    <td><input id="user" type="text" size="17" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="pass">Password:</label></td>
+                    <td><input id="pass" type="password" size="17" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="pass_confirm">Password confirmation:</label></td>
+                    <td><input id="pass_confirm" type="password" size="17"/></td>
+                    <td></td>
+                </tr>
+            </table>
+            <button id="test" class="translate">Test connection</button>
+        </div>
+        <div id="tabs-2">
+            <table>
+                <tr>
+                    <td colspan='3'><h4 class="translate">Adapter settings</h4></td>
+                </tr>
+                <tr id="_patterns">
+                    <td><label class="translate" for="patterns">Patterns:</label></td>
+                    <td><input id="patterns" type="text" size="17" class="value"/></td>
+                    <td class="translate">Divided by comma</td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="publish">Mask to publish own states:</label></td>
+                    <td><input id="publish" type="text" size="17" class="value"/></td>
+                    <td class="translate">Mask to publish</td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="onchange">Store only on change:</label></td>
+                    <td><input id="onchange" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="publishAllOnStart">Publish all states at start:</label></td>
+                    <td><input id="publishAllOnStart" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr id ="_publishOnSubscribe">
+                    <td><label class="translate" for="publishOnSubscribe">Publish states on subscribe:</label></td>
+                    <td><input id="publishOnSubscribe" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="prefix">Prefix for topics:</label></td>
+                    <td><input id="prefix" type="text" size="17" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="debug">Trace output for every message:</label></td>
+                    <td><input id="debug" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="sendAckToo">Send states (ack=true) too:</label></td>
+                    <td><input id="sendAckToo" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="extraSet">Use different topic names for set and get:</label></td>
+                    <td><input id="extraSet" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="maxTopicLength">Max topic length:</label></td>
+                    <td><input id="maxTopicLength" class="value" size="17"/></td>
+                    <td class="translate">chars</td>
+                </tr>
+                <tr id="_clientId">
+                    <td><label class="translate" for="clientId">Client ID:</label></td>
+                    <td><input id="clientId" class="value" size="17"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="sendOnStartInterval">Interval before send topics by connection:</label></td>
+                    <td><input id="sendOnStartInterval" class="value" size="17"/></td>
+                    <td class="translate">ms</td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="sendInterval">Send interval:</label></td>
+                    <td><input id="sendInterval" class="value" size="17"/></td>
+                    <td class="translate">ms</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </div>
+</body>
 </html>

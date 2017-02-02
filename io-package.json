@@ -4,8 +4,13 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.3.0",
+        "version": "1.3.1",
         "news": {
+            "1.3.1": {
+                "en": "Update mqtt package\nadd Interval before send topics by connection ans send interval settings\nreorganise configuration dialog",
+                "de": "Update mqtt Packet\nNeue Einstellungen für Server hizugefügt\nÄndere Konfigurationsdialog",
+                "ru": "Обновлён mqtt модуль\nДобавлены новые настройки для сервера\nизменеён диалог настроек"
+            },
             "1.3.0": {
                 "en": "Update mqtt package\nconfigurable client ID",
                 "de": "Update mqtt Packet\nEinstellbares Client ID",
@@ -100,6 +105,8 @@
         "maxTopicLength":       100,
         "publishOnSubscribe":   true,
         "extraSet":             false,
+        "sendOnStartInterval":  2000,
+        "sendInterval":         10,
 
         "keepalive":            1000,
         "reconnectPeriod":      10,
