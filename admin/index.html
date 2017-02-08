@@ -190,6 +190,8 @@
 
     function loadHelper(settings, param, subparam) {
         if (!settings) return;
+		
+		if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
 
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
