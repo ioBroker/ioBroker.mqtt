@@ -37,6 +37,7 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true). The client will receive sent messages back in this mode.
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
+- **Use chunk patch** - There is a problem with last update of mqtt-packet, that frames will be sent directly to client and not first completely built and then sent to client. Some old clients do not like such a packets and do not work with new library. To fix it you can activate this flag.
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like "localhost".
@@ -101,6 +102,10 @@ The broker was tested with following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Changelog
+### 1.3.2 (2017-02-08)
+* (bluefox) Fix convert of UTF8 payloads
+* (bluefox) optional fix for chunking problem
+
 ### 1.3.1 (2017-02-02)
 * (bluefox) Update mqtt packages
 * (bluefox) add Interval before send topics by connection ans send interval settings

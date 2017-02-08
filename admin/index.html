@@ -40,6 +40,7 @@
             "ru": "Интервал перед отсылкой всей топиков после соединения:"
         },
         "Send interval:":         {"en": "Send interval:",         "de": "Sendeintervall:",        "ru": "Интервал между пакетами:"},
+        "Use chunk patch:":       {"en": "Use chunk patch:",       "de": "Benutze Pathch für Chunking:", "ru": "Использовать заплатку для Chunking:"},
         "Divided by comma":       {
             "en": "Divided by comma, e.g. 'mqtt/0/#,javascript/#'",
             "de": "Mit Komma getrennt, z.B 'mqtt/0/#,javascript/#'",
@@ -127,13 +128,16 @@
             $('#_certPrivate').hide();
             $('#_certChained').hide();
             $('#_webSocket').hide();
+            $('#_useChunkPatch').hide();
             $('#_publishOnSubscribe').hide();
-        }else {
+        } else {
+            $('#_useChunkPatch').show();
             $('#_clientId').hide();
             $('#_url').hide();
             $('#test').hide();
             $('#_patterns').hide();
             $('#_webSocket').show();
+
             if ($('#ssl').prop('checked')) {
                 $('#_certPublic').show();
                 $('#_certPrivate').show();
@@ -143,6 +147,7 @@
                 $('#_certPrivate').hide();
                 $('#_certChained').hide();
             }
+
             $('#_publishOnSubscribe').show();
         }
     }
@@ -155,7 +160,6 @@
     }
 
     function setValue(id, value) {
-        // example: select elements with id=key and class=value and insert value
         if ($('#' + id + '.value').attr('type') === 'checkbox') {
             $('#' + id + '.value').prop('checked', value).change(function() {
                 onChange();
@@ -228,6 +232,7 @@
         settings.clientId   = settings.clientId   || '';
         loadHelper(settings);
         $('#pass_confirm').val($('#pass').val());
+
         init();
         fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
         fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
@@ -266,6 +271,7 @@
         }
         return obj;
     }
+
     function getSettings() {
         var obj = {};
         $('.value').each(function () {
@@ -281,8 +287,6 @@
         return obj;
     }
 
-    // ... and the function save has to exist.
-    // you have to make sure the callback is called with the settings object as first param!
     function save(callback) {
         if ($('#pass').val() !== $('#pass_confirm').val()) {
             showMessage(_('Password confirmation is not equal with password'));
@@ -293,7 +297,6 @@
             return;
         }
 
-        // example: select elements with class=value and build settings object
         callback(getSettings());
     }
 </script>
@@ -450,6 +453,11 @@
                     <td><label class="translate" for="sendInterval">Send interval:</label></td>
                     <td><input id="sendInterval" class="value" size="17"/></td>
                     <td class="translate">ms</td>
+                </tr>
+                <tr id="_useChunkPatch">
+                    <td><label class="translate" for="useChunkPatch">Use chunk patch:</label></td>
+                    <td><input id="useChunkPatch" class="value" type="checkbox"/></td>
+                    <td></td>
                 </tr>
             </table>
         </div>

@@ -120,7 +120,7 @@ function readStatesForPattern(pattern) {
             if (!states) states = {};
 
             for (var id in res) {
-                if (!messageboxRegex.test(id)) {
+                if (res.hasOwnProperty(id) &&  !messageboxRegex.test(id)) {
                     states[id] = res[id];
                 }
             }
@@ -136,7 +136,45 @@ function readStatesForPattern(pattern) {
     });
 }
 
+function patchWriteToStream() {
+    var fs = require('fs');
+    try {
+        var path = require.resolve('mqtt-packet');
+        path = path.replace(/\\/g, '/');
+        var parts = path.split('/');
+        parts[parts.length - 1] = 'writeToStream.js';
+        path = parts.join('/');
+
+        if (fs.existsSync(path)) {
+            var text = fs.readFileSync(path).toString();
+            if (adapter.config.useChunkPatch) {
+                if (text.indexOf('ioBroker') === -1) {
+                    try {
+                        fs.writeFileSync(__dirname + '/lib/writeToStreamOriginal.js', text);
+                        fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStream.js'));
+                    } catch (e) {
+                        console.error('Cannot update writeToStream.js: ' + e);
+                    }
+                }
+            } else {
+                if (text.indexOf('ioBroker') !== -1) {
+                    try {
+                        fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStreamOriginal.js'));
+                    } catch (e) {
+                        console.error('Cannot repair writeToStream.js: ' + e);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Cannot patch writeToStream.js: ' + e);
+    }
+}
+
 function main() {
+    // temporary solution
+    patchWriteToStream();
+
     // Subscribe on own variables to publish it
     if (adapter.config.publish) {
         var parts = adapter.config.publish.split(',');
