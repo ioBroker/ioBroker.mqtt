@@ -138,36 +138,53 @@ function readStatesForPattern(pattern) {
 
 function patchWriteToStream() {
     var fs = require('fs');
+    var path;
     try {
-        var path = require.resolve('mqtt-packet');
+        path = require.resolve('mqtt-packet');
+    } catch (e) {
+        return;
+    }
+    
+    if (path) {
         path = path.replace(/\\/g, '/');
         var parts = path.split('/');
         parts[parts.length - 1] = 'writeToStream.js';
         path = parts.join('/');
+    }
 
-        if (fs.existsSync(path)) {
-            var text = fs.readFileSync(path).toString();
-            if (adapter.config.useChunkPatch) {
-                if (text.indexOf('ioBroker') === -1) {
-                    try {
-                        fs.writeFileSync(__dirname + '/lib/writeToStreamOriginal.js', text);
-                        fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStream.js'));
-                    } catch (e) {
-                        console.error('Cannot update writeToStream.js: ' + e);
-                    }
+    if (!path || !fs.existsSync(path)) {
+        try {
+            path = require.resolve('mqtt-connection');
+        } catch (e) {
+            return;
+        }
+        path = path.replace(/\\/g, '/');
+        parts = path.split('/');
+        parts[parts.length - 1] = 'node_modules';
+        parts.push('mqtt-packet/writeToStream.js');
+        path = parts.join('/');
+    }
+
+    if (fs.existsSync(path)) {
+        var text = fs.readFileSync(path).toString();
+        if (adapter.config.useChunkPatch) {
+            if (text.indexOf('ioBroker') === -1) {
+                try {
+                    fs.writeFileSync(__dirname + '/lib/writeToStreamOriginal.js', text);
+                    fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStream.js'));
+                } catch (e) {
+                    console.error('Cannot update writeToStream.js: ' + e);
                 }
-            } else {
-                if (text.indexOf('ioBroker') !== -1) {
-                    try {
-                        fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStreamOriginal.js'));
-                    } catch (e) {
-                        console.error('Cannot repair writeToStream.js: ' + e);
-                    }
+            }
+        } else {
+            if (text.indexOf('ioBroker') !== -1) {
+                try {
+                    fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStreamOriginal.js'));
+                } catch (e) {
+                    console.error('Cannot repair writeToStream.js: ' + e);
                 }
             }
         }
-    } catch (e) {
-        console.error('Cannot patch writeToStream.js: ' + e);
     }
 }
 
