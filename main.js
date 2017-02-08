@@ -142,9 +142,9 @@ function patchWriteToStream() {
     try {
         path = require.resolve('mqtt-packet');
     } catch (e) {
-        return;
+
     }
-    
+
     if (path) {
         path = path.replace(/\\/g, '/');
         var parts = path.split('/');
@@ -172,6 +172,7 @@ function patchWriteToStream() {
                 try {
                     fs.writeFileSync(__dirname + '/lib/writeToStreamOriginal.js', text);
                     fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStream.js'));
+                    adapter.log.info('Patch applied');
                 } catch (e) {
                     console.error('Cannot update writeToStream.js: ' + e);
                 }
@@ -180,6 +181,7 @@ function patchWriteToStream() {
             if (text.indexOf('ioBroker') !== -1) {
                 try {
                     fs.writeFileSync(path, fs.readFileSync(__dirname + '/lib/writeToStreamOriginal.js'));
+                    adapter.log.info('Patch removed');
                 } catch (e) {
                     console.error('Cannot repair writeToStream.js: ' + e);
                 }
