@@ -71,6 +71,10 @@
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],
+		"docs": {
+            "en": "docs/en/mqtt.md",
+            "ru": "docs/ru/mqtt.md"
+        },
         "license":                  "MIT",
         "platform":                 "Javascript/Node.js",
         "mode":                     "daemon",
