@@ -623,7 +623,7 @@ The example described above has several disadvantages. First, it is not always t
 *   customer/subscriber – the ioBroker system with access to the Internet, publishes data of temperature and humidity (see [example above](http://www.iobroker.net/?page_id=6435&lang=en#ioBroker_working_as_MQTT-broker)), publishes the real status of ports **P7-P13** (relay driver MegaD **megad.0** – light control), subscribing to properties of the remote light control (an instance of the driver mqtt **mqtt.0**),
 *   customer/subscriber – the application of [IoT MQTT Dashboard](https://play.google.com/store/apps/details?id=com.thn.iotmqttdashboard&hl=en) to work remotely – subscribe to sensor data of temperature and humidity, subscription to the real status of ports **P7-P13** (relay driver MegaD **megad.0**), publication of variables of a remote control light (driver instance **mqtt.0**).
 
-he result is the following structure: 
+The result is the following structure: 
 
 ![](img/mqtt_cloud1.jpg)
 
