@@ -1,5 +1,3 @@
-[![Fork me on GitHub](https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67)](https://github.com/ioBroker/ioBroker.mqtt) ![](http://download.iobroker.net/img/logo-mqtt.png)
-
 # Beschreibung
 
 [MQTT](http://mqtt.org/) (Message Queue Telemetry Transport) ist ein schlankes Protokoll für die Kommunikation zwischen verschiedenen Geräten (M2M - machine-to-machine). Es benutzt das publisher-subscriber Modell um Nachrichten über das TCP / IP Protokoll zu senden. Die zentrale Stelle des Protokolls ist der MQTT-Server oder Broker Der Zugriff auf den publisher und den subscriber besitzt. Dieses Protokoll ist sehr simpel: ein kurzer Header ohne Integrität (deshalb setzt die Übermittlung auf TCP auf), legt der Struktur keinerlei Beschränkungen beim Code oder einem Datenbankschema auf. Die einzige Bedingung ist dass jedes Datenpaket eine Information zur Identifikation beinhalten muss. Diese Identifikationsinformation heißt Topic Name.
@@ -15,7 +13,17 @@ Das MQTT Protokoll benötigt einen Datenbroker. Dieses ist die zentrale Idee d
 
 # Installation
 
-Die Installation findet im Admin im Reiter _**Adapter**_ statt. In der Gruppe Kommunikation befindet sich eine Zeile **_MQTT Adapter_**, dort wird über das (+)-Icon ganz rechts eine neue Instanz angelegt. [![](http://www.iobroker.net/wp-content/uploads//1-1024x342.png)](http://www.iobroker.net/wp-content/uploads//1.png) Ein pop-up Fenster erscheint mit den Installationsinformationen und schließt nach der Installation eigenständig. [![](http://www.iobroker.net/wp-content/uploads//2-300x153.png)](http://www.iobroker.net/wp-content/uploads//2.png) Wenn alles klappt befindet sich anschließend unter dem Reiter _**Instanzen**_ die neu installierte **mqtt.0** Instanz. [![](http://www.iobroker.net/wp-content/uploads//3-300x156.png)](http://www.iobroker.net/wp-content/uploads//3.png)  
+Die Installation findet im Admin im Reiter _**Adapter**_ statt. In der Gruppe Kommunikation befindet sich eine Zeile **_MQTT Adapter_**, dort wird über das (+)-Icon ganz rechts eine neue Instanz angelegt. 
+
+[![](http://www.iobroker.net/wp-content/uploads//1-1024x342.png)](http://www.iobroker.net/wp-content/uploads//1.png) 
+
+Ein pop-up Fenster erscheint mit den Installationsinformationen und schließt nach der Installation eigenständig. 
+
+[![](http://www.iobroker.net/wp-content/uploads//2-300x153.png)](http://www.iobroker.net/wp-content/uploads//2.png)
+
+Wenn alles klappt befindet sich anschließend unter dem Reiter _**Instanzen**_ die neu installierte **mqtt.0** Instanz.
+
+[![](http://www.iobroker.net/wp-content/uploads//3-300x156.png)](http://www.iobroker.net/wp-content/uploads//3.png)  
 
 # Konfiguration
 
@@ -25,7 +33,7 @@ Wie bereits oben gesagt, besteht ein MQTT-System aus einem Broker und Clients. �
 
 Die Grundeinstellungen um den Adapter als Server/Broker zu verwenden sind in der Abbildung gezeigt: 
 
-[![](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Server.jpg)](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Server.jpg)
+[![](http://www.iobroker.net/wp-content/uploads/ioBroker_Adapter_MQTT_Konfig_Server.jpg)](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Server.jpg)
 
 ### Allgemeine Einstellungen
 
@@ -69,7 +77,11 @@ Format topics of data exchange:
 *   `example1/hum` - client publishes a specified humidity value intervals with DHT22 sensor (float type),
 *   `example1/led` - the client is subscribed to the state change of the led (the text on/off or 0/1 or true/false).
 
-Driver settings will be as follows: [![](http://www.iobroker.net/wp-content/uploads//5-283x300.png)](http://www.iobroker.net/wp-content/uploads//5.png) Connecting via TCP (WebSocket is not necessary), default port 1883\. The client within the local network, so to encrypt traffic and authenticate the user is not necessary. We will send only the changes since the client signed on the send interval indications and led state to obtain information about the update (without changing the value) to a variable makes no sense. To publish the subscription - note this option, as when you first connect (or connected after disconnection) of the client, he must know the state of the variables on which it is signed (a current interval of sending and whether the LED is to be turned on). Setting to send variables ack = true or false is also worth noting, as a variable (which signed the client) can change any driver / script / VIS and any changes should be sent to the client. The complete code for the arduino board will look like this:
+Driver settings will be as follows: 
+
+[![](http://www.iobroker.net/wp-content/uploads//5-283x300.png)](http://www.iobroker.net/wp-content/uploads//5.png) 
+
+Connecting via TCP (WebSocket is not necessary), default port 1883\. The client within the local network, so to encrypt traffic and authenticate the user is not necessary. We will send only the changes since the client signed on the send interval indications and led state to obtain information about the update (without changing the value) to a variable makes no sense. To publish the subscription - note this option, as when you first connect (or connected after disconnection) of the client, he must know the state of the variables on which it is signed (a current interval of sending and whether the LED is to be turned on). Setting to send variables ack = true or false is also worth noting, as a variable (which signed the client) can change any driver / script / VIS and any changes should be sent to the client. The complete code for the arduino board will look like this:
 
 <pre>// Connecting libraries
 #include
@@ -256,7 +268,12 @@ Driver MQTT can be used as a gateway for various protocols to connect new device
 *   humidity – address 1 value multiplied by 10 (read function 3),
 *   PWM LED address 2 value 0...1023 to check the recording function (write function 6).
 
-Connection scheme: [caption id="" align="alignnone" width="401"][![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus1.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus1.jpg) by Fritzing[/caption] Code for arduino pro mini controller produces the following:
+Connection scheme: 
+
+![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus1.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus1.jpg) 
+by Fritzing 
+
+Code for arduino pro mini controller produces the following:
 
 <pre>#include  //https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib
 #include  //https://code.google.com/archive/p/simple-modbus/
@@ -317,7 +334,15 @@ To test the operation code and schema, you can connect to port serial board (for
 *   slave id: 10, read: function No. 3 read holding registers, starting address: 0, number of registers: 3,
 *   slave id: 10, record: function No. 6 write single register start address: 2,
 
-The answer in the program when reading should be approximately the following: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus2.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus2.jpg) The answer in the program when recording: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus3.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus3.jpg) <span style="text-decoration: underline;">**Now configure the gateway itself and connect it to the iobroker**</span> The gateway will be based on the platform arduino MEGA 2560 with ethernet shield - client MQTT, broker - an instance mqtt.0 ioBroker system driver. Choosing the MEGA 2560 due to the fact that on this Board more than one UART port, respectively, is zero Serial0 (pin_0 (RX) and pin_1 (TX)) or simply Serial – use to output debug messages, and Serial1 (pin_19 (RX) and pin_18 (TX)) – for slave via ModBus.
+The answer in the program when reading should be approximately the following: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus2.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus2.jpg) 
+
+The answer in the program when recording: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus3.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus3.jpg) 
+
+<span style="text-decoration: underline;">**Now configure the gateway itself and connect it to the iobroker**</span> The gateway will be based on the platform arduino MEGA 2560 with ethernet shield - client MQTT, broker - an instance mqtt.0 ioBroker system driver. Choosing the MEGA 2560 due to the fact that on this Board more than one UART port, respectively, is zero Serial0 (pin_0 (RX) and pin_1 (TX)) or simply Serial – use to output debug messages, and Serial1 (pin_19 (RX) and pin_18 (TX)) – for slave via ModBus.
 
 *   the client – the fee for developing arduino MEGA 2560 + ethernet shield based on W5100 chip;
 *   to work with the ethernet board uses the [standard library](https://www.arduino.cc/en/Reference/Ethernet) for working with MQTT library [Pubsubclient](https://github.com/knolleary/pubsubclient);
@@ -334,7 +359,16 @@ Format topics of data exchange:
 *   `modbusgateway/hum` - the client publishes with a given interval the value of the humidity sensor DHT22 (type float),
 *   `modbusgateway/led` - the client is subscribed to the state change of the led (PWM control value 0...1024).
 
-СThe connection diagram will look something like this: [caption id="" align="alignnone" width="699"][![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus6.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus6.jpg) By Fritzing[/caption] For the test slave device energized from the master device. The Master in turn will work from the USB port, which is being debug (Serial0). Driver settings will be as follows: [![](http://www.iobroker.net/wp-content/uploads//14-283x300.png)](http://www.iobroker.net/wp-content/uploads//14.png) Connecting via TCP (WebSocket is not necessary), default port 1883\. The client within the local network, so to encrypt traffic and authenticate the user is not necessary. We will send only the changes since the client signed on the send interval indications and led state to obtain information about the update (without changing the value) to a variable makes no sense. To publish the subscription - note this option, as when you first connect (or connected after disconnection) of the client, he must know the state of the variables on which it is signed (a current interval of sending and whether the LED is to be turned on). Setting to send variables ack = true or false is also worth noting, as a variable (which signed the client) can change any driver / script / VIS and any changes should be sent to the client. The complete code for the arduino board will look like this:
+СThe connection diagram will look something like this: 
+
+[caption id="" align="alignnone" width="699"][![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus6.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus6.jpg) 
+By Fritzing
+
+For the test slave device energized from the master device. The Master in turn will work from the USB port, which is being debug (Serial0). Driver settings will be as follows: 
+
+[![](http://www.iobroker.net/wp-content/uploads//14-283x300.png)](http://www.iobroker.net/wp-content/uploads//14.png) 
+
+Connecting via TCP (WebSocket is not necessary), default port 1883\. The client within the local network, so to encrypt traffic and authenticate the user is not necessary. We will send only the changes since the client signed on the send interval indications and led state to obtain information about the update (without changing the value) to a variable makes no sense. To publish the subscription - note this option, as when you first connect (or connected after disconnection) of the client, he must know the state of the variables on which it is signed (a current interval of sending and whether the LED is to be turned on). Setting to send variables ack = true or false is also worth noting, as a variable (which signed the client) can change any driver / script / VIS and any changes should be sent to the client. The complete code for the arduino board will look like this:
 
 <pre>// Connecting libraries
 #include 
@@ -434,7 +468,13 @@ void loop()
 }
 </pre>
 
-This solution can be used as a prototype (example) ModBus network in your automation system. The data from the slave is transmitted with the desired spacing in the ioBroker. [![](http://www.iobroker.net/wp-content/uploads//10-1024x202.png)](http://www.iobroker.net/wp-content/uploads//10.png) MQTT client signed variables and redirects needed in slave-device on the ModBus network. [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus5.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus5.jpg)
+This solution can be used as a prototype (example) ModBus network in your automation system. The data from the slave is transmitted with the desired spacing in the ioBroker. 
+
+[![](http://www.iobroker.net/wp-content/uploads//10-1024x202.png)](http://www.iobroker.net/wp-content/uploads//10.png) 
+
+MQTT client signed variables and redirects needed in slave-device on the ModBus network. 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus5.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-modbus5.jpg)
 
 ## Application - connecting mobile clients
 
@@ -468,7 +508,21 @@ on({ id : 'mqtt.0.remotectrl.light.hall', change : 'any' }, function(obj) {
 });
 </pre>
 
-Connect button and light bulbs to MegaD controller: [![](http://www.iobroker.net/wp-content/uploads//mqtt-mobile1.jpg)](http://www.iobroker.net/wp-content/uploads//mqtt-mobile1.jpg) MQTT driver settings: [![](http://www.iobroker.net/wp-content/uploads//14-283x300.png)](http://www.iobroker.net/wp-content/uploads//14.png) The mobile client can publish data to variable mqtt.0.remotectrl.light.hall and signs up for a real port status MegaD – megad.0.p7_P7\. The configure publishing and subscriptions: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile3.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile3.png) [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile4.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile4.png) In total for one channel light control turn the control window (publish) and subscription window is a real condition light relay (for feedback): [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile5.png) ![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile6.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile6.png)
+Connect button and light bulbs to MegaD controller: 
+
+[![](http://www.iobroker.net/wp-content/uploads//mqtt-mobile1.jpg)](http://www.iobroker.net/wp-content/uploads//mqtt-mobile1.jpg) 
+
+MQTT driver settings: [![](http://www.iobroker.net/wp-content/uploads//14-283x300.png)](http://www.iobroker.net/wp-content/uploads//14.png) 
+
+The mobile client can publish data to variable mqtt.0.remotectrl.light.hall and signs up for a real port status MegaD – megad.0.p7_P7\. The configure publishing and subscriptions: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile3.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile3.png) 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile4.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile4.png) 
+
+In total for one channel light control turn the control window (publish) and subscription window is a real condition light relay (for feedback): 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile5.png) ![](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile6.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-mobile6.png)
 
 ## Application - working with cloud servers
 
@@ -478,7 +532,15 @@ The example described above has several disadvantages. First, it is not always t
 *   customer/subscriber – the ioBroker system with access to the Internet, publishes data of temperature and humidity (see [example above](http://www.iobroker.net/?page_id=6435&lang=en#ioBroker_working_as_MQTT-broker)), publishes the real status of ports **P7-P13** (relay driver MegaD **megad.0** – light control), subscribing to properties of the remote light control (an instance of the driver mqtt **mqtt.0**),
 *   килент/подписчик - приложение [IoT MQTT Dashboard](https://play.google.com/store/apps/details?id=com.thn.iotmqttdashboard&hl=en) для удаленной работы - подписка на данные сенсора температуры и влажности, подписка на реальное состояние портов **P7-P13** (реле MegaD драйвера **megad.0**), публикация переменных удаленного управления светом (экземпляр драйвера **mqtt.0**). - customer/subscriber – the application of [IoT MQTT Dashboard](https://play.google.com/store/apps/details?id=com.thn.iotmqttdashboard&hl=en) to work remotely – subscribe to sensor data of temperature and humidity, subscription to the real status of ports **P7-P13** (relay driver MegaD **megad.0**), publication of variables of a remote control light (driver instance **mqtt.0**).
 
-he result is the following structure: [![](http://www.iobroker.net/wp-content/uploads//mqtt-cloud1-1024x511.jpg)](http://www.iobroker.net/wp-content/uploads//mqtt-cloud1.jpg) Bundle driver **mqtt.1** (broker) – Arduino UNO + Ethernet + DHT22 (client) as in [the example above](http://www.iobroker.net/?page_id=6435&lang=en#ioBroker_working_as_MQTT-broker) with a few modifications. Configuring an instance of the mqtt **driver.1**: [![](http://www.iobroker.net/wp-content/uploads//14-283x300.png)](http://www.iobroker.net/wp-content/uploads//14.png) Code for the arduino platform:
+he result is the following structure: 
+
+[![](http://www.iobroker.net/wp-content/uploads//mqtt-cloud1-1024x511.jpg)](http://www.iobroker.net/wp-content/uploads//mqtt-cloud1.jpg)
+
+Bundle driver **mqtt.1** (broker) – Arduino UNO + Ethernet + DHT22 (client) as in [the example above](http://www.iobroker.net/?page_id=6435&lang=en#ioBroker_working_as_MQTT-broker) with a few modifications. Configuring an instance of the mqtt **driver.1**: 
+
+[![](http://www.iobroker.net/wp-content/uploads//14-283x300.png)](http://www.iobroker.net/wp-content/uploads//14.png) 
+
+Code for the arduino platform:
 
 <pre>// Connecting libraries
 #include 
@@ -577,7 +639,21 @@ void loop()
     client.loop();
 }</pre>
 
-The result of the work - **mqtt.1** driver objects: [![](http://www.iobroker.net/wp-content/uploads//12-1024x187.png)](http://www.iobroker.net/wp-content/uploads//12.png) Now let's set up publish/subscribe data to the cloud. For a start, register on the site [cloudmqtt.com](https://www.cloudmqtt.com/), select the desired rate, create instance, get settings: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud4.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud4.jpg) For greater security it is better to create a separate user, assume that it will be user **iobroker**with the password **1234**. Give user permission to read and write in any topic: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud5.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud5.jpg) Next set the instance of the mqtt **driver.0** to connect as a client/subscriber cloud broker and a list of publications/subscriptions: [![](http://www.iobroker.net/wp-content/uploads//8-283x300.png)](http://www.iobroker.net/wp-content/uploads//8.png)
+The result of the work - **mqtt.1** driver objects: 
+
+[![](http://www.iobroker.net/wp-content/uploads//12-1024x187.png)](http://www.iobroker.net/wp-content/uploads//12.png)
+
+Now let's set up publish/subscribe data to the cloud. For a start, register on the site [cloudmqtt.com](https://www.cloudmqtt.com/), select the desired rate, create instance, get settings: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud4.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud4.jpg) 
+
+For greater security it is better to create a separate user, assume that it will be user **iobroker**with the password **1234**. Give user permission to read and write in any topic: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud5.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud5.jpg) 
+
+Next set the instance of the mqtt **driver.0** to connect as a client/subscriber cloud broker and a list of publications/subscriptions: 
+
+[![](http://www.iobroker.net/wp-content/uploads//8-283x300.png)](http://www.iobroker.net/wp-content/uploads//8.png)
 
 *   connection type – the customer/subscriber,
 *   connection settings – specify the URL issued in the control panel [cloudmqtt.com](https://www.cloudmqtt.com/) the port will use **22809**that works with **SSL**,
@@ -588,4 +664,32 @@ The result of the work - **mqtt.1** driver objects: [![](http://www.iobroker.net
 *   to give your own values at the start – just specify to create topics,
 *   to send not only commands, but also the state (ack=true) – it should be noted that setting both the temperature/humidity updated driver mqtt (ack=true).
 
-Settings saved, make sure that the connection is established (on the control panel [cloudmqtt.com](https://www.cloudmqtt.com/) watch the log server). After some time, data will appear (in the panel link **WebsocketUI**): [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud7.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud7.jpg) In the end, it remains only to configure a mobile client, for example [IoT MQTT Dashboard](https://play.google.com/store/apps/details?id=com.thn.iotmqttdashboard&hl=en). Create a new connection: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud8.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud8.png) Create topics for publication (for example, lighting of the hall - port **P7** MegaD): [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud9.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud9.png) Создаем топики подписок (температура, влажность, освещение зала порт **P7** MegaD): [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud10.png) ](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud10.png)[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud11.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud11.png) [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud12.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud12.png) In the end, your dashboard might look something like this: [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud13.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud13.png) [![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud14.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud14.png) After the creation of the publications on a mobile device, in the driver instance **mqtt.0** system ioBroker should appear variable light control that should be used in the script for lighting control (see [example above](http://www.iobroker.net/?page_id=6435&lang=en#Application_8211_connecting_mobile_clients)): [![](http://www.iobroker.net/wp-content/uploads//mqtt_13-1024x230.png)](http://www.iobroker.net/wp-content/uploads//mqtt_13.png) Congratulations! Now you can control the system ioBroker and receive data via a cloud service!
+Settings saved, make sure that the connection is established (on the control panel [cloudmqtt.com](https://www.cloudmqtt.com/) watch the log server). After some time, data will appear (in the panel link **WebsocketUI**): 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud7.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud7.jpg) 
+
+In the end, it remains only to configure a mobile client, for example [IoT MQTT Dashboard](https://play.google.com/store/apps/details?id=com.thn.iotmqttdashboard&hl=en). Create a new connection: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud8.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud8.png) 
+
+Create topics for publication (for example, lighting of the hall - port **P7** MegaD): 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud9.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud9.png) 
+
+Создаем топики подписок (температура, влажность, освещение зала порт **P7** MegaD): 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud10.png) ](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud10.png)[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud11.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud11.png) 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud12.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud12.png) 
+
+In the end, your dashboard might look something like this: 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud13.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud13.png) 
+
+[![](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud14.png)](http://www.iobroker.net/wp-content/uploads//MQTT-example-cloud14.png) 
+
+After the creation of the publications on a mobile device, in the driver instance **mqtt.0** system ioBroker should appear variable light control that should be used in the script for lighting control (see [example above](http://www.iobroker.net/?page_id=6435&lang=en#Application_8211_connecting_mobile_clients)): 
+
+[![](http://www.iobroker.net/wp-content/uploads//mqtt_13-1024x230.png)](http://www.iobroker.net/wp-content/uploads//mqtt_13.png) 
+
+Congratulations! Now you can control the system ioBroker and receive data via a cloud service!
