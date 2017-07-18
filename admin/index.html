@@ -40,7 +40,7 @@
             "ru": "Интервал перед отсылкой всей топиков после соединения:"
         },
         "Send interval:":         {"en": "Send interval:",         "de": "Sendeintervall:",        "ru": "Интервал между пакетами:"},
-        "Use chunk patch:":       {"en": "Use chunk patch:",       "de": "Benutze Pathch für Chunking:", "ru": "Использовать заплатку для Chunking:"},
+        "Use chunk patch:":       {"en": "Use chunk patch:",       "de": "Benutze Patch für Chunking:", "ru": "Использовать заплатку для Chunking:"},
         "Divided by comma":       {
             "en": "Divided by comma, e.g. 'mqtt/0/#,javascript/#'",
             "de": "Mit Komma getrennt, z.B 'mqtt/0/#,javascript/#'",
@@ -101,7 +101,7 @@
     };
 
 	var onChange;
-	
+
     function encrypt(key, value) {
         var result = '';
         for(var i = 0; i < value.length; ++i) {
@@ -190,7 +190,7 @@
 
     function loadHelper(settings, param, subparam) {
         if (!settings) return;
-		
+
 		if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
 
         if (subparam && param) {
