@@ -160,6 +160,7 @@ function checkConnection(value, done, counter) {
 describe('MQTT server: Test mqtt server', function() {
     before('MQTT server: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
+        setup.adapterStarted = false;
 
         setup.setupController(function () {
             var config = setup.getAdapterConfig();
@@ -220,7 +221,7 @@ describe('MQTT server: Test mqtt server', function() {
             }
         })(r, rules[r]);
     }
-    
+
     it('MQTT server: detector must receive /mqtt/0/test1', function (done) {
         var mqttid = '/mqtt/0/test1';
         var value  = 'AABB';

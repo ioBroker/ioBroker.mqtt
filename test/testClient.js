@@ -116,6 +116,7 @@ describe('Test MQTT client', function() {
         this.timeout(600000); // because of first install from npm
         var clientConnected = false;
         var brokerStarted   = false;
+        setup.adapterStarted = false;
 
         setup.setupController(function () {
             var config = setup.getAdapterConfig();

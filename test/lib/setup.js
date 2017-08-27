@@ -682,4 +682,5 @@ if (typeof module !== undefined && module.parent) {
     module.exports.installAdapter   = installAdapter;
     module.exports.appName          = appName;
     module.exports.adapterName      = adapterName;
+    module.exports.adapterStarted   = adapterStarted;
 }
