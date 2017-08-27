@@ -499,6 +499,7 @@ function startController(isStartAdapter, onObjectChange, onStateChange, callback
         console.error('Controller is already started!');
     } else {
         console.log('startController...');
+        adapterStarted = false;
         var isObjectConnected;
         var isStatesConnected;
 
@@ -586,6 +587,7 @@ function stopAdapter(cb) {
             }, 0);
         }
     } else {
+        adapterStarted = false;
         pid.on('exit', function (code, signal) {
             if (pid) {
                 console.log('child process terminated due to receipt of signal ' + signal);
