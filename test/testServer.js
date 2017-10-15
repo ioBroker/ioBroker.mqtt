@@ -146,7 +146,7 @@ function checkConnection(value, done, counter) {
 
     states.getState('mqtt.0.info.connection', function (err, state) {
         if (err) console.error(err);
-        if (state && typeof state.val == 'string' && ((value && state.val.indexOf(',') != -1) || (!value && state.val.indexOf(',') === -1))) {
+        if (state && typeof state.val === 'string' && ((value && state.val.indexOf(',') !== -1) || (!value && state.val.indexOf(',') === -1))) {
             connected = value;
             done();
         } else {

@@ -102,6 +102,9 @@ The broker was tested with following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Changelog
+### 1.3.3 (2017-10-15)
+* (bluefox) Fix sending of QOS=2 if server
+
 ### 1.3.2 (2017-02-08)
 * (bluefox) Fix convert of UTF8 payloads
 * (bluefox) optional fix for chunking problem

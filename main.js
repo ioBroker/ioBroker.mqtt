@@ -213,7 +213,7 @@ function main() {
     }
     // If no subscription, start client or server
     if (!cnt) {
-        if (adapter.config.type == 'client') {
+        if (adapter.config.type === 'client') {
             client = new require(__dirname + '/lib/client')(adapter, states);
         } else {
             server = new require(__dirname + '/lib/server')(adapter, states);
