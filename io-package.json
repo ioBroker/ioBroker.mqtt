@@ -1,6 +1,6 @@
 {
     "common": {
-        "name":                     "mqtt",
+        "name": "mqtt",
         "require": {
             "js-controller": ">=0.10.0"
         },
@@ -67,8 +67,8 @@
                 "ru": "convert values like +58,890 into numbers too"
             }
         },
-        "title":                    "MQTT Adapter",
-        "desc":                     {
+        "title": "MQTT Adapter",
+        "desc": {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
             "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
             "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера"
@@ -76,64 +76,65 @@
         "authors": [
             "bluefox <dogafox@gmail.com>"
         ],
-		"docs": {
+        "docs": {
             "en": "docs/en/mqtt.md",
             "ru": "docs/ru/mqtt.md"
         },
-        "license":                  "MIT",
-        "platform":                 "Javascript/Node.js",
-        "mode":                     "daemon",
-        "messagebox":               true,
-        "readme":                   "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
-        "loglevel":                 "info",
-        "icon":                     "mqtt.png",
-        "keywords":                 ["notification", "MQTT", "message"],
-        "extIcon":                  "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
-		"type":                     "communication",
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "mode": "daemon",
+        "messagebox": true,
+        "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
+        "loglevel": "info",
+        "icon": "mqtt.png",
+        "keywords": [
+            "notification",
+            "MQTT",
+            "message"
+        ],
+        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
+        "type": "protocols",
         "config": {
-            "width" :    800,
-            "height" :   850,
-            "minWidth":  400,
+            "width": 800,
+            "height": 850,
+            "minWidth": 400,
             "minHeight": 400
         }
     },
     "native": {
-        "type":                 "client",
-        "clientId":             "",
-        "port":                 1883,
-        "ssl":                  false,
-        "user":                 "",
-        "pass":                 "",
-        "url":                  "localhost",
-        "patterns":             "#",
-        "onchange":             true,
-        "publishAllOnStart":    true,
-        "debug":                false,
-        "publish":              "*",
-        "certPublic":           "",
-        "certPrivate":          "",
-        "certChained":          "",
-        "prefix":               "",
-        "sendAckToo":           false,
-        "webSocket":            false,
-        "maxTopicLength":       100,
-        "publishOnSubscribe":   true,
-        "extraSet":             false,
-        "sendOnStartInterval":  2000,
-        "sendInterval":         10,
-        "useChunkPatch":        false,
-
-        "keepalive":            1000,
-        "reconnectPeriod":      10,
-        "connectTimeout":       30,
-        "clean":                false
+        "type": "client",
+        "clientId": "",
+        "port": 1883,
+        "ssl": false,
+        "user": "",
+        "pass": "",
+        "url": "localhost",
+        "patterns": "#",
+        "onchange": true,
+        "publishAllOnStart": true,
+        "debug": false,
+        "publish": "*",
+        "certPublic": "",
+        "certPrivate": "",
+        "certChained": "",
+        "prefix": "",
+        "sendAckToo": false,
+        "webSocket": false,
+        "maxTopicLength": 100,
+        "publishOnSubscribe": true,
+        "extraSet": false,
+        "sendOnStartInterval": 2000,
+        "sendInterval": 10,
+        "useChunkPatch": false,
+        "keepalive": 1000,
+        "reconnectPeriod": 10,
+        "connectTimeout": 30,
+        "clean": false
     },
-    "objects": [
-
-    ],
+    "objects": [],
     "instanceObjects": [
         {
-            "_id":  "info",
+            "_id": "info",
             "type": "channel",
             "common": {
                 "name": "Information"
