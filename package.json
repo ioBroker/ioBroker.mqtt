@@ -21,11 +21,11 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^2.15.1",
+    "mqtt": "^2.13.0",
     "websocket-stream": "^5.0.1",
     "async": "^2.5.0",
     "ws": "^3.2.0",
-    "mqtt-connection": "^3.2.0"
+    "mqtt-connection": "^3.1.0"
   },
   "devDependencies": {
     "grunt": "^1.0.1",
