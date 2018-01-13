@@ -102,6 +102,10 @@ The broker was tested with following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Changelog
+### 1.4.0 (2018-01-13)
+* (bluefox) Convert error is caught
+* (bluefox) Ready for admin3
+
 ### 1.3.3 (2017-10-15)
 * (bluefox) Fix sending of QOS=2 if server
 
@@ -256,7 +260,7 @@ The broker was tested with following clients:
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2017, bluefox<dogafox@gmail.com>
+Copyright (c) 2014-2018, bluefox<dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
