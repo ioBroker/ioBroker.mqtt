@@ -4,8 +4,19 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.3.3",
+        "version": "1.4.0",
         "news": {
+            "1.4.0": {
+                "en": "Convert error is caught\nReady for admin3",
+                "de": "Konvertierungsfehler wird abgefangen\nBereit für admin3",
+                "ru": "Ошибка конвертирования\nГотово для admin3",
+                "pt": "O erro de conversão é detectado\nPronto para admin3",
+                "nl": "Converteerfout wordt gepakt\nKlaar voor admin3",
+                "fr": "L'erreur de conversion est interceptée\nPrêt pour admin3",
+                "it": "L'errore di conversione viene catturato\nPronto per admin3",
+                "es": "El error de conversión está atrapado\nListo para admin3",
+                "pl": "Przekonwertowano błąd został złapany\nGotowy na admin3"
+            },
             "1.3.3": {
                 "en": "Fix sending of QOS=2 if server",
                 "de": "Korregiere versendung von Packeten mit QOS=2 bei Server",
@@ -35,43 +46,30 @@
                 "en": "additional debug output",
                 "de": "Debug-Ausgaben hinzugefügt",
                 "ru": "Добавлена отладочная информация"
-            },
-            "1.2.1": {
-                "en": "fix publish on start",
-                "de": "Korregiere Publish beim Start",
-                "ru": "Исправлен publish при старте"
-            },
-            "1.2.0": {
-                "en": "implementation of LWT for server\nupdate mqtt package version",
-                "de": "Implementierung von LWT für Sevrer\nBenutzung von neuem MQTT Paket",
-                "ru": "Поддержка LWT для сервера\nИспользование последней версии MQTT пакета"
-            },
-            "1.1.2": {
-                "en": "fix authentication in server",
-                "de": "Korregiere Kennwortprüfung im Broker",
-                "ru": "Исправлена проверка пароля"
-            },
-            "1.1.1": {
-                "en": "do not parse JSON states, that do not have attribute val to support other systems",
-                "de": "Parse die JSON Meldungen nicht, falls die kein val beinhalten. Um andere Systeme zu unterstützen",
-                "ru": "Не парсить JSON объекты, если они не содержат атрибут val для поддержки других систем"
-            },
-            "1.1.0": {
-                "en": "add new setting: Use different topic names for set and get",
-                "de": "add new setting: Use different topic names for set and get",
-                "ru": "add new setting: Use different topic names for set and get"
-            },
-            "1.0.4": {
-                "en": "convert values like +58,890 into numbers too",
-                "de": "convert values like +58,890 into numbers too",
-                "ru": "convert values like +58,890 into numbers too"
             }
         },
-        "title": "MQTT Adapter",
+        "title": "MQTT Broker/Client",
+        "titleLang": {
+            "en": "MQTT Broker/Client",
+            "de": "MQTT Broker/Client",
+            "ru": "Брокер MQTT/Клиент",
+            "pt": "MQTT Broker/Cliente",
+            "nl": "MQTT-makelaar/klant",
+            "fr": "Courtier MQTT/Client",
+            "it": "Broker/Cliente MQTT",
+            "es": "Agente MQTT/Cliente",
+            "pl": "Broker/klient MQTT"
+        },
         "desc": {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
             "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
-            "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера"
+            "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера",
+            "pt": "Este adaptador permite enviar e receber mensagens MQTT da ioBroker e ser um corretor",
+            "nl": "Met deze adapter kunt u MQTT-berichten van ioBroker verzenden en ontvangen en makelaar worden",
+            "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
+            "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
+            "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
+            "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera"
         },
         "authors": [
             "bluefox <dogafox@gmail.com>"
@@ -87,6 +85,7 @@
         "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
         "loglevel": "info",
         "icon": "mqtt.png",
+        "materialize": true,
         "keywords": [
             "notification",
             "MQTT",

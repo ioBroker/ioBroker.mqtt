@@ -2,7 +2,7 @@
  *
  *      ioBroker mqtt Adapter
  *
- *      (c) 2014-2017 bluefox
+ *      (c) 2014-2018 bluefox
  *
  *      MIT License
  *
@@ -127,7 +127,7 @@ function readStatesForPattern(pattern) {
         }
         // If all patters answered, start client or server
         if (!--cnt) {
-            if (adapter.config.type == 'client') {
+            if (adapter.config.type === 'client') {
                 client = new require(__dirname + '/lib/client')(adapter, states);
             } else {
                 server = new require(__dirname + '/lib/server')(adapter, states);

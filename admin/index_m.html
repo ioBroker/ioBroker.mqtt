@@ -1,0 +1,423 @@
+<html>
+<head>
+<!-- Materialze style -->
+<link rel="stylesheet" type="text/css" href="../../css/adapter.css"/>
+<link rel="stylesheet" type="text/css" href="../../lib/css/materialize.css">
+
+<script type="text/javascript" src="../../lib/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="../../socket.io/socket.io.js"></script>
+
+<script type="text/javascript" src="../../js/translate.js"></script>
+<script type="text/javascript" src="../../lib/js/materialize.js"></script>
+<script type="text/javascript" src="../../js/adapter-settings.js"></script>
+<script type="text/javascript" src="words.js"></script>
+
+<script type="text/javascript">
+	var onChange;
+
+    function encrypt(key, value) {
+        var result = '';
+        for(var i = 0; i < value.length; ++i) {
+            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+        }
+        return result;
+    }
+
+    function decrypt(key, value) {
+        var result = '';
+        for(var i = 0; i < value.length; ++i) {
+            result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+        }
+        return result;
+    }
+
+    function showHideSettings() {
+        if ($('#type').val() === 'client') {
+            $('#_clientId').show();
+            $('#_url').show();
+            $('#test').show();
+            $('#_patterns').show();
+            $('#_certPublic').hide();
+            $('#_certPrivate').hide();
+            $('#_certChained').hide();
+            $('#_webSocket').hide();
+            $('#_useChunkPatch').hide();
+            $('#_publishOnSubscribe').hide();
+        } else {
+            $('#_useChunkPatch').show();
+            $('#_clientId').hide();
+            $('#_url').hide();
+            $('#test').hide();
+            $('#_patterns').hide();
+            $('#_webSocket').show();
+
+            if ($('#ssl').prop('checked')) {
+                $('#_certPublic').show();
+                $('#_certPrivate').show();
+                $('#_certChained').show();
+            } else {
+                $('#_certPublic').hide();
+                $('#_certPrivate').hide();
+                $('#_certChained').hide();
+            }
+
+            $('#_publishOnSubscribe').show();
+        }
+    }
+
+    function init() {
+        showHideSettings();
+        $('#type').on('change', showHideSettings);
+        $('#ssl').on('change', showHideSettings);
+        $('#test').on('click', test);
+    }
+
+    function setValue(id, value) {
+        var $value = $('#' + id + '.value');
+        if ($value.attr('type') === 'checkbox') {
+            $value.prop('checked', value).change(function() {
+                onChange();
+            });
+        } else {
+            $value.val(value).change(function() {
+                onChange();
+            }).keyup(function() {
+                // Check that only numbers entered
+                if ($(this).hasClass('number')) {
+                    var val = $(this).val();
+                    if (val) {
+                        var newVal = '';
+                        for (var i = 0; i < val.length; i++) {
+                            if (val[i] >= '0' && val[i] <= '9') {
+                                newVal += val[i];
+                            }
+                        }
+
+                        if (val != newVal) $(this).val(newVal);
+                    }
+                }
+
+                onChange();
+            });
+        }
+    }
+
+    function loadHelper(settings, param, subparam) {
+        if (!settings) return;
+
+		if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
+
+        if (subparam && param) {
+            for (var key in settings[param][subparam]) {
+                if (!settings[param][subparam].hasOwnProperty(key)) continue;
+                if (typeof settings[param][subparam][key] !== 'object') {
+                    setValue(param + '_' + subparam + '_' + key, settings[param][subparam][key]);
+                } else {
+                    alert('4th level is not supported');
+                }
+            }
+        } else if (param) {
+            for (var key in settings[param]) {
+                if (!settings[param].hasOwnProperty(key)) continue;
+                if (typeof settings[param][key] !== 'object') {
+                    setValue(param + '_' + key, settings[param][key]);
+                } else {
+                    loadHelper(settings, param, key);
+                }
+            }
+        } else {
+            for (var key in settings) {
+                if (!settings.hasOwnProperty(key)) continue;
+                if (typeof settings[key] !== 'object') {
+                    if (key === 'pass') {
+                        settings[key] = decrypt('Zgfr56gFe87jJOM', settings[key]);
+                    }
+                    setValue(key, settings[key]);
+                } else {
+                    loadHelper(settings, key);
+                }
+            }
+        }
+    }
+
+    // the function loadSettings has to exist ...
+    function load(settings, _onChange) {
+		onChange = _onChange;
+        settings.sendAckToo = settings.sendAckToo || false;
+        settings.webSocket  = settings.webSocket  || false;
+        if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
+        if (settings.sendInterval === undefined) settings.sendInterval = 10;
+        settings.clientId   = settings.clientId   || '';
+        loadHelper(settings);
+        $('#pass_confirm').val($('#pass').val());
+
+        init();
+        fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
+        fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
+        fillSelectCertificates('#certChained', 'chained', settings.certChained);
+		onChange(false);
+    }
+
+    function test() {
+        // var newValue = JSON.stringify(getSettings());
+        if (!common.enabled) {
+            showToast(null, _('Enable first the adapter to test client.'));
+            return;
+        }
+        if (changed) {
+            showToast(null, _('First save the adapter'));
+            return;
+        }
+        $('#test').addClass('disabled');
+        sendTo('mqtt.' + instance, 'test', getSettings(), function (result) {
+            $('#test').removeClass('disabled');
+            showMessage(_(result), _('Result: '));
+        });
+    }
+
+    function saveHelper(obj, id, value) {
+        var ids = id.split('_');
+
+        if (ids.length === 1) {
+            if (ids[0] === 'pass') value = encrypt('Zgfr56gFe87jJOM', value);
+            obj[id] = value;
+        } else if (ids.length === 2) {
+            if (!obj[ids[0]]) obj[ids[0]] = {};
+            obj[ids[0]][ids[1]] = value;
+        } else if (ids.length === 3) {
+            if (!obj[ids[0]]) obj[ids[0]] = {};
+            if (!obj[ids[0]][ids[1]]) obj[ids[0]][ids[1]] = {};
+            obj[ids[0]][ids[1]][ids[2]] = value;
+        }
+        return obj;
+    }
+
+    function getSettings() {
+        var obj = {};
+        $('.value').each(function () {
+            var $this = $(this);
+            var id = $this.attr('id');
+
+            if ($this.attr('type') === 'checkbox') {
+                obj = saveHelper(obj, id, $this.prop('checked'))
+            } else {
+                obj = saveHelper(obj, id, $this.val())
+            }
+        });
+        return obj;
+    }
+
+    function save(callback) {
+        if ($('#pass').val() !== $('#pass_confirm').val()) {
+            showMessage(_('Password confirmation is not equal with password'));
+            return;
+        }
+        if ($('#ssl').prop('checked') && $('#type').val() === 'server' && (!$('#certPrivate').val() || !$('#certPublic').val())) {
+            showMessage(_('Set certificates or load it first in the system settings (right top).'));
+            return;
+        }
+
+        callback(getSettings());
+    }
+</script>
+
+<style>
+    .sub-title {
+        margin-top: 2rem!important;
+        padding: 0.5rem;
+        background: #64b5f6;
+        color: white;
+    }
+    .main-page {
+        height: 100%;
+        overflow: hidden;
+        margin-bottom: 0 !important;
+    }
+    .page {
+        height: calc(100% - 34px) !important;
+    }
+</style>
+</head>
+<body>
+<!-- you have to put your config page in a div with id adapter-container -->
+<div class="m adapter-container">
+    <div class="main-page row">
+        <div class="col s12">
+            <ul class="tabs">
+                <li class="tab col s2"><a href="#tab-main" class="translate active">Connection</a></li>
+                <li class="tab col s2"><a href="#tab-mqtt" class="translate">MQTT Settings</a></li>
+            </ul>
+        </div>
+        <div id="tab-main" class="col s12 page">
+            <div class="row">
+                <div class="col s12 m4 l2">
+                    <img src="mqtt.png" class="logo">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <h6 class="translate sub-title">Main settings</h6>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m8">
+                    <select id="type" class="value">
+                        <option value="client" class="translate">Client</option>
+                        <option value="server" class="translate">Server</option>
+                    </select>
+                    <label class="translate" for="type">Type:</label>
+                </div>
+                <div class="col s12 m4"  id="_webSocket">
+                    <input type="checkbox" id="webSocket" class="value filled-in"/>
+                    <span class="translate" for="webSocket">Use WebSockets:</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <h6 class="translate sub-title">Connection settings</h6>
+                </div>
+            </div>
+            <div class="row" id="_url">
+                <div class="col s12 m8">
+                    <input type="text" id="url" class="value"/>
+                    <label class="translate" for="url">URL:</label></td>
+                </div>
+                <div class="col s12 m4">
+                    <input id="port" type="number" min="1" max="65565" class="value"/>
+                    <label class="translate" for="port">Port:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m3">
+                    <input id="ssl" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="ssl">Secure:</span>
+                </div>
+                <div class="col s12 m3" id="_certPublic">
+                    <select id="certPublic" class="value"></select>
+                    <label class="translate" for="certPublic">Public certificate:</label>
+                </div>
+                <div class="col s12 m3" id="_certPrivate">
+                    <select id="certPrivate" class="value"></select>
+                    <label class="translate" for="certPrivate">Private certificate:</label>
+                </div>
+                <div class="col s12 m3" id="_certChained">
+                    <select id="certChained" class="value"></select>
+                    <label class="translate" for="certChained">Chained certificate:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <h6 class="translate sub-title">Authentication settings</h6>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m6">
+                    <input id="user" type="text" size="17" class="value"/>
+                    <label class="translate" for="user">User:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m6">
+                    <input id="pass" type="password" size="17" class="value"/>
+                    <label class="translate" for="pass">Password:</label>
+                </div>
+                <div class="col s12 m6">
+                    <input id="pass_confirm" type="password" size="17"/>
+                    <label class="translate" for="pass_confirm">Password confirmation:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <a id="test" class="btn"><span class="translate">Test connection</span></a>
+                </div>
+            </div>
+        </div>
+        <div id="tab-mqtt">
+            <div class="row"  id="_patterns">
+                <div class="col s12">
+                    <input id="patterns" type="text" size="17" class="value"/>
+                    <label for="patterns"><span class="translate" >Patterns:</span> (<span class="translate">Divided by comma</span>)</label>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="publish" type="text" size="17" class="value"/>
+                    <label for="publish"><span class="translate" >Mask to publish own states:</span> (<span class="translate">Mask to publish</span>)</label>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="onchange" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="onchange">Store only on change:</span>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="publishAllOnStart" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
+                </div>
+            </div>
+            <div class="row"  id ="_publishOnSubscribe">
+                <div class="col s12">
+                    <input id="publishOnSubscribe" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="publishOnSubscribe">Publish states on subscribe:</span>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="prefix" type="text" size="17" class="value"/>
+                    <label class="translate" for="prefix">Prefix for topics:</label>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="debug" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="debug">Trace output for every message:</span>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="sendAckToo" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="sendAckToo">Send states (ack=true) too:</span>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="extraSet" type="checkbox" class="value filled-in"/>
+                    <span class="translate" for="extraSet">Use different topic names for set and get:</span>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="maxTopicLength" class="value" size="17"/>
+                    <label for="maxTopicLength"><span class="translate">Max topic length:</span> (<span class="translate">chars</span>)</label>
+                </div>
+            </div>
+            <div class="row"  id="_clientId">
+                <div class="col s12">
+                    <input id="clientId" class="value" size="17"/>
+                    <label class="translate" for="clientId">Client ID:</label>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="sendOnStartInterval" class="value" size="17"/>
+                    <label for="sendOnStartInterval"><span class="translate">Interval before send topics by connection:</span> (<span class="translate">ms</span>)</label>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col s12">
+                    <input id="sendInterval" class="value" size="17"/>
+                    <label for="sendInterval"><span class="translate">Send interval:</span> (<span class="translate">ms</span>)</label>
+            </div>
+            <div class="row"  id="_useChunkPatch">
+                <div class="col s12">
+                    <input id="useChunkPatch" class="value filled-in" type="checkbox"/>
+                    <span class="translate" for="useChunkPatch">Use chunk patch:</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
