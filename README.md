@@ -102,7 +102,7 @@ The broker was tested with following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Changelog
-### 1.4.0 (2018-01-13)
+### 1.4.1 (2018-01-13)
 * (bluefox) Convert error is caught
 * (bluefox) Ready for admin3
 

@@ -4,9 +4,9 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.4.0",
+        "version": "1.4.1",
         "news": {
-            "1.4.0": {
+            "1.4.1": {
                 "en": "Convert error is caught\nReady for admin3",
                 "de": "Konvertierungsfehler wird abgefangen\nBereit für admin3",
                 "ru": "Ошибка конвертирования\nГотово для admin3",
