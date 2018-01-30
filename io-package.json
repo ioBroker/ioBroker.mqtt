@@ -4,8 +4,19 @@
         "require": {
             "js-controller": ">=0.10.0"
         },
-        "version": "1.4.1",
+        "version": "1.4.2",
         "news": {
+            "1.4.2": {
+                "en": "Admin3 settings are corrected",
+                "de": "Admin3-Einstellungen sind korrigiert",
+                "ru": "Настройки Admin3 исправлены",
+                "pt": "As configurações do Admin3 são corrigidas",
+                "nl": "Admin3-instellingen zijn gecorrigeerd",
+                "fr": "Les paramètres Admin3 sont corrigés",
+                "it": "Le impostazioni di Admin3 sono corrette",
+                "es": "La configuración de Admin3 está corregida",
+                "pl": "Ustawienia Admin3 zostały poprawione"
+            },
             "1.4.1": {
                 "en": "Convert error is caught\nReady for admin3",
                 "de": "Konvertierungsfehler wird abgefangen\nBereit für admin3",
