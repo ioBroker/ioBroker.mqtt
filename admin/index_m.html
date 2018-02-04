@@ -13,7 +13,7 @@
 <script type="text/javascript" src="words.js"></script>
 
 <script type="text/javascript">
-	var onChange;
+    var onChange;
 
     function encrypt(key, value) {
         var result = '';
@@ -104,8 +104,8 @@
 
     function loadHelper(settings, param, subparam) {
         if (!settings) return;
-
-		if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
+        
+        if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
 
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
@@ -142,7 +142,7 @@
 
     // the function loadSettings has to exist ...
     function load(settings, _onChange) {
-		onChange = _onChange;
+        onChange = _onChange;
         settings.sendAckToo = settings.sendAckToo || false;
         settings.webSocket  = settings.webSocket  || false;
         if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
@@ -155,7 +155,8 @@
         fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
         fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
         fillSelectCertificates('#certChained', 'chained', settings.certChained);
-		onChange(false);
+        onChange(false);
+        if (M) M.updateTextFields();
     }
 
     function test() {
@@ -239,186 +240,156 @@
 </style>
 </head>
 <body>
-<!-- you have to put your config page in a div with id adapter-container -->
-<div class="m adapter-container">
-    <div class="main-page row">
-        <div class="col s12">
-            <ul class="tabs">
-                <li class="tab col s2"><a href="#tab-main" class="translate active">Connection</a></li>
-                <li class="tab col s2"><a href="#tab-mqtt" class="translate">MQTT Settings</a></li>
-            </ul>
-        </div>
-        <div id="tab-main" class="col s12 page">
-            <div class="row">
-                <div class="col s12 m4 l2">
-                    <img src="mqtt.png" class="logo">
-                </div>
+    <!-- you have to put your config page in a div with id adapter-container -->
+    <div class="m adapter-container">
+        <div class="main-page row">
+            <div class="col s12">
+                <ul class="tabs">
+                    <li class="tab col s4"><a href="#tab-main" class="translate active">Connection</a></li>
+                    <li class="tab col s4"><a href="#tab-mqtt" class="translate">MQTT Settings</a></li>
+                </ul>
             </div>
-            <div class="row">
-                <div class="col s12">
-                    <h6 class="translate sub-title">Main settings</h6>
+            <div id="tab-main" class="col s12 page">
+                <div class="row">
+                    <div class="col s6">
+                        <img src="mqtt.png" class="logo">
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m8">
-                    <select id="type" class="value">
+                <div class="row">
+                    <div class="input-field col s12 m6 l4">
+                        <select id="type" class="value">
                         <option value="client" class="translate">Client</option>
                         <option value="server" class="translate">Server</option>
                     </select>
-                    <label class="translate" for="type">Type:</label>
+                        <label class="translate" for="type">Type:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4" id="_webSocket">
+                        <input type="checkbox" id="webSocket" class="value filled-in" />
+                        <span class="translate" for="webSocket">Use WebSockets:</span>
+                    </div>
                 </div>
-                <div class="col s12 m4"  id="_webSocket">
-                    <input type="checkbox" id="webSocket" class="value filled-in"/>
-                    <span class="translate" for="webSocket">Use WebSockets:</span>
+                <h6 class="translate sub-title">Connection settings</h6>
+                <div class="row">
+                    <div class="input-field col s12 m6 l4" id="_url">
+                        <input type="text" id="url" class="value" />
+                        <label class="translate" for="url">URL:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="port" type="number" min="1" max="65565" class="value" />
+                        <label class="translate" for="port">Port:</label>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <h6 class="translate sub-title">Connection settings</h6>
+                <div class="row">
+                    <div class="input-field col s12 m12">
+                        <input id="ssl" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="ssl">Secure:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l4" id="_certPublic">
+                        <select id="certPublic" class="value"></select>
+                        <label class="translate" for="certPublic">Public certificate:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4" id="_certPrivate">
+                        <select id="certPrivate" class="value"></select>
+                        <label class="translate" for="certPrivate">Private certificate:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4" id="_certChained">
+                        <select id="certChained" class="value"></select>
+                        <label class="translate" for="certChained">Chained certificate:</label>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m8" id="_url">
-                    <input type="text" id="url" class="value"/>
-                    <label class="translate" for="url">URL:</label></td>
+                <h6 class="translate sub-title">Authentication settings</h6>
+                <div class="row">
+                    <div class="input-field col s12 m6 l4">
+                        <input id="user" type="text" size="17" class="value" />
+                        <label class="translate" for="user">User:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="pass" type="password" size="17" class="value" />
+                        <label class="translate" for="pass">Password:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="pass_confirm" type="password" size="17" />
+                        <label class="translate" for="pass_confirm">Password confirmation:</label>
+                    </div>
                 </div>
-                <div class="col s12 m4">
-                    <input id="port" type="number" min="1" max="65565" class="value"/>
-                    <label class="translate" for="port">Port:</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m3">
-                    <input id="ssl" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="ssl">Secure:</span>
-                </div>
-                <div class="col s12 m3" id="_certPublic">
-                    <select id="certPublic" class="value"></select>
-                    <label class="translate" for="certPublic">Public certificate:</label>
-                </div>
-                <div class="col s12 m3" id="_certPrivate">
-                    <select id="certPrivate" class="value"></select>
-                    <label class="translate" for="certPrivate">Private certificate:</label>
-                </div>
-                <div class="col s12 m3" id="_certChained">
-                    <select id="certChained" class="value"></select>
-                    <label class="translate" for="certChained">Chained certificate:</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12">
-                    <h6 class="translate sub-title">Authentication settings</h6>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m6">
-                    <input id="user" type="text" size="17" class="value"/>
-                    <label class="translate" for="user">User:</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m6">
-                    <input id="pass" type="password" size="17" class="value"/>
-                    <label class="translate" for="pass">Password:</label>
-                </div>
-                <div class="col s12 m6">
-                    <input id="pass_confirm" type="password" size="17"/>
-                    <label class="translate" for="pass_confirm">Password confirmation:</label>
+                <div class="row">
+                    <div class="col s12">
+                        <a id="test" class="btn"><span class="translate">Test connection</span></a>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col s12">
-                    <a id="test" class="btn"><span class="translate">Test connection</span></a>
+            <div id="tab-mqtt" class="col s12 page">
+                <div class="row">
+                    <div class="col s6">
+                        <img src="mqtt.png" class="logo">
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div id="tab-mqtt" class="col s12 page">
-            <div class="row"  id="_patterns">
-                <div class="col s12">
-                    <input id="patterns" type="text" size="17" class="value"/>
-                    <label for="patterns"><span class="translate" >Patterns:</span> (<span class="translate">Divided by comma</span>)</label>
+                <div class="row">
+                    <div id="_patterns" class="input-field col s12 m6 l4">
+                        <input id="patterns" type="text" size="17" class="value" />
+                        <label for="patterns" class="translate">Patterns:</label> (
+                        <span class="translate">Divided by comma</span>)
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="prefix" type="text" size="17" class="value" />
+                        <label class="translate" for="prefix">Prefix for topics:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="publish" type="text" size="17" class="value" />
+                        <label for="publish" class="translate">Mask to publish own states:</label> (
+                        <span class="translate">Mask to publish</span>)
+                    </div>
                 </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="publish" type="text" size="17" class="value"/>
-                    <label for="publish"><span class="translate" >Mask to publish own states:</span> (<span class="translate">Mask to publish</span>)</label>
+                <div class="row">
+                    <div class="input-field col s12 m6 l4">
+                        <input id="onchange" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="onchange">Store only on change:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="publishAllOnStart" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
+                    </div>
+                    <div id="_publishOnSubscribe" class="input-field col s12 m6 l4">
+                        <input id="publishOnSubscribe" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="publishOnSubscribe">Publish states on subscribe:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="debug" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="debug">Trace output for every message:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="sendAckToo" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="sendAckToo">Send states (ack=true) too:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="extraSet" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="extraSet">Use different topic names for set and get:</span>
+                    </div>
                 </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="onchange" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="onchange">Store only on change:</span>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="publishAllOnStart" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
-                </div>
-            </div>
-            <div class="row"  id ="_publishOnSubscribe">
-                <div class="col s12">
-                    <input id="publishOnSubscribe" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="publishOnSubscribe">Publish states on subscribe:</span>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="prefix" type="text" size="17" class="value"/>
-                    <label class="translate" for="prefix">Prefix for topics:</label>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="debug" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="debug">Trace output for every message:</span>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="sendAckToo" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="sendAckToo">Send states (ack=true) too:</span>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="extraSet" type="checkbox" class="value filled-in"/>
-                    <span class="translate" for="extraSet">Use different topic names for set and get:</span>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="maxTopicLength" class="value" size="17"/>
-                    <label for="maxTopicLength"><span class="translate">Max topic length:</span> (<span class="translate">chars</span>)</label>
-                </div>
-            </div>
-            <div class="row"  id="_clientId">
-                <div class="col s12">
-                    <input id="clientId" class="value" size="17"/>
-                    <label class="translate" for="clientId">Client ID:</label>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="sendOnStartInterval" class="value" size="17"/>
-                    <label for="sendOnStartInterval"><span class="translate">Interval before send topics by connection:</span> (<span class="translate">ms</span>)</label>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col s12">
-                    <input id="sendInterval" class="value" size="17"/>
-                    <label for="sendInterval"><span class="translate">Send interval:</span> (<span class="translate">ms</span>)</label>
-                </div>
-            </div>
-            <div class="row"  id="_useChunkPatch">
-                <div class="col s12">
-                    <input id="useChunkPatch" class="value filled-in" type="checkbox"/>
-                    <span class="translate" for="useChunkPatch">Use chunk patch:</span>
+                <div class="row">
+                    <div id="_clientId" class="input-field col s12 m6 l4">
+                        <input id="clientId" type="text" class="value" size="17" />
+                        <label class="translate" for="clientId">Client ID:</label>
+                    </div>
+                    <div id="_useChunkPatch" class="input-field col s12 m6 l4">
+                        <input id="useChunkPatch" class="value filled-in" type="checkbox" />
+                        <span class="translate" for="useChunkPatch">Use chunk patch:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="maxTopicLength" type="text" class="value" size="17" />
+                        <label for="maxTopicLength" class="translate">Max topic length:(<span class="translate">chars</span>)</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="sendOnStartInterval" type="text" class="value" size="17" />
+                        <label for="sendOnStartInterval"><span class="translate">Interval before send topics by connection:</span> (<span class="translate">ms</span>)</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4">
+                        <input id="sendInterval" type="text" class="value" size="17" />
+                        <label for="sendInterval"><span class="translate">Send interval:</span> (<span class="translate">ms</span>)</label>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 </html>
