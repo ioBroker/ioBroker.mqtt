@@ -105,6 +105,7 @@ The broker was tested with following clients:
 ### 1.5.0 (2018-03-05)
 * (bluefox) The patch for wifi-iot removed
 * (bluefox) the mqtt library updated
+* (bluefox) implement QoS>0
 
 ### 1.4.2 (2018-01-30)
 * (bluefox) Admin3 settings are corrected
