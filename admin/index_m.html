@@ -41,10 +41,8 @@
             $('#_certPrivate').hide();
             $('#_certChained').hide();
             $('#_webSocket').hide();
-            $('#_useChunkPatch').hide();
             $('#_publishOnSubscribe').hide();
         } else {
-            $('#_useChunkPatch').show();
             $('#_clientId').hide();
             $('#_url').hide();
             $('#test').hide();
@@ -105,8 +103,6 @@
     function loadHelper(settings, param, subparam) {
         if (!settings) return;
         
-        if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
-
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
                 if (!settings[param][subparam].hasOwnProperty(key)) continue;
@@ -370,10 +366,6 @@
                     <div id="_clientId" class="input-field col s12 m6 l4">
                         <input id="clientId" type="text" class="value" size="17" />
                         <label class="translate" for="clientId">Client ID:</label>
-                    </div>
-                    <div id="_useChunkPatch" class="input-field col s12 m6 l4">
-                        <input id="useChunkPatch" class="value filled-in" type="checkbox" />
-                        <span class="translate" for="useChunkPatch">Use chunk patch:</span>
                     </div>
                     <div class="input-field col s12 m6 l4">
                         <input id="maxTopicLength" type="text" class="value" size="17" />

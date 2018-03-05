@@ -1,7 +1,7 @@
 {
   "name": "iobroker.mqtt",
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "author": "bluefox <dogafox@gmail.com>",
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository": {
@@ -21,15 +21,16 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^2.15.1",
-    "websocket-stream": "^5.1.1",
+    "mqtt": "^2.16.0",
+    "websocket-stream": "^5.1.2",
     "async": "^2.6.0",
-    "ws": "^3.2.0",
-    "mqtt-connection": "^3.2.0"
+    "ws": "^3.3.3",
+    "mqtt-connection": "^3.2.0",
+    "process-nextick-args": "^2.0.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
-    "mocha": "^4.1.0",
+    "mocha": "^5.0.1",
     "chai": "^4.1.2"
   },
   "bugs": {

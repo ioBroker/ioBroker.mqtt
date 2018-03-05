@@ -1,5 +1,5 @@
 ![Logo](admin/mqtt.png)
-ioBroker MQTT Adapter
+# ioBroker MQTT
 ==============
 
 [![NPM version](http://img.shields.io/npm/v/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
@@ -102,6 +102,10 @@ The broker was tested with following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Changelog
+### 1.5.0 (2018-03-05)
+* (bluefox) The patch for wifi-iot removed
+* (bluefox) the mqtt library updated
+
 ### 1.4.2 (2018-01-30)
 * (bluefox) Admin3 settings are corrected
 

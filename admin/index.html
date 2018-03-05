@@ -42,10 +42,8 @@
             $('#_certPrivate').hide();
             $('#_certChained').hide();
             $('#_webSocket').hide();
-            $('#_useChunkPatch').hide();
             $('#_publishOnSubscribe').hide();
         } else {
-            $('#_useChunkPatch').show();
             $('#_clientId').hide();
             $('#_url').hide();
             $('#test').hide();
@@ -105,8 +103,6 @@
 
     function loadHelper(settings, param, subparam) {
         if (!settings) return;
-
-		if (settings.useChunkPatch === undefined) settings.useChunkPatch = false;
 
         if (subparam && param) {
             for (var key in settings[param][subparam]) {
@@ -373,11 +369,6 @@
                     <td><label class="translate" for="sendInterval">Send interval:</label></td>
                     <td><input id="sendInterval" class="value" size="17"/></td>
                     <td class="translate">ms</td>
-                </tr>
-                <tr id="_useChunkPatch">
-                    <td><label class="translate" for="useChunkPatch">Use chunk patch:</label></td>
-                    <td><input id="useChunkPatch" class="value" type="checkbox"/></td>
-                    <td></td>
                 </tr>
             </table>
         </div>
