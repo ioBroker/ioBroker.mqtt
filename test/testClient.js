@@ -1,16 +1,16 @@
-var expect = require('chai').expect;
-var setup  = require(__dirname + '/lib/setup');
+var expect  = require('chai').expect;
+var setup   = require(__dirname + '/lib/setup');
 
 var objects = null;
 var states  = null;
 var MqttServer;
 var mqttClient = null;
 var mqttServer = null;
-var connected = false;
+var connected  = false;
 var lastReceivedTopic;
 var lastReceivedMessage;
 
-var rules = {
+const rules = {
     '/mqtt/0/test1': 'mqtt.0.test1',
     'mqtt/0/test2':  'mqtt.0.test2',
     'test3':         'mqtt.0.test3',
@@ -25,11 +25,11 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     var mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
-        if (id[0] == '.') id = id.substring(1);
+        if (id[0] === '.') id = id.substring(1);
     } else {
         id = _expectedId;
     }
-    if (id.indexOf('.') == -1) id = 'mqtt.0.' + id;
+    if (id.indexOf('.') === -1) id = 'mqtt.0.' + id;
 
     mqttClient.publish(mqttid, value);
 
@@ -39,7 +39,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
             expect(obj._id).to.be.equal(id);
             expect(obj.type).to.be.equal('state');
 
-            if (mqttid.indexOf('mqtt') != -1) {
+            if (mqttid.indexOf('mqtt') !== -1) {
                 expect(obj.native.topic).to.be.equal(mqttid);
             }
 
@@ -54,7 +54,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 }
 
 function checkAdapter2Mqtt(id, mqttid, _it, _done) {
-    var value = 'NewRoger' + Math.round(Math.random() * 100);
+    const value = 'NewRoger' + Math.round(Math.random() * 100);
     _it.timeout(5000);
 
     console.log('Send ' + id);
@@ -114,8 +114,8 @@ function checkConnectionToServer(value, cb, counter) {
 describe('Test MQTT client', function() {
     before('MQTT client: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
-        var clientConnected = false;
-        var brokerStarted   = false;
+        var clientConnected  = false;
+        var brokerStarted    = false;
         setup.adapterStarted = false;
 
         setup.setupController(function () {
@@ -141,7 +141,7 @@ describe('Test MQTT client', function() {
 
         // start mqtt server
         MqttServer = require(__dirname + '/lib/mqttServer.js');
-        var MqttClient = require(__dirname + '/lib/mqttClient.js');
+        const MqttClient = require(__dirname + '/lib/mqttClient.js');
 
         mqttServer = new MqttServer({user: 'user', pass: 'pass1'});
 
@@ -179,17 +179,17 @@ describe('Test MQTT client', function() {
         }, 1000);
     });
 
-    for (var r in rules) {
+    for (let rr in rules) {
         (function(id, topic) {
             it('MQTT client: Check receive ' + id, function (done) {
                 checkMqtt2Adapter(id, topic, this, done);
             });
-        })(r, rules[r]);
+        })(rr, rules[rr]);
     }
 
-    for (var r in rules) {
+    for (let r in rules) {
         (function(id, topic) {
-            if (topic.indexOf('mqtt') != -1) {
+            if (topic.indexOf('mqtt') !== -1) {
                 it('MQTT client: Check send ' + topic, function (done) {
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
