@@ -141,6 +141,7 @@
         onChange = _onChange;
         settings.sendAckToo = settings.sendAckToo || false;
         settings.webSocket  = settings.webSocket  || false;
+        settings.defaultQoS = settings.defaultQoS || 0;
         if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
         if (settings.sendInterval === undefined) settings.sendInterval = 10;
         settings.clientId   = settings.clientId   || '';
@@ -201,6 +202,8 @@
                 obj = saveHelper(obj, id, $this.val())
             }
         });
+        obj.defaultQoS = parseInt(obj.defaultQoS, 10) || 0;
+
         return obj;
     }
 
@@ -254,9 +257,9 @@
                 <div class="row">
                     <div class="input-field col s12 m6 l4">
                         <select id="type" class="value">
-                        <option value="client" class="translate">Client</option>
-                        <option value="server" class="translate">Server</option>
-                    </select>
+                            <option value="client" class="translate">Client</option>
+                            <option value="server" class="translate">Server</option>
+                        </select>
                         <label class="translate" for="type">Type:</label>
                     </div>
                     <div class="input-field col s12 m6 l4" id="_webSocket">
@@ -321,63 +324,77 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div id="_patterns" class="input-field col s12 m6 l4">
+                    <div id="_patterns" class="input-field col s12 m6 l3">
                         <input id="patterns" type="text" size="17" class="value" />
                         <label for="patterns" class="translate">Patterns:</label> (
                         <span class="translate">Divided by comma</span>)
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="prefix" type="text" size="17" class="value" />
                         <label class="translate" for="prefix">Prefix for topics:</label>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="publish" type="text" size="17" class="value" />
                         <label for="publish" class="translate">Mask to publish own states:</label> (
                         <span class="translate">Mask to publish</span>)
                     </div>
                 </div>
                 <div class="row">
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="onchange" type="checkbox" class="value filled-in" />
                         <span class="translate" for="onchange">Store only on change:</span>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="publishAllOnStart" type="checkbox" class="value filled-in" />
                         <span class="translate" for="publishAllOnStart">Publish all states at start:</span>
                     </div>
-                    <div id="_publishOnSubscribe" class="input-field col s12 m6 l4">
+                    <div id="_publishOnSubscribe" class="input-field col s12 m6 l3">
                         <input id="publishOnSubscribe" type="checkbox" class="value filled-in" />
                         <span class="translate" for="publishOnSubscribe">Publish states on subscribe:</span>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="debug" type="checkbox" class="value filled-in" />
                         <span class="translate" for="debug">Trace output for every message:</span>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="sendAckToo" type="checkbox" class="value filled-in" />
                         <span class="translate" for="sendAckToo">Send states (ack=true) too:</span>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="extraSet" type="checkbox" class="value filled-in" />
                         <span class="translate" for="extraSet">Use different topic names for set and get:</span>
                     </div>
                 </div>
                 <div class="row">
-                    <div id="_clientId" class="input-field col s12 m6 l4">
+                    <div id="_clientId" class="input-field col s12 m6 l3">
                         <input id="clientId" type="text" class="value" size="17" />
                         <label class="translate" for="clientId">Client ID:</label>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="maxTopicLength" type="text" class="value" size="17" />
                         <label for="maxTopicLength" class="translate">Max topic length:(<span class="translate">chars</span>)</label>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="sendOnStartInterval" type="text" class="value" size="17" />
                         <label for="sendOnStartInterval"><span class="translate">Interval before send topics by connection:</span> (<span class="translate">ms</span>)</label>
                     </div>
-                    <div class="input-field col s12 m6 l4">
+                    <div class="input-field col s12 m6 l3">
                         <input id="sendInterval" type="text" class="value" size="17" />
                         <label for="sendInterval"><span class="translate">Send interval:</span> (<span class="translate">ms</span>)</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="_defaultQoS" class="input-field col s12 m6 l3">
+                        <select id="defaultQoS" class="value">
+                            <option value="0" class="translate">0 - At most once</option>
+                            <option value="1" class="translate">1 - At least once</option>
+                            <option value="2" class="translate">2 - Exactly once</option>
+                        </select>
+                        <label class="translate" for="defaultQoS">Default QoS:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l3">
+                        <input id="retain" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="retain">Default retain flag:</span>
                     </div>
                 </div>
             </div>

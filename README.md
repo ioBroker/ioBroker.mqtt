@@ -8,7 +8,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.mqtt.png?downloads=true)](https://nodei.co/npm/iobroker.mqtt/)
 
-Requires node.js 4.0 or higher.
+Requires node.js **6.0** or higher.
 
 # MQ Telemetry Transport for ioBroker (MQTT).
 
@@ -101,7 +101,19 @@ The broker was tested with following clients:
 - http://mqttfx.jfx4ee.org/
 - http://www.eclipse.org/paho/clients/tool/
 
+## Todo
+* Implement resend of "QoS 2" messages after a while.
+  Whenever a packet gets lost on the way, the sender is responsible for resending the last message after a reasonable amount of time. This is true when the sender is a MQTT client and also when a MQTT broker sends a message.
+
+* queue packets with "QoS 1/2" for the offline clients with persistent session.
+  [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
+
 ## Changelog
+### 2.0.0 (2018-03-05)
+* (bluefox) broke node.js 4 support
+* (bluefox) remove mqtt-stream-server
+* (bluefox) partial mqtt5 support
+
 ### 1.5.0 (2018-03-05)
 * (bluefox) The patch for wifi-iot removed
 * (bluefox) the mqtt library updated

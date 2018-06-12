@@ -1,11 +1,19 @@
 {
     "common": {
         "name": "mqtt",
-        "require": {
-            "js-controller": ">=0.10.0"
-        },
-        "version": "1.5.0",
+        "version": "2.0.0",
         "news": {
+            "2.0.0": {
+                "en": "The patch for wifi-iot removed\nthe mqtt library updated",
+                "de": "Der Patch für wifi-iot wurde entfernt\nDie mqtt-Bibliothek wurde aktualisiert",
+                "ru": "Патч для wifi-iot удален\nобновлена ​​библиотека mqtt",
+                "pt": "O patch para o wifi foi removido\na biblioteca mqtt foi atualizada",
+                "nl": "De patch voor wifi-iot verwijderd\nde mqtt-bibliotheek is bijgewerkt",
+                "fr": "Le patch pour wifi-iot supprimé\nla bibliothèque mqtt mise à jour",
+                "it": "La patch per wifi-iot è stata rimossa\nla libreria mqtt aggiornata",
+                "es": "El parche para wifi-iot eliminado\nla biblioteca mqtt actualizada",
+                "pl": "Łata dla wifi-iot została usunięta\nZaktualizowano bibliotekę mqtt"
+            },
             "1.5.0": {
                 "en": "The patch for wifi-iot removed\nthe mqtt library updated",
                 "de": "Der Patch für wifi-iot wurde entfernt\nDie mqtt-Bibliothek wurde aktualisiert",
@@ -149,7 +157,9 @@
         "keepalive": 1000,
         "reconnectPeriod": 10,
         "connectTimeout": 30,
-        "clean": false
+        "clean": false,
+        "defaultQoS": 0,
+        "retain": false
     },
     "objects": [],
     "instanceObjects": [
