@@ -156,7 +156,7 @@ function main() {
     }
 
     adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
-    adapter.config.retain = retain === 'true' || retain === true;
+    adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
 
     // If no subscription, start client or server
     if (!cnt) {
