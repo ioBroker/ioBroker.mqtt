@@ -20,7 +20,7 @@ describe('MQTT server', () => {
         done();
     });
 
-    it.skip('MQTT server: Check if connected to MQTT broker', done => {
+    it('MQTT server: Check if connected to MQTT broker', done => {
         let client = new Client(isConnected => {
                 if (done) {
                     expect(isConnected).to.be.true;
@@ -37,7 +37,7 @@ describe('MQTT server', () => {
         );
     });
 
-    it.skip('MQTT server: Check if subscribes stored', () => {
+    it('MQTT server: Check if subscribes stored', () => {
         let client;
         const data = 1;
         return new Promise(resolve => {
@@ -83,7 +83,7 @@ describe('MQTT server', () => {
             });
     });
 
-    it.skip('MQTT server: Check if QoS1 retransmitted', done => {
+    it('MQTT server: Check if QoS1 retransmitted', done => {
         let client;
         const data = 1;
         let sendPacket;
@@ -141,7 +141,7 @@ describe('MQTT server', () => {
         const id = 'aaa3';
         let sendPacket;
         let count = 0;
-        let allowPuback = false;
+        let allowPubrec = false;
         let receiveFunc;
         new Promise(resolve => {
             receiverClient = new Client(isConnected => {
@@ -168,8 +168,8 @@ describe('MQTT server', () => {
             );
             sendPacket = receiverClient.client._sendPacket;
             receiverClient.client._sendPacket = function (packet, cb) {
-                // ignore puback
-                if (packet.cmd === 'pubcomp' && !allowPuback) {
+                // ignore pubrec
+                if (packet.cmd === 'pubrec' && !allowPubrec) {
                     count++;
                     cb && cb();
                     return;
@@ -177,22 +177,71 @@ describe('MQTT server', () => {
                 sendPacket.call(this, packet, cb);
             };
         })
+        .then(() => {
+            return new Promise(resolve => {
+                emitterClient.publish(id, data.toString(), 2); // Send QoS 2
+                setTimeout(() => resolve(), 100);
+            });
+        })
+        .then(() => {
+            expect(count).to.be.equal(1);
+            allowPubrec = true;
+            receiveFunc = () => {
+                receiverClient.destroy();
+                emitterClient.destroy();
+                done();
+            };
+        });
+    }).timeout(5000);
+
+    it('MQTT server: Check if message with QoS1 received', done => {
+        let receiverClient;
+        let emitterClient;
+        const data = 1;
+        const id = 'aaa4';
+        let sendPacket;
+        let count = 0;
+        let allowPuback = false;
+        let receiveFunc;
+        new Promise(resolve => {
+            receiverClient = new Client(isConnected => {
+                    if (isConnected) {
+                        receiverClient.subscribe(id);
+                        setTimeout(() => resolve(), 100);
+                    }
+                },
+                (topic, data, packet) => receiveFunc && receiveFunc(topic, data, packet),
+                {
+                    url: 'localhost:' + port,
+                    clean: false,
+                    clientId: 'receiverClient',
+                    resubscribe: false
+                }
+            );
+            emitterClient = new Client(null, null,
+                {
+                    url: 'localhost:' + port,
+                    clean: true,
+                    clientId: 'emitterClient',
+                    resubscribe: false
+                }
+            );
+        })
             .then(() => {
                 return new Promise(resolve => {
-                    emitterClient.publish(id, data.toString(), 2);
+                    receiveFunc = (topic, data, packet) => {
+                        expect(data).to.be.ok;
+                        expect(topic).to.be.ok;
+                        expect(packet.qos).to.be.equal(1);
+                        receiverClient.destroy();
+                        emitterClient.destroy();
+                        done();
+                    };
+                    emitterClient.publish(id, data.toString(), 1); // Send QoS 2
                     setTimeout(() => resolve(), 100);
                 });
-            })
-            .then(() => {
-                expect(count).to.be.equal(1);
-                allowPuback = true;
-                receiveFunc = () => {
-                    receiverClient.destroy();
-                    emitterClient.destroy();
-                    done();
-                };
             });
-    }).timeout(5000);
+    }).timeout(1000);
 
     after('MQTT server: Stop MQTT server', done => {
         server.destroy(done);

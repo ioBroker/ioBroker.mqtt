@@ -27,10 +27,10 @@ function Client(cbConnected, cbChanged, config) {
         if (cbConnected) cbConnected(true);
     });
 
-    this.client.on('message', (topic, message) => {
+    this.client.on('message', (topic, message, packet) => {
         // message is Buffer
         if (cbChanged) {
-            cbChanged(topic, message);
+            cbChanged(topic, message, packet);
         } else {
             console.log('Test MQTT Client received "' + topic + '": ' + message.toString());
         }
