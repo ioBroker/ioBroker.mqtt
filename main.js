@@ -157,6 +157,12 @@ function main() {
 
     adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
     adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
+    adapter.config.retransmitInterval = parseInt(adapter.config.retransmitInterval, 10) || 2000;
+    adapter.config.retransmitCount = parseInt(adapter.config.retransmitCount, 10) || 10;
+
+    if (adapter.config.retransmitInterval < adapter.config.sendInterval) {
+        adapter.config.retransmitInterval = adapter.config.sendInterval * 5;
+    }
 
     // If no subscription, start client or server
     if (!cnt) {

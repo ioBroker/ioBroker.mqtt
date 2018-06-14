@@ -139,6 +139,8 @@
     // the function loadSettings has to exist ...
     function load(settings, _onChange) {
         onChange = _onChange;
+        settings.retransmitInterval = settings.retransmitInterval || 2000;
+        settings.retransmitCount = settings.retransmitCount || 10;
         settings.sendAckToo = settings.sendAckToo || false;
         settings.webSocket  = settings.webSocket  || false;
         settings.defaultQoS = settings.defaultQoS || 0;

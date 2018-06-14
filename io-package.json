@@ -159,7 +159,10 @@
         "connectTimeout": 30,
         "clean": false,
         "defaultQoS": 0,
-        "retain": false
+        "retain": false,
+        "retransmitInterval": 2000,
+        "retransmitCount": 10,
+        "storeClientsTime": 1440
     },
     "objects": [],
     "instanceObjects": [

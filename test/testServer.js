@@ -1,21 +1,21 @@
-var expect = require('chai').expect;
-var setup  = require(__dirname + '/lib/setup');
+const expect = require('chai').expect;
+const setup  = require(__dirname + '/lib/setup');
 
-var objects = null;
-var states  = null;
-var mqttClientEmitter = null;
-var mqttClientDetector = null;
-var connected = false;
-var lastReceivedTopic1;
-var lastReceivedMessage1;
-var lastReceivedTopic2;
-var lastReceivedMessage2;
+let objects = null;
+let states  = null;
+let mqttClientEmitter = null;
+let mqttClientDetector = null;
+let connected = false;
+let lastReceivedTopic1;
+let lastReceivedMessage1;
+let lastReceivedTopic2;
+let lastReceivedMessage2;
 
-var clientConnected1 = false;
-var clientConnected2 = false;
-var brokerStarted    = false;
+let clientConnected1 = false;
+let clientConnected2 = false;
+let brokerStarted    = false;
 
-var rules = {
+const rules = {
     '/mqtt/0/test1': 'mqtt.0.test1',
     'mqtt/0/test2':  'mqtt.0.test2',
     'test3':         'mqtt.0.test3',
@@ -26,7 +26,7 @@ var rules = {
 
 function startClients(_done) {
     // start mqtt client
-    var MqttClient = require(__dirname + '/lib/mqttClient.js');
+    const MqttClient = require(__dirname + '/lib/mqttClient.js');
 
     // Start client to emit topics
     mqttClientEmitter = new MqttClient(function () {
@@ -64,15 +64,15 @@ function startClients(_done) {
 
 function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     _it.timeout(1000);
-    var value = 'Roger' + Math.round(Math.random() * 100);
-    var mqttid = id;
+    const value = 'Roger' + Math.round(Math.random() * 100);
+    const mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
-        if (id[0] == '.') id = id.substring(1);
+        if (id[0] === '.') id = id.substring(1);
     } else {
         id = _expectedId;
     }
-    if (id.indexOf('.') == -1) id = 'mqtt.0.' + id;
+    if (id.indexOf('.') === -1) id = 'mqtt.0.' + id;
 
     lastReceivedMessage1 = null;
     lastReceivedTopic1   = null;

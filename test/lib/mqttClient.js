@@ -5,9 +5,9 @@ function Client(cbConnected, cbChanged, config) {
     if (typeof config === 'string') config = {name: config};
     config = config || {};
     config.url = config.url || 'localhost';
-    this.client = mqtt.connect('mqtt://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url  + (config.name ? '?clientId=' + config.name : ''));
+    this.client = mqtt.connect('mqtt://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url  + (config.name ? '?clientId=' + config.name : ''), config);
 
-    this.client.on('connect', function () {
+    this.client.on('connect', () => {
         console.log((new Date()) + ' test client connected to localhost');
 
         /*that.client.publish('mqtt/0/test', 'Roger1');
@@ -24,10 +24,10 @@ function Client(cbConnected, cbChanged, config) {
          client.subscribe('arduino/kitchen/in/#');*/
         //client.subscribe('arduino/kitchen/in/updateInterval');
         that.client.subscribe('#');
-        if (cbConnected) cbConnected();
+        if (cbConnected) cbConnected(true);
     });
 
-    this.client.on('message', function (topic, message) {
+    this.client.on('message', (topic, message) => {
         // message is Buffer
         if (cbChanged) {
             cbChanged(topic, message);
@@ -35,12 +35,38 @@ function Client(cbConnected, cbChanged, config) {
             console.log('Test MQTT Client received "' + topic + '": ' + message.toString());
         }
     });
+    this.client.on('close', () => {
+        // message is Buffer
+        if (cbConnected) {
+            cbConnected(false);
+        } else {
+            console.log('Test MQTT Client closed');
+        }
+    });
 
-    this.publish = function (topic, message, cb) {
-        that.client.publish(topic,  message, cb);
+    this.client.on('error', error => {
+        console.error('Test MQTT Client error: ' + error);
+    });
+
+    this.publish = (topic, message, qos, retain, cb) => {
+        if (typeof qos === 'function') {
+            cb = qos;
+            qos = undefined;
+        }
+        if (typeof retain === 'function') {
+            cb = retain;
+            retain = undefined;
+        }
+        const opts = {
+            retain: retain || false,
+            qos: qos || 0
+        };
+        that.client.publish(topic,  message, opts, cb);
     };
-
-    this.destroy = function () {
+    this.subscribe = (topic, cb) => {
+        that.client.subscribe(topic, cb);
+    };
+    this.destroy = () => {
         if (that.client) {
             that.client.end();
             that.client = null;
