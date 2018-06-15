@@ -143,7 +143,7 @@
         settings.retransmitCount = settings.retransmitCount || 10;
         settings.sendAckToo = settings.sendAckToo || false;
         settings.webSocket  = settings.webSocket  || false;
-        settings.defaultQoS = settings.defaultQoS || 0;
+        settings.defaultQoS = (settings.defaultQoS === '' || settings.defaultQoS === -1 || settings.defaultQoS === '-1') ? -1 : settings.defaultQoS || 0;
         if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
         if (settings.sendInterval === undefined) settings.sendInterval = 10;
         settings.clientId   = settings.clientId   || '';

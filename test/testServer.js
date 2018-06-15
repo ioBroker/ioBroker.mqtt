@@ -1,3 +1,4 @@
+'use strict';
 const expect = require('chai').expect;
 const setup  = require(__dirname + '/lib/setup');
 
@@ -29,7 +30,7 @@ function startClients(_done) {
     const MqttClient = require(__dirname + '/lib/mqttClient.js');
 
     // Start client to emit topics
-    mqttClientEmitter = new MqttClient(function () {
+    mqttClientEmitter = new MqttClient(() => {
         // on connected
         console.log('Test MQTT Emitter is connected to MQTT broker');
         clientConnected1 = true;
@@ -45,7 +46,7 @@ function startClients(_done) {
     }, {name: 'Emitter', user: 'user', pass: 'pass1'});
 
     // Start client to receive topics
-    mqttClientDetector = new MqttClient(function () {
+    mqttClientDetector = new MqttClient(() => {
         // on connected
         console.log('Test MQTT Detector is connected to MQTT broker');
         clientConnected2 = true;
@@ -82,7 +83,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     mqttClientEmitter.publish(mqttid, value, function (err) {
         expect(err).to.be.undefined;
 
-        setTimeout(function () {
+        setTimeout(() => {
             /*expect(lastReceivedTopic2).to.be.equal(mqttid);
              expect(lastReceivedMessage2).to.be.equal(value);*/
 
@@ -95,7 +96,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
                     expect(obj.native.topic).to.be.equal(mqttid);
                 }
 
-                states.getState(id, function (err, state) {
+                states.getState(id, (err, state) => {
                     expect(state).to.be.not.null.and.not.undefined;
                     expect(state.val).to.be.equal(value);
                     expect(state.ack).to.be.true;
@@ -107,7 +108,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 }
 
 function checkAdapter2Mqtt(id, mqttid, _it, _done) {
-    var value = 'NewRoger' + Math.round(Math.random() * 100);
+    const value = 'NewRoger' + Math.round(Math.random() * 100);
     _it.timeout(5000);
 
     console.log(new Date().getTime() + ' Send ' + id + ' with value '+ value);
@@ -120,10 +121,10 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
     states.setState(id, {
         val: value,
         ack: false
-    }, function (err, id) {
-        setTimeout(function () {
+    }, (err, id) => {
+        setTimeout(() => {
             if (!lastReceivedTopic1) {
-                setTimeout(function () {
+                setTimeout(() => {
                     expect(lastReceivedTopic1).to.be.equal(mqttid);
                     expect(lastReceivedMessage1).to.be.equal(value);
                     _done();
@@ -144,26 +145,26 @@ function checkConnection(value, done, counter) {
         return;
     }
 
-    states.getState('mqtt.0.info.connection', function (err, state) {
+    states.getState('mqtt.0.info.connection', (err, state) => {
         if (err) console.error(err);
         if (state && typeof state.val === 'string' && ((value && state.val.indexOf(',') !== -1) || (!value && state.val.indexOf(',') === -1))) {
             connected = value;
             done();
         } else {
-            setTimeout(function () {
+            setTimeout(() => {
                 checkConnection(value, done, counter + 1);
             }, 1000);
         }
     });
 }
 
-describe('MQTT server: Test mqtt server', function() {
+describe('MQTT server: Test mqtt server', () => {
     before('MQTT server: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
         setup.adapterStarted = false;
 
-        setup.setupController(function () {
-            var config = setup.getAdapterConfig();
+        setup.setupController(() => {
+            const config = setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
@@ -173,7 +174,7 @@ describe('MQTT server: Test mqtt server', function() {
             config.native.pass     = '*\u0006\u0015\u0001\u0004';
             setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController(function (_objects, _states) {
+            setup.startController((_objects, _states) => {
                 objects = _objects;
                 states  = _states;
                 brokerStarted = true;
@@ -187,7 +188,7 @@ describe('MQTT server: Test mqtt server', function() {
         startClients(_done);
     });
 
-    it('MQTT server: Check if connected to MQTT broker', function (done) {
+    it('MQTT server: Check if connected to MQTT broker', done => {
         this.timeout(2000);
         if (!connected) {
             checkConnection(true, done);
@@ -196,39 +197,39 @@ describe('MQTT server: Test mqtt server', function() {
         }
     });
 
-    for (var r in rules) {
+    for (const r in rules) {
         (function(id, topic) {
-            it('MQTT server: Check receive ' + id, function (done) {
+            it('MQTT server: Check receive ' + id, done => {
                 checkMqtt2Adapter(id, topic, this, done);
             });
         })(r, rules[r]);
     }
 
     // give time to client to receive all messages
-    it('wait', function (done) {
+    it('wait', done => {
         this.timeout(3000);
-        setTimeout(function () {
+        setTimeout(() => {
             done();
         }, 2000);
     });
 
-    for (var r in rules) {
+    for (const r in rules) {
         (function(id, topic) {
-            if (topic.indexOf('mqtt') != -1) {
-                it('MQTT server: Check send ' + topic, function (done) {
+            if (topic.indexOf('mqtt') !== -1) {
+                it('MQTT server: Check send ' + topic, done => {
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
             }
         })(r, rules[r]);
     }
 
-    it('MQTT server: detector must receive /mqtt/0/test1', function (done) {
-        var mqttid = '/mqtt/0/test1';
-        var value  = 'AABB';
-        mqttClientEmitter.publish(mqttid, JSON.stringify({val: value, ack: false}), function (err) {
+    it('MQTT server: detector must receive /mqtt/0/test1', done => {
+        const mqttid = '/mqtt/0/test1';
+        const value  = 'AABB';
+        mqttClientEmitter.publish(mqttid, JSON.stringify({val: value, ack: false}), err => {
             expect(err).to.be.undefined;
 
-            setTimeout(function () {
+            setTimeout(() => {
                 expect(lastReceivedTopic2).to.be.equal(mqttid);
                 expect(lastReceivedMessage2).to.be.equal(value);
                 done();
@@ -236,14 +237,14 @@ describe('MQTT server: Test mqtt server', function() {
         });
     });
 
-    it('MQTT server: check reconnection', function (done) {
+    it('MQTT server: check reconnection', done => {
         this.timeout(10000);
         mqttClientEmitter.stop();
         mqttClientDetector.stop();
-        checkConnection(false, function (error) {
+        checkConnection(false, error => {
             expect(error).to.be.not.ok;
             startClients();
-            checkConnection(true, function (error) {
+            checkConnection(true, error => {
                 expect(error).to.be.not.ok;
                 done();
             });
@@ -254,7 +255,7 @@ describe('MQTT server: Test mqtt server', function() {
         this.timeout(5000);
         mqttClientEmitter.stop();
         mqttClientDetector.stop();
-        setup.stopController(function () {
+        setup.stopController(() => {
             done();
         });
     });

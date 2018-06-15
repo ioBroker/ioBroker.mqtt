@@ -1,15 +1,15 @@
 'use strict';
-var expect  = require('chai').expect;
-var setup   = require(__dirname + '/lib/setup');
+const expect  = require('chai').expect;
+const setup   = require(__dirname + '/lib/setup');
 
-var objects = null;
-var states  = null;
-var MqttServer;
-var mqttClient = null;
-var mqttServer = null;
-var connected  = false;
-var lastReceivedTopic;
-var lastReceivedMessage;
+let objects = null;
+let states  = null;
+let MqttServer;
+let mqttClient = null;
+let mqttServer = null;
+let connected  = false;
+let lastReceivedTopic;
+let lastReceivedMessage;
 
 const rules = {
     '/mqtt/0/test1': 'mqtt.0.test1',
@@ -22,8 +22,8 @@ const rules = {
 
 function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     _it.timeout(1000);
-    var value = 'Roger' + Math.round(Math.random() * 100);
-    var mqttid = id;
+    const value = 'Roger' + Math.round(Math.random() * 100);
+    const mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
         if (id[0] === '.') id = id.substring(1);
@@ -34,8 +34,8 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 
     mqttClient.publish(mqttid, value);
 
-    setTimeout(function () {
-        objects.getObject(id, function (err, obj) {
+    setTimeout(() => {
+        objects.getObject(id, (err, obj) => {
             expect(obj).to.be.not.null.and.not.undefined;
             expect(obj._id).to.be.equal(id);
             expect(obj.type).to.be.equal('state');
@@ -44,7 +44,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
                 expect(obj.native.topic).to.be.equal(mqttid);
             }
 
-            states.getState(id, function (err, state) {
+            states.getState(id, (err, state) => {
                 expect(state).to.be.not.null.and.not.undefined;
                 expect(state.val).to.be.equal(value);
                 expect(state.ack).to.be.true;
@@ -79,7 +79,7 @@ function checkConnectionOfAdapter(cb, counter) {
         return;
     }
 
-    states.getState('system.adapter.mqtt.0.connected', function (err, state) {
+    states.getState('system.adapter.mqtt.0.connected', (err, state) => {
         if (err) console.error(err);
         if (state && state.val) {
             connected = state.val;
@@ -99,7 +99,7 @@ function checkConnectionToServer(value, cb, counter) {
         return;
     }
 
-    states.getState('mqtt.0.info.connection', function (err, state) {
+    states.getState('mqtt.0.info.connection', (err, state) => {
         if (err) console.error(err);
         if (state && state.val == value) {
             connected = state.val;
@@ -113,14 +113,14 @@ function checkConnectionToServer(value, cb, counter) {
 }
 
 describe('Test MQTT client', function() {
-    before('MQTT client: Start js-controller', function (_done) {
+    before('MQTT client: Start js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(600000); // because of first install from npm
-        var clientConnected  = false;
-        var brokerStarted    = false;
+        let clientConnected  = false;
+        let brokerStarted    = false;
         setup.adapterStarted = false;
 
         setup.setupController(function () {
-            var config = setup.getAdapterConfig();
+            const config = setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
@@ -129,7 +129,7 @@ describe('Test MQTT client', function() {
             config.native.pass     = '*\u0006\u0015\u0001\u0004';
             setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController(function (_objects, _states) {
+            setup.startController((_objects, _states) => {
                 objects = _objects;
                 states  = _states;
                 brokerStarted = true;
@@ -147,7 +147,7 @@ describe('Test MQTT client', function() {
         mqttServer = new MqttServer({user: 'user', pass: 'pass1'});
 
         // Start client to emit topics
-        mqttClient = new MqttClient(function () {
+        mqttClient = new MqttClient(() => {
             // on connected
             //console.log('Test MQTT Client is connected to MQTT broker');
             clientConnected = true;
@@ -164,7 +164,7 @@ describe('Test MQTT client', function() {
         }, {name: 'Emitter', user: 'user', pass: 'pass1'});
     });
 
-    it('MQTT client: Check if connected to MQTT broker', function (done) {
+    it('MQTT client: Check if connected to MQTT broker', done => {
         this.timeout(3000);
         if (!connected) {
             checkConnectionOfAdapter(done);
@@ -173,7 +173,7 @@ describe('Test MQTT client', function() {
         }
     });
 
-    it('MQTT client: wait', function (done) {
+    it('MQTT client: wait', done => {
         this.timeout(4000);
         setTimeout(function () {
             done();
@@ -182,7 +182,7 @@ describe('Test MQTT client', function() {
 
     for (let rr in rules) {
         (function(id, topic) {
-            it('MQTT client: Check receive ' + id, function (done) {
+            it('MQTT client: Check receive ' + id, done => {
                 checkMqtt2Adapter(id, topic, this, done);
             });
         })(rr, rules[rr]);
@@ -191,29 +191,29 @@ describe('Test MQTT client', function() {
     for (let r in rules) {
         (function(id, topic) {
             if (topic.indexOf('mqtt') !== -1) {
-                it('MQTT client: Check send ' + topic, function (done) {
+                it('MQTT client: Check send ' + topic, done => {
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
             }
         })(r, rules[r]);
     }
 
-    it('MQTT client: check reconnect if server is down', function (done) {
+    it('MQTT client: check reconnect if server is down', done => {
         this.timeout(20000);
         mqttServer.stop();
         connected = false;
 
-        checkConnectionToServer(false, function (error) {
+        checkConnectionToServer(false, error => {
             expect(error).to.be.not.ok;
             mqttServer = new MqttServer();
-            checkConnectionToServer(true, function (error) {
+            checkConnectionToServer(true, error => {
                 expect(error).to.be.not.ok;
                 done();
             });
         });
     });
 
-    after('MQTT client: Stop js-controller', function (done) {
+    after('MQTT client: Stop js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(6000);
         mqttServer.stop();
         mqttClient.stop();

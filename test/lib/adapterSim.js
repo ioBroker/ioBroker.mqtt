@@ -1,4 +1,4 @@
-
+'use strict';
 
 module.exports = function (config) {
     this.namespace = 'mqtt.0';
@@ -23,11 +23,11 @@ module.exports = function (config) {
     this.config = Object.assign(this.config, config || {});
 
     this.log = {
-        silly: text => console.log(text),
-        debug: text => console.log(text),
-        info: text => console.log(text),
-        warn: text => console.warn(text),
-        error: text => console.error(text)
+        silly: text => console.log(`[${new Date().toISOString()} ${text}`),
+        debug: text => console.log(`[${new Date().toISOString()} ${text}`),
+        info: text => console.log(`[${new Date().toISOString()} ${text}`),
+        warn: text => console.warn(`[${new Date().toISOString()} ${text}`),
+        error: text => console.error(`[${new Date().toISOString()} ${text}`)
     };
 
     this.setState = (id, state, ack, cb) => {

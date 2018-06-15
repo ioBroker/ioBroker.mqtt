@@ -1,3 +1,4 @@
+'use strict';
 const expect = require('chai').expect;
 const Adapter = require('./lib/adapterSim');
 const Server = require('../lib/server');
@@ -67,10 +68,12 @@ describe('MQTT server', () => {
 
                         },
                         (topic, message) => {
-                            expect(topic).to.be.equal('aaa');
-                            expect(message.toString()).to.be.equal(data.toString());
-                            client.destroy();
-                            resolve();
+                            if (topic === 'aaa') {
+                                expect(topic).to.be.equal('aaa');
+                                expect(message.toString()).to.be.equal(data.toString());
+                                client.destroy();
+                                resolve();
+                            }
                         },
                         {
                             url: 'localhost:' + port,
@@ -94,7 +97,7 @@ describe('MQTT server', () => {
         new Promise(resolve => {
             client = new Client(isConnected => {
                     if (isConnected) {
-                        client.subscribe(id);
+                        client.subscribe(id, {qos: 1});
                         setTimeout(() => resolve(), 100);
                     }
                 },
@@ -121,10 +124,11 @@ describe('MQTT server', () => {
             return new Promise(resolve => {
                 adapter.setForeignState('mqtt.0.' + id, data);
                 server.onStateChange('mqtt.0.' + id, {val: data, ack: false});
-                setTimeout(() => resolve(), 100);
+                setTimeout(() => resolve(), 1000);
             });
         })
         .then(() => {
+            console.log(`[${new Date().toISOString()} continue tests`);
             expect(count).to.be.equal(1);
             allowPuback = true;
             receiveFunc = () => {
@@ -146,7 +150,7 @@ describe('MQTT server', () => {
         new Promise(resolve => {
             receiverClient = new Client(isConnected => {
                     if (isConnected) {
-                        receiverClient.subscribe(id);
+                        receiverClient.subscribe(id, {qos: 2});
                         setTimeout(() => resolve(), 100);
                     }
                 },
@@ -199,14 +203,11 @@ describe('MQTT server', () => {
         let emitterClient;
         const data = 1;
         const id = 'aaa4';
-        let sendPacket;
-        let count = 0;
-        let allowPuback = false;
         let receiveFunc;
         new Promise(resolve => {
             receiverClient = new Client(isConnected => {
                     if (isConnected) {
-                        receiverClient.subscribe(id);
+                        receiverClient.subscribe(id, {qos: 1});
                         setTimeout(() => resolve(), 100);
                     }
                 },
@@ -242,6 +243,56 @@ describe('MQTT server', () => {
                 });
             });
     }).timeout(1000);
+
+    // check unsubscribe
+    it('MQTT server: Check if unsubscribes works', () => {
+        let client;
+        const data = 1;
+        let count = 0;
+        return new Promise(resolve => {
+            client = new Client(isConnected => {
+                    if (isConnected) {
+                        client.subscribe('aaa6');
+                        setTimeout(() => {
+                            adapter.setForeignState('mqtt.0.aaa6', data);
+                            server.onStateChange('mqtt.0.aaa6', {val: data, ack: false});
+                        }, 500);
+                    }
+                },
+                (id, topic, packet) => {
+                    if (id.indexOf('aaa6') !== -1) {
+                        console.log('Received ' + topic.toString());
+                        count++;
+                        expect(count).to.be.equal(1);
+                        setTimeout(() => resolve(), 100);
+                    }
+                },
+                {
+                    url: 'localhost:' + port,
+                    clean: true,
+                    clientId: 'testClient6',
+                    resubscribe: false
+                }
+            );
+        })
+        .then(() => {
+            return new Promise(resolve => {
+                client.unsubscribe('aaa6');
+                client.unsubscribe('#');
+                setTimeout(() => {
+                    console.log('Resend data');
+                    adapter.setForeignState('mqtt.0.aaa6', 2);
+                    server.onStateChange('mqtt.0.aaa6', {val: 2, ack: false});
+                    // wait 1 second to not receive the update
+                    setTimeout(() => {
+                        console.log('Done');
+                        client.destroy();
+                        resolve();
+                    }, 1000);
+                }, 300);
+            });
+        });
+    }).timeout(3000);
 
     after('MQTT server: Stop MQTT server', done => {
         server.destroy(done);

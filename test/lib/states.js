@@ -1,9 +1,10 @@
-var path        = require('path');
-var rootDir     = path.normalize(__dirname + '/../../');
-var adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
+'use strict';
+const path      = require('path');
+const rootDir   = path.normalize(__dirname + '/../../');
+let adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName     = adapterName[adapterName.length - 2];
 
-var logger = {
+const logger = {
     info:  function (msg) {
         console.log(msg);
     },
@@ -19,30 +20,29 @@ var logger = {
 };
 
 function States(cb, stateChange) {
-    var that    = this;
-    var _States = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/states');
+    const that    = this;
+    const _States = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/states');
+    let callbackId = 0;
 
-    var options = {
-        stateChange: function (id, state) {
-            if (stateChange) stateChange(id, state);
-        }
+    const options = {
+        stateChange: (id, state) => stateChange && stateChange(id, state)
     };
 
     that.namespace = 'test';
 
     that.states = new _States({
         connection: {
-            "type" : "file",
-            "host" : "127.0.0.1",
-            "port" : 19000,
-            "options" : {
-                "auth_pass" : null,
-                "retry_max_delay" : 15000
+            type : 'file',
+            host : '127.0.0.1',
+            port : 19000,
+            options : {
+                auth_pass : null,
+                retry_max_delay : 15000
             }
         },
         logger: logger,
-        change: function (id, state) {
-            if (!id || typeof id != 'string') {
+        change: (id, state) => {
+            if (!id || typeof id !== 'string') {
                 console.log('Something is wrong! ' + JSON.stringify(id));
                 return;
             }
@@ -56,14 +56,14 @@ function States(cb, stateChange) {
             if (that.logList && id.match(/\.logging$/)) {
                 that.logRedirect(state ? state.val : false, id.substring(0, id.length - '.logging'.length));
             } else
-            if (id == 'log.system.adapter.' + that.namespace) {
+            if (id === 'log.system.adapter.' + that.namespace) {
                 that.processLog(state);
             } else
             // If this is messagebox
-            if (id == 'messagebox.system.adapter.' + that.namespace && state) {
+            if (id === 'messagebox.system.adapter.' + that.namespace && state) {
                 // Read it from fifo list
                 that.states.delMessage('system.adapter.' + that.namespace, state._id);
-                var obj = state;
+                const obj = state;
                 if (obj) {
                     // If callback stored for this request
                     if (obj.callback     &&
@@ -77,9 +77,9 @@ function States(cb, stateChange) {
                             delete that.callbacks['_' + obj.callback.id];
                         }
                         // delete too old callbacks IDs, like garbage collector
-                        var now = (new Date()).getTime();
-                        for (var _id in that.callbacks) {
-                            if (now - that.callbacks[_id].time > 3600000) delete that.callbacks[_id];
+                        const now = Date.now();
+                        for (const _id in that.callbacks) {
+                            if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000) delete that.callbacks[_id];
                         }
 
                     } else {
@@ -94,25 +94,21 @@ function States(cb, stateChange) {
                 if (id.slice(that.namespace.length) === that.namespace) {
                     if (typeof options.stateChange === 'function') options.stateChange(id.slice(that.namespace.length + 1), state);
                     // emit 'stateChange' event instantly
-                    setTimeout(function () {
-                        that.emit('stateChange', id.slice(that.namespace.length + 1), state);
-                    }, 0);
+                    setImmediate(() => that.emit('stateChange', id.slice(that.namespace.length + 1), state));
 
                 } else {
                     if (typeof options.stateChange === 'function') options.stateChange(id, state);
-                    if (id.substring(0, 4) == 'log.') {
+                    if (id.substring(0, 4) === 'log.') {
                         console.log("LOG");
                     }
                     if (that.emit) {
                         // emit 'stateChange' event instantly
-                        setTimeout(function () {
-                            that.emit('stateChange', id, state);
-                        }, 0);
+                        setImmediate(() => that.emit('stateChange', id, state));
                     }
                 }
             }
         },
-        connectTimeout: function (error) {
+        connectTimeout: (error) => {
             if (logger) logger.error(that.namespace + ' no connection to states DB');
             if (cb) cb('Timeout');
         }
@@ -120,11 +116,11 @@ function States(cb, stateChange) {
 
     // Send message to other adapter instance or all instances of adapter
     that.sendTo = function sendTo(objName, command, message, callback) {
-        if (typeof message == 'undefined') {
+        if (typeof message === 'undefined') {
             message = command;
             command = 'send';
         }
-        var obj = {command: command, message: message, from: 'system.adapter.' + that.namespace};
+        const obj = {command: command, message: message, from: 'system.adapter.' + that.namespace};
 
         if (!objName.match(/^system\.adapter\./)) objName = 'system.adapter.' + objName;
 
@@ -133,16 +129,16 @@ function States(cb, stateChange) {
         // If not specific instance
         if (!objName.match(/\.[0-9]+$/)) {
             // Send to all instances of adapter
-            that.objects.getObjectView('system', 'instance', {startkey: objName + '.', endkey: objName + '.\u9999'}, function (err, _obj) {
+            that.objects.getObjectView('system', 'instance', {startkey: objName + '.', endkey: objName + '.\u9999'}, (err, _obj) => {
                 if (_obj) {
-                    for (var i = 0; i < _obj.rows.length; i++) {
+                    for (let i = 0; i < _obj.rows.length; i++) {
                         that.states.pushMessage(_obj.rows[i].id, obj);
                     }
                 }
             });
         } else {
             if (callback) {
-                if (typeof callback == 'function') {
+                if (typeof callback === 'function') {
                     // force subscribe even no messagebox enabled
                     if (!that.common.messagebox && !that.mboxSubscribed) {
                         that.mboxSubscribed = true;
@@ -153,16 +149,20 @@ function States(cb, stateChange) {
                         message: message,
                         id:      callbackId++,
                         ack:     false,
-                        time:    (new Date()).getTime()
+                        time:    Date.now()
                     };
-                    if (callbackId >= 0xFFFFFFFF) callbackId = 1;
+                    if (callbackId >= 0xFFFFFFFF) {
+                        callbackId = 1;
+                    }
                     if (!that.callbacks) that.callbacks = {};
                     that.callbacks['_' + obj.callback.id] = {cb: callback};
 
                     // delete too old callbacks IDs
-                    var now = (new Date()).getTime();
-                    for (var _id in that.callbacks) {
-                        if (now - that.callbacks[_id].time > 3600000) delete that.callbacks[_id];
+                    const now = Date.now();
+                    for (const _id in that.callbacks) {
+                        if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000) {
+                            delete that.callbacks[_id];
+                        }
                     }
                 } else {
                     obj.callback = callback;
@@ -176,22 +176,22 @@ function States(cb, stateChange) {
 
     // Send message to specific host or to all hosts
     that.sendToHost = function sendToHost(objName, command, message, callback) {
-        if (typeof message == 'undefined') {
+        if (typeof message === 'undefined') {
             message = command;
             command = 'send';
         }
-        var obj = {command: command, message: message, from: 'system.adapter.' + that.namespace};
+        const obj = {command: command, message: message, from: 'system.adapter.' + that.namespace};
 
-        if (objName && objName.substring(0, 'system.host.'.length) != 'system.host.') objName = 'system.host.' + objName;
+        if (objName && objName.substring(0, 'system.host.'.length) !== 'system.host.') objName = 'system.host.' + objName;
 
         if (!objName) {
             // Send to all hosts
-            that.objects.getObjectList({startkey: 'system.host.', endkey: 'system.host.' + '\u9999'}, null, function (err, res) {
+            that.objects.getObjectList({startkey: 'system.host.', endkey: 'system.host.' + '\u9999'}, null, (err, res) => {
                 if (!err && res.rows.length) {
-                    for (var i = 0; i < res.rows.length; i++) {
-                        var parts = res.rows[i].id.split('.');
+                    for (let i = 0; i < res.rows.length; i++) {
+                        const parts = res.rows[i].id.split('.');
                         // ignore system.host.name.alive and so on
-                        if (parts.length == 3) {
+                        if (parts.length === 3) {
                             that.states.pushMessage(res.rows[i].id, obj);
                         }
                     }
@@ -199,7 +199,7 @@ function States(cb, stateChange) {
             });
         } else {
             if (callback) {
-                if (typeof callback == "function") {
+                if (typeof callback === 'function') {
                     // force subscribe even no messagebox enabled
                     if (!that.common.messagebox && !that.mboxSubscribed) {
                         that.mboxSubscribed = true;
@@ -210,7 +210,7 @@ function States(cb, stateChange) {
                         message: message,
                         id:      callbackId++,
                         ack:     false,
-                        time:    (new Date()).getTime()
+                        time:    Date.now()
                     };
                     if (callbackId >= 0xFFFFFFFF) callbackId = 1;
                     if (!that.callbacks) that.callbacks = {};
@@ -226,18 +226,18 @@ function States(cb, stateChange) {
     };
 
     that.setState = function setState(id, state, ack, options, callback) {
-        if (typeof state == 'object' && typeof ack != 'boolean') {
+        if (typeof state === 'object' && typeof ack !== 'boolean') {
             callback = options;
             options  = ack;
             ack      = undefined;
         }
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
         id = that._fixId(id, 'state');
 
-        if (typeof ack == 'function') {
+        if (typeof ack === 'function') {
             callback = ack;
             ack = undefined;
         }
@@ -249,10 +249,10 @@ function States(cb, stateChange) {
         }
 
         state.from = 'system.adapter.' + that.namespace;
-        if (options && options.user && options.user != 'system.user.admin') {
-            checkStates(id, options, 'setState', function (err) {
+        if (options && options.user && options.user !== 'system.user.admin') {
+            checkStates(id, options, 'setState', err => {
                 if (err) {
-                    if (typeof callback == 'function') callback(err);
+                    if (typeof callback === 'function') callback(err);
                 } else {
                     that.states.setState(id, state, callback);
                 }
@@ -263,18 +263,18 @@ function States(cb, stateChange) {
     };
 
     that.setForeignState = function setForeignState(id, state, ack, options, callback) {
-        if (typeof state == 'object' && typeof ack != 'boolean') {
+        if (typeof state === 'object' && typeof ack !== 'boolean') {
             callback = options;
             options  = ack;
             ack = undefined;
         }
 
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
 
-        if (typeof ack == 'function') {
+        if (typeof ack === 'function') {
             callback = ack;
             ack = undefined;
         }
@@ -287,10 +287,10 @@ function States(cb, stateChange) {
 
         state.from = 'system.adapter.' + that.namespace;
 
-        if (options && options.user && options.user != 'system.user.admin') {
-            checkStates(id, options, 'setState', function (err) {
+        if (options && options.user && options.user !== 'system.user.admin') {
+            checkStates(id, options, 'setState', err => {
                 if (err) {
-                    if (typeof callback == 'function') callback(err);
+                    if (typeof callback === 'function') callback(err);
                 } else {
                     that.states.setState(id, state, callback);
                 }
@@ -301,15 +301,15 @@ function States(cb, stateChange) {
     };
 
     that.getState = function getState(id, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
         id = that._fixId(id, 'state');
-        if (options && options.user && options.user != 'system.user.admin') {
-            checkStates(id, options, 'getState', function (err) {
+        if (options && options.user && options.user !== 'system.user.admin') {
+            checkStates(id, options, 'getState', err => {
                 if (err) {
-                    if (typeof callback == 'function') callback(err);
+                    if (typeof callback === 'function') callback(err);
                 } else {
                     that.states.getState(id, callback);
                 }
@@ -320,7 +320,7 @@ function States(cb, stateChange) {
     };
 
     that.getStateHistory = function getStateHistory(id, start, end, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
@@ -329,7 +329,7 @@ function States(cb, stateChange) {
     };
 
     that.getForeignStateHistory = function getForeignStateHistory(id, start, end, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
@@ -346,15 +346,15 @@ function States(cb, stateChange) {
         start = start || Math.round((new Date()).getTime() / 1000) - 31536000; // - 1 year
         end   = end   || Math.round((new Date()).getTime() / 1000) + 5000;
 
-        var history = [];
-        var docs =    [];
+        const history = [];
+        const docs =    [];
 
         // get data from states
         that.log.debug('get states history ' + id + ' ' + start + ' ' + end);
-        that.getFifo(id, function (err, res) {
+        that.getFifo(id, (err, res) => {
             if (!err && res) {
-                var iProblemCount = 0;
-                for (var i = 0; i < res.length; i++) {
+                let iProblemCount = 0;
+                for (let i = 0; i < res.length; i++) {
                     if (!res[i]) {
                         iProblemCount++;
                         continue;
@@ -370,7 +370,7 @@ function States(cb, stateChange) {
 
                 that.log.debug('got ' + res.length + ' datapoints for ' + id);
             } else {
-                if (err != 'Not exists') {
+                if (err !== 'Not exists') {
                     that.log.error(err);
                 } else {
                     that.log.debug('datapoints for ' + id + ' do not yet exist');
@@ -380,9 +380,9 @@ function States(cb, stateChange) {
             // fetch a history document from objectDB
             function getObjectsLog(cid, callback) {
                 that.log.info('getObjectLog ' + cid);
-                that.getForeignObject(cid, options, function (err, res) {
+                that.getForeignObject(cid, options, (err, res) => {
                     if (!err && res.common.data) {
-                        for (var i = 0; i < res.common.data.length; i++) {
+                        for (let i = 0; i < res.common.data.length; i++) {
                             if (res.common.data[i].ts < start) {
                                 continue;
                             } else if (res.common.data[i].ts > end) {
@@ -403,20 +403,18 @@ function States(cb, stateChange) {
                     callback(null, history);
                     return;
                 }
-                var cid = 'history.' + id + '.' + ts2day(ts);
+                const cid = 'history.' + id + '.' + ts2day(ts);
                 if (docs.indexOf(cid) !== -1) {
-                    getObjectsLog(cid, function (err) {
-                        queue(ts - 86400); // - 1 day
-                    });
+                    getObjectsLog(cid, err => queue(ts - 86400)); // - 1 day
                 } else {
                     queue(ts - 86400); // - 1 day
                 }
             }
 
             // get list of available history documents
-            that.objects.getObjectList({startkey: 'history.' + id, endkey: 'history.' + id + '\u9999'}, options, function (err, res) {
+            that.objects.getObjectList({startkey: 'history.' + id, endkey: 'history.' + id + '\u9999'}, options, (err, res) => {
                 if (!err && res.rows.length) {
-                    for (var i = 0; i < res.rows.length; i++) {
+                    for (let i = 0; i < res.rows.length; i++) {
                         docs.push(res.rows[i].id);
                     }
                     queue(end);
@@ -438,18 +436,14 @@ function States(cb, stateChange) {
         if (!options.instance) {
             if (!that.defaultHistory) {
                 // read default history instance from system.config
-                return getDefaultHistory(function () {
-                    that.getHistory(id, options, callback);
-                });
+                return getDefaultHistory(() => that.getHistory(id, options, callback));
             } else {
                 options.instance = that.defaultHistory;
             }
         }
 
-        that.sendTo(options.instance || 'history.0', 'getHistory', {id: id, options: options}, function (res) {
-            setTimeout(function () {
-                callback(res.error, res.result, res.step);
-            }, 0);
+        that.sendTo(options.instance || 'history.0', 'getHistory', {id: id, options: options}, res => {
+            setImmediate(() => callback(res.error, res.result, res.step));
         });
     };
 
@@ -457,8 +451,8 @@ function States(cb, stateChange) {
     // Convert ID to {device: D, channel: C, state: S}
     that.idToDCS = function idToDCS(id) {
         if (!id) return null;
-        var parts = id.split('.');
-        if (parts[0] + '.' + parts[1] != that.namespace) {
+        const parts = id.split('.');
+        if (parts[0] + '.' + parts[1] !== that.namespace) {
             that.log.warn("Try to decode id not from this adapter");
             return null;
         }
@@ -466,14 +460,14 @@ function States(cb, stateChange) {
     };
 
     that.getForeignState = function getForeignState(id, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        if (options && options.user && options.user != 'system.user.admin') {
-            checkStates(id, options, 'getState', function (err) {
+        if (options && options.user && options.user !== 'system.user.admin') {
+            checkStates(id, options, 'getState', err => {
                 if (err) {
-                    if (typeof callback == 'function') callback(err);
+                    if (typeof callback === 'function') callback(err);
                 } else {
                     that.states.getState(id, callback);
                 }
@@ -484,15 +478,15 @@ function States(cb, stateChange) {
     };
 
     that.delForeignState = function delForeignState(id, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
 
-        if (options && options.user && options.user != 'system.user.admin') {
-            checkStates(id, options, 'delState', function (err) {
+        if (options && options.user && options.user !== 'system.user.admin') {
+            checkStates(id, options, 'delState', err => {
                 if (err) {
-                    if (typeof callback == 'function') callback(err);
+                    if (typeof callback === 'function') callback(err);
                 } else {
                     that.states.delState(id, callback);
                 }
@@ -504,15 +498,15 @@ function States(cb, stateChange) {
     };
 
     that.delState = function delState(id, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
         id = that._fixId(id);
-        if (options && options.user && options.user != 'system.user.admin') {
-            checkStates(id, options, 'delState', function (err) {
+        if (options && options.user && options.user !== 'system.user.admin') {
+            checkStates(id, options, 'delState', err => {
                 if (err) {
-                    if (typeof callback == 'function') callback(err);
+                    if (typeof callback === 'function') callback(err);
                 } else {
                     that.states.delState(id, callback);
                 }
@@ -523,7 +517,7 @@ function States(cb, stateChange) {
     };
 
     that.getStates = function getStates(pattern, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
@@ -532,28 +526,28 @@ function States(cb, stateChange) {
     };
 
     that.getForeignStates = function getForeignStates(pattern, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        var list = {};
-        if (typeof pattern == 'function') {
+        const list = {};
+        if (typeof pattern === 'function') {
             callback = pattern;
             pattern = '*';
         }
 
-        if (typeof callback != 'function') {
+        if (typeof callback !== 'function') {
             logger.error('getForeignStates invalid callback for ' + pattern);
             return;
         }
 
-        if (typeof pattern == 'object') {
-            that.states.getStates(pattern, function (err, arr) {
+        if (typeof pattern === 'object') {
+            that.states.getStates(pattern, (err, arr) => {
                 if (err) {
                     callback(err);
                     return;
                 }
-                for (var i = 0; i < pattern.length; i++) {
+                for (let i = 0; i < pattern.length; i++) {
                     if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
                     list[pattern[i]] = arr[i] || {};
                 }
@@ -561,28 +555,28 @@ function States(cb, stateChange) {
             });
             return;
         }
-        var keys = [];
-        var params = {};
+        const keys = [];
+        let params = {};
         if (pattern && pattern !== '*') {
             params = {
                 startkey: pattern.replace('*', ''),
                 endkey:   pattern.replace('*', '\u9999')
             };
         }
-        that.objects.getObjectView('system', 'state', params, options, function (err, res) {
+        that.objects.getObjectView('system', 'state', params, options, (err, res) => {
             if (err) {
-                if (typeof callback == 'function') callback(err);
+                if (typeof callback === 'function') callback(err);
                 return;
             }
 
-            for (var i = 0; i < res.rows.length; i++) {
+            for (let i = 0; i < res.rows.length; i++) {
                 keys.push(res.rows[i].id);
             }
 
-            if (options && options.user && options.user != 'system.user.admin') {
-                checkStates(keys, options, 'getState', function (err, keys) {
+            if (options && options.user && options.user !== 'system.user.admin') {
+                checkStates(keys, options, 'getState', (err, keys) => {
                     if (err) {
-                        if (typeof callback == 'function') callback(err);
+                        if (typeof callback === 'function') callback(err);
                         return;
                     }
                     that.states.getStates(keys, function (err, arr) {
@@ -590,11 +584,11 @@ function States(cb, stateChange) {
                             callback(err);
                             return;
                         }
-                        for (var i = 0; i < res.rows.length; i++) {
+                        for (let i = 0; i < res.rows.length; i++) {
                             if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
                             list[keys[i]] = arr[i] || {};
                         }
-                        if (typeof callback == 'function') callback(null, list);
+                        if (typeof callback === 'function') callback(null, list);
                     });
                 });
             } else {
@@ -603,11 +597,11 @@ function States(cb, stateChange) {
                         callback(err);
                         return;
                     }
-                    for (var i = 0; i < res.rows.length; i++) {
+                    for (let i = 0; i < res.rows.length; i++) {
                         if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
                         list[keys[i]] = arr[i] || {};
                     }
-                    if (typeof callback == 'function') callback(null, list);
+                    if (typeof callback === 'function') callback(null, list);
                 });
             }
         });
@@ -625,7 +619,7 @@ function States(cb, stateChange) {
 
     that.subscribeStates = function subscribeStates(pattern, options) {
         // Exception. Threat the '*' case automatically
-        if (!pattern || pattern == '*') {
+        if (!pattern || pattern === '*') {
             that.states.subscribe(that.namespace + '.*', options);
         } else {
             pattern = that._fixId(pattern, 'state');
@@ -634,7 +628,7 @@ function States(cb, stateChange) {
     };
 
     that.unsubscribeStates = function unsubscribeStates(pattern, options) {
-        if (!pattern || pattern == '*') {
+        if (!pattern || pattern === '*') {
             that.states.unsubscribe(that.namespace + '.*', options);
         } else {
             pattern = that._fixId(pattern, 'state');
@@ -686,7 +680,7 @@ function States(cb, stateChange) {
 
     // Write binary block into redis, e.g image
     that.setBinaryState = function setBinaryState(id, binary, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
@@ -695,7 +689,7 @@ function States(cb, stateChange) {
 
     // Read binary block fromredis, e.g. image
     that.getBinaryState = function getBinaryState(id, options, callback) {
-        if (typeof options == 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
@@ -705,9 +699,7 @@ function States(cb, stateChange) {
     logger.debug(that.namespace + ' statesDB connected');
 
     if (typeof cb === 'function') {
-        setTimeout(function () {
-            cb();
-        }, 0);
+        setImmediate(() => cb(), 0);
     }
 
     return this;

@@ -1,3 +1,4 @@
+'use strict';
 const mqtt    = require('mqtt');
 
 function Client(cbConnected, cbChanged, config) {
@@ -63,8 +64,15 @@ function Client(cbConnected, cbChanged, config) {
         };
         that.client.publish(topic,  message, opts, cb);
     };
-    this.subscribe = (topic, cb) => {
-        that.client.subscribe(topic, cb);
+    this.subscribe = (topic, opts, cb) => {
+        if (typeof opts === 'function') {
+            cb = opts;
+            opts = null;
+        }
+        that.client.subscribe(topic, opts, cb);
+    };
+    this.unsubscribe = (topic, cb) => {
+        that.client.unsubscribe(topic, cb);
     };
     this.destroy = () => {
         if (that.client) {
