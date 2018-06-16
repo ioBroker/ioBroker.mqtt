@@ -27,10 +27,9 @@
     "ws": "^5.2.0"
   },
   "devDependencies": {
-    "istanbul": "^0.4.5",
+    "chai": "^4.1.2",
     "gulp": "^3.9.1",
-    "mocha": "^5.2.0",
-    "chai": "^4.1.2"
+    "mocha": "^5.2.0"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
