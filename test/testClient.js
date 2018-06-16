@@ -165,24 +165,22 @@ describe('Test MQTT client', function() {
     });
 
     it('MQTT client: Check if connected to MQTT broker', done => {
-        this.timeout(3000);
         if (!connected) {
             checkConnectionOfAdapter(done);
         } else {
             done();
         }
-    });
+    }).timeout(3000);
 
     it('MQTT client: wait', done => {
-        this.timeout(4000);
         setTimeout(function () {
             done();
         }, 1000);
-    });
+    }).timeout(4000);
 
     for (let rr in rules) {
         (function(id, topic) {
-            it('MQTT client: Check receive ' + id, done => {
+            it('MQTT client: Check receive ' + id, function (done) { // let FUNCTION here
                 checkMqtt2Adapter(id, topic, this, done);
             });
         })(rr, rules[rr]);
@@ -191,7 +189,7 @@ describe('Test MQTT client', function() {
     for (let r in rules) {
         (function(id, topic) {
             if (topic.indexOf('mqtt') !== -1) {
-                it('MQTT client: Check send ' + topic, done => {
+                it('MQTT client: Check send ' + topic, function (done) { // let FUNCTION here
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
             }
@@ -199,7 +197,6 @@ describe('Test MQTT client', function() {
     }
 
     it('MQTT client: check reconnect if server is down', done => {
-        this.timeout(20000);
         mqttServer.stop();
         connected = false;
 
@@ -211,7 +208,7 @@ describe('Test MQTT client', function() {
                 done();
             });
         });
-    });
+    }).timeout(20000);
 
     after('MQTT client: Stop js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(6000);
@@ -220,7 +217,7 @@ describe('Test MQTT client', function() {
 
         setup.stopController(function (normalTerminated) {
             console.log('Adapter normal terminated: ' + normalTerminated);
-            done();
+            _done();
         });
     });
 });

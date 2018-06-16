@@ -189,17 +189,16 @@ describe('MQTT server: Test mqtt server', () => {
     });
 
     it('MQTT server: Check if connected to MQTT broker', done => {
-        this.timeout(2000);
         if (!connected) {
             checkConnection(true, done);
         } else {
             done();
         }
-    });
+    }).timeout(2000);
 
     for (const r in rules) {
         (function(id, topic) {
-            it('MQTT server: Check receive ' + id, done => {
+            it('MQTT server: Check receive ' + id, function (done) { // let FUNCTION here
                 checkMqtt2Adapter(id, topic, this, done);
             });
         })(r, rules[r]);
@@ -207,16 +206,15 @@ describe('MQTT server: Test mqtt server', () => {
 
     // give time to client to receive all messages
     it('wait', done => {
-        this.timeout(3000);
         setTimeout(() => {
             done();
         }, 2000);
-    });
+    }).timeout(3000);
 
     for (const r in rules) {
         (function(id, topic) {
             if (topic.indexOf('mqtt') !== -1) {
-                it('MQTT server: Check send ' + topic, done => {
+                it('MQTT server: Check send ' + topic, function (done) { // let FUNCTION here
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
             }
@@ -238,7 +236,6 @@ describe('MQTT server: Test mqtt server', () => {
     });
 
     it('MQTT server: check reconnection', done => {
-        this.timeout(10000);
         mqttClientEmitter.stop();
         mqttClientDetector.stop();
         checkConnection(false, error => {
@@ -249,7 +246,7 @@ describe('MQTT server: Test mqtt server', () => {
                 done();
             });
         });
-    });
+    }).timeout(10000);
 
     after('MQTT server: Stop js-controller', function (done) {
         this.timeout(5000);
