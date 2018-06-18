@@ -30,15 +30,17 @@ function startClients(_done) {
     const MqttClient = require(__dirname + '/lib/mqttClient.js');
 
     // Start client to emit topics
-    mqttClientEmitter = new MqttClient(() => {
+    mqttClientEmitter = new MqttClient(connected => {
         // on connected
-        console.log('Test MQTT Emitter is connected to MQTT broker');
-        clientConnected1 = true;
-        if (_done && brokerStarted && clientConnected1 && clientConnected2) {
-            _done();
-            _done = null;
+        if (connected) {
+            console.log('Test MQTT Emitter is connected to MQTT broker');
+            clientConnected1 = true;
+            if (_done && brokerStarted && clientConnected1 && clientConnected2) {
+                _done();
+                _done = null;
+            }
         }
-    }, function (topic, message) {
+    }, (topic, message) => {
         console.log((new Date()).getTime() + ' emitter received ' + topic + ': ' + message.toString());
         // on receive
         lastReceivedTopic1   = topic;
@@ -46,15 +48,17 @@ function startClients(_done) {
     }, {name: 'Emitter', user: 'user', pass: 'pass1'});
 
     // Start client to receive topics
-    mqttClientDetector = new MqttClient(() => {
+    mqttClientDetector = new MqttClient(connected => {
         // on connected
-        console.log('Test MQTT Detector is connected to MQTT broker');
-        clientConnected2 = true;
-        if (_done && brokerStarted && clientConnected1 && clientConnected2) {
-            _done();
-            _done = null;
+        if (connected) {
+            console.log('Test MQTT Detector is connected to MQTT broker');
+            clientConnected2 = true;
+            if (_done && brokerStarted && clientConnected1 && clientConnected2) {
+                _done();
+                _done = null;
+            }
         }
-    }, function (topic, message) {
+    }, (topic, message) => {
         console.log((new Date()).getTime() + ' detector received ' + topic + ': ' + message.toString());
         // on receive
         lastReceivedTopic2   = topic;
