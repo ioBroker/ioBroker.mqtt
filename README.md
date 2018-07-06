@@ -109,6 +109,9 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.0.1 (2018-07-06)
+* (bluefox) Double prefix by client was fixed
+
 ### 2.0.0 (2018-03-05)
 * (bluefox) broke node.js 4 support
 * (bluefox) remove mqtt-stream-server

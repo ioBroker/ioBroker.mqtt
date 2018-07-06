@@ -1,8 +1,19 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.0.0",
+        "version": "2.0.1",
         "news": {
+            "2.0.1": {
+                "en": "Double prefix by client was fixed",
+                "de": "Doppelter Präfix von Client wurde behoben",
+                "ru": "Был исправлен двойной префикс клиентом",
+                "pt": "Prefixo duplo por cliente foi corrigido",
+                "nl": "Dubbel voorvoegsel per klant is opgelost",
+                "fr": "Double préfixe par client a été fixé",
+                "it": "È stato corretto il doppio prefisso del client",
+                "es": "Se corrigió el doble prefijo por cliente",
+                "pl": "Poprawiono podwójny prefiks według klienta"
+            },
             "2.0.0": {
                 "en": "The patch for wifi-iot removed\nthe mqtt library updated",
                 "de": "Der Patch für wifi-iot wurde entfernt\nDie mqtt-Bibliothek wurde aktualisiert",
