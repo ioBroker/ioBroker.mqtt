@@ -1,8 +1,19 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.0.1",
+        "version": "2.0.2",
         "news": {
+            "2.0.2": {
+                "en": "Behaviour of set topics was changed",
+                "de": "Verhalten von Set -topics wurde geändert",
+                "ru": "Изменено поведение для set",
+                "pt": "O comportamento de topics definidos foi alterado",
+                "nl": "Gedrag van 'set'-onderwerpen is gewijzigd",
+                "fr": "Le comportement des sujets set a été modifié",
+                "it": "Il comportamento degli argomenti set è stato modificato",
+                "es": "Comportamiento de los temas establecidos fue cambiado",
+                "pl": "Zachowanie topics zestaw zostało zmienione"
+            },
             "2.0.1": {
                 "en": "Double prefix by client was fixed",
                 "de": "Doppelter Präfix von Client wurde behoben",

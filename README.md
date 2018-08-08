@@ -109,6 +109,9 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.0.2 (2018-08-09)
+* (bluefox) Behaviour of "set" topics was changed
+
 ### 2.0.1 (2018-07-06)
 * (bluefox) Double prefix by client was fixed
 
