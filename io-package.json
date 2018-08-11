@@ -1,8 +1,19 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.0.2",
+        "version": "2.0.3",
         "news": {
+            "2.0.3": {
+                "en": "Prefix in server was corrected",
+                "de": "Präfix im Server wurde korrigiert",
+                "ru": "Исправлен префикс на сервере",
+                "pt": "O prefixo no servidor foi corrigido",
+                "nl": "Prefix in server is gecorrigeerd",
+                "fr": "Le préfixe du serveur a été corrigé",
+                "it": "Il prefisso nel server è stato corretto",
+                "es": "El prefijo en el servidor fue corregido",
+                "pl": "Prefix na serwerze został poprawiony"
+            },
             "2.0.2": {
                 "en": "Behaviour of set topics was changed",
                 "de": "Verhalten von Set -topics wurde geändert",
