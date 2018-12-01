@@ -109,6 +109,9 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.0.4 (2018-12-01)
+* (Apollon77) Subscribe to topics after connect
+
 ### 2.0.3 (2018-08-11)
 * (bluefox) Prefix in server was corrected
 
