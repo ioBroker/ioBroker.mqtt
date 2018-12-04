@@ -201,7 +201,7 @@
         "keepalive": 1000,
         "reconnectPeriod": 10,
         "connectTimeout": 30,
-        "clean": false,
+        "clean": true,
         "defaultQoS": 0,
         "retain": false,
         "retransmitInterval": 2000,
