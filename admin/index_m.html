@@ -42,14 +42,14 @@
             $('#_certChained').hide();
             $('#_webSocket').hide();
             $('#_publishOnSubscribe').hide();
-            $('#_clean').show();
+            $('#_persistent').show();
         } else {
             $('#_clientId').hide();
             $('#_url').hide();
             $('#test').hide();
             $('#_patterns').hide();
             $('#_webSocket').show();
-            $('#_clean').hide();
+            $('#_persistent').hide();
 
             if ($('#ssl').prop('checked')) {
                 $('#_certPublic').show();
@@ -400,8 +400,8 @@
                         <input id="retain" type="checkbox" class="value filled-in" />
                         <span class="translate" for="retain">Set retain flag</span>
                     </div>
-                    <div id="_clean" class="input-field col s12 m6 l3">
-                        <input id="clean" type="checkbox" class="value filled-in" />
+                    <div id="_persistent" class="input-field col s12 m6 l3">
+                        <input id="persistent" type="checkbox" class="value filled-in" />
                         <span class="translate" for="persistent">Persistent Session</span>
                     </div>
                 </div>
