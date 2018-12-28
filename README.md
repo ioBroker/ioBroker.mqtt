@@ -54,7 +54,8 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
 - **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
 - **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true).
- 
+- **Persistent Session** - When checked the broker saves the session information of the adapter. This means it tracks which messages have been send / received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
+
 ## Install
 
 ```node iobroker.js add mqtt```

@@ -157,6 +157,7 @@ function main() {
 
     adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
     adapter.config.retain = adapter.config.retain === 'true' || adapter.config.retain === true;
+    adapter.config.persistent = adapter.config.persistent === 'true' || adapter.config.persistent === true;
     adapter.config.retransmitInterval = parseInt(adapter.config.retransmitInterval, 10) || 2000;
     adapter.config.retransmitCount = parseInt(adapter.config.retransmitCount, 10) || 10;
 
