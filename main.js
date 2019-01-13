@@ -2,7 +2,7 @@
  *
  *      ioBroker mqtt Adapter
  *
- *      (c) 2014-2018 bluefox
+ *      (c) 2014-2019 bluefox
  *
  *      MIT License
  *
@@ -10,7 +10,8 @@
 'use strict';
 
 const utils    = require(__dirname + '/lib/utils'); // Get common adapter utils
-const adapter  = new utils.Adapter('mqtt');
+const adapterName = require('./package.json').name.split('.').pop();
+let adapter;
 
 let server   = null;
 let client   = null;
@@ -26,57 +27,65 @@ function decrypt(key, value) {
     return result;
 }
 
-adapter.on('message', function (obj) {
-    if (obj) processMessage(obj);
-    processMessages();
-});
+function startAdapter(options) {
+    options = options || {};
+    Object.assign(options, {name: adapterName});
 
-adapter.on('ready', function () {
-    adapter.config.pass = decrypt('Zgfr56gFe87jJOM', adapter.config.pass);
-    adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
-    if (adapter.config.ssl && adapter.config.type === 'server') {
-        // Load certificates
-        adapter.getCertificates(function (err, certificates) {
-            adapter.config.certificates = certificates;
+    adapter = new utils.Adapter(options);
+
+    adapter.on('message', function (obj) {
+        if (obj) processMessage(obj);
+        processMessages();
+    });
+
+    adapter.on('ready', function () {
+        adapter.config.pass = decrypt('Zgfr56gFe87jJOM', adapter.config.pass);
+        adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
+        if (adapter.config.ssl && adapter.config.type === 'server') {
+            // Load certificates
+            adapter.getCertificates(function (err, certificates) {
+                adapter.config.certificates = certificates;
+                main();
+            });
+        } else {
+            // Start
             main();
-        });
-    } else {
-        // Start
-        main();
-    }
-});
-
-adapter.on('unload', function () {
-    if (client) client.destroy();
-    if (server) server.destroy();
-});
-
-// is called if a subscribed state changes
-adapter.on('stateChange', (id, state) => {
-    adapter.log.debug('stateChange ' + id + ': ' + JSON.stringify(state));
-    // State deleted
-    if (!state) {
-        delete states[id];
-        // If SERVER
-        if (server) server.onStateChange(id);
-        // if CLIENT
-        if (client) client.onStateChange(id);
-    } else
-    // you can use the ack flag to detect if state is desired or acknowledged
-    if ((adapter.config.sendAckToo || !state.ack) && !messageboxRegex.test(id)) {
-        const oldVal = states[id] ? states[id].val : null;
-        const oldAck = states[id] ? states[id].ack : null;
-        states[id] = state;
-
-        // If value really changed
-        if (!adapter.config.onchange || oldVal !== state.val || oldAck !== state.ack) {
-            // If SERVER
-            if (server) server.onStateChange(id, state);
-            // if CLIENT
-            if (client) client.onStateChange(id, state);
         }
-    }
-});
+    });
+
+    adapter.on('unload', function () {
+        if (client) client.destroy();
+        if (server) server.destroy();
+    });
+
+    // is called if a subscribed state changes
+    adapter.on('stateChange', (id, state) => {
+        adapter.log.debug('stateChange ' + id + ': ' + JSON.stringify(state));
+        // State deleted
+        if (!state) {
+            delete states[id];
+            // If SERVER
+            if (server) server.onStateChange(id);
+            // if CLIENT
+            if (client) client.onStateChange(id);
+        } else
+        // you can use the ack flag to detect if state is desired or acknowledged
+        if ((adapter.config.sendAckToo || !state.ack) && !messageboxRegex.test(id)) {
+            const oldVal = states[id] ? states[id].val : null;
+            const oldAck = states[id] ? states[id].ack : null;
+            states[id] = state;
+
+            // If value really changed
+            if (!adapter.config.onchange || oldVal !== state.val || oldAck !== state.ack) {
+                // If SERVER
+                if (server) server.onStateChange(id, state);
+                // if CLIENT
+                if (client) client.onStateChange(id, state);
+            }
+        }
+    });
+    return adapter;
+}
 
 function processMessage(obj) {
     if (!obj || !obj.command) return;
@@ -173,4 +182,12 @@ function main() {
             server = new require(__dirname + '/lib/server')(adapter, states);
         }
     }
+}
+
+// If started as allInOne/compact mode => return function to create instance
+if (module && module.parent) {
+    module.exports = startAdapter;
+} else {
+    // or start the instance directly
+    startAdapter();
 }
