@@ -110,6 +110,9 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.0.6 (2019-01-16)
+* (SchumyHao) Add Chinese support
+
 ### 2.0.5 (2019-01-12)
 * (simatec) Support for Compact mode
 
