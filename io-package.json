@@ -1,8 +1,31 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.0.4",
+        "version": "2.0.6",
         "news": {
+            "2.0.6": {
+                "en": "Add Chinese support",
+                "de": "Chinesische Unterstützung hinzufügen",
+                "ru": "Добавить поддержку китайцев",
+                "pt": "Adicionar suporte chinês",
+                "nl": "Voeg Chinese ondersteuning toe",
+                "fr": "Ajouter un support chinois",
+                "it": "Aggiungi supporto cinese",
+                "es": "Añadir soporte chino",
+                "pl": "Dodaj chińskie wsparcie",
+                "zh-cn": "添加中文支持"
+            },
+            "2.0.5": {
+                "en": "Support for Compact mode",
+                "de": "Unterstützung für den Kompaktmodus",
+                "ru": "Поддержка компактного режима",
+                "pt": "Suporte para o modo compacto",
+                "nl": "Ondersteuning voor de Compact-modus",
+                "fr": "Prise en charge du mode compact",
+                "it": "Supporto per la modalità compatta",
+                "es": "Soporte para el modo compacto",
+                "pl": "Obsługa trybu Compact"
+            },
             "2.0.4": {
                 "en": "Subscribe to topics after connect",
                 "de": "Themen nach dem Verbinden abonnieren",
@@ -155,6 +178,7 @@
         "license": "MIT",
         "platform": "Javascript/Node.js",
         "mode": "daemon",
+        "compact": true,
         "messagebox": true,
         "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
         "loglevel": "info",

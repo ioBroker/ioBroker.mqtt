@@ -110,6 +110,12 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.0.6 (2019-01-16)
+* (SchumyHao) Add Chinese support
+
+### 2.0.5 (2019-01-12)
+* (simatec) Support for Compact mode
+
 ### 2.0.4 (2018-12-01)
 * (Apollon77) Subscribe to topics after connect
 
@@ -293,7 +299,7 @@ The broker was tested with following clients:
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2018, bluefox<dogafox@gmail.com>
+Copyright (c) 2014-2019, bluefox<dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
