@@ -24,13 +24,13 @@
     "mqtt": "^2.18.3",
     "mqtt-connection": "^4.0.0",
     "websocket-stream": "^5.1.2",
-    "ws": "^5.2.0"
+    "ws": "^5.2.0",
+    "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "gulp": "^3.9.1",
-    "mocha": "^6.0.2",
-    "@iobroker/adapter-core": "^1.0.3"
+    "mocha": "^6.0.2"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
