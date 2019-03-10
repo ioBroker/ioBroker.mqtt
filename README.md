@@ -2,7 +2,7 @@
 # ioBroker MQTT
 ==============
 
-[![NPM version](http://img.shields.io/npm/v/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
+![Number of Installations](http://iobroker.live/badges/mqtt-installed.svg) ![Number of Installations](http://iobroker.live/badges/mqtt-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
 [![Tests](https://travis-ci.org/ioBroker/ioBroker.mqtt.svg?branch=master)](https://travis-ci.org/ioBroker/ioBroker.mqtt)
 
