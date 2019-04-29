@@ -90,6 +90,16 @@ function startAdapter(options) {
 function processMessage(obj) {
     if (!obj || !obj.command) return;
     switch (obj.command) {
+		case 'sendMessage2Client':
+			adapter.log.debug('Sending message via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...')
+			server.onMessage(obj.message.topic, obj.message.message);
+			break;
+			
+		case 'sendState2Client':
+			adapter.log.debug('Sending message to client ' + obj.message.id + ': ' + obj.message.state + ' ...')
+			server.onStateChange(obj.message.id, obj.message.state);
+			break;
+            
         case 'test': {
             // Try to connect to mqtt broker
             if (obj.callback && obj.message) {
