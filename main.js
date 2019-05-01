@@ -91,13 +91,23 @@ function processMessage(obj) {
     if (!obj || !obj.command) return;
     switch (obj.command) {
 		case 'sendMessage2Client':
-			adapter.log.debug('Sending message via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...')
-			server.onMessage(obj.message.topic, obj.message.message);
+			if (server)
+			{
+				adapter.log.debug('Sending message via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
+				server.onMessage(obj.message.topic, obj.message.message);
+			}
+			else
+				adapter.log.debug('MQTT Server not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
 			break;
 			
 		case 'sendState2Client':
-			adapter.log.debug('Sending message to client ' + obj.message.id + ': ' + obj.message.state + ' ...')
-			server.onStateChange(obj.message.id, obj.message.state);
+			if (server)
+			{
+				adapter.log.debug('Sending message to client ' + obj.message.id + ': ' + obj.message.state + ' ...')
+				server.onStateChange(obj.message.id, obj.message.state);
+			}
+			else
+				adapter.log.debug('MQTT Server not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
 			break;
             
         case 'test': {
