@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.0.6",
+        "version": "2.1.0",
         "news": {
+            "2.1.0": {
+                "en": "Add option to send message using messagebox\nFix error with logging on pubrec",
+                "de": "Option zum Senden von Nachrichten mithilfe von Messagebox hinzufügen\nFehler bei der pubrec-logging behoben",
+                "ru": "Добавить опцию для отправки сообщения с помощью messagebox\nИсправлена ​​ошибка при входе в pubrec",
+                "pt": "Adicionar opção para enviar mensagem usando messagebox\nCorrigir erro com o registro em pubrec",
+                "nl": "Optie toevoegen om een ​​bericht te verzenden via messagebox\nFout bij herstellen met inloggen op pubrec",
+                "fr": "Ajouter une option pour envoyer un message en utilisant la messagebox\nCorrection d'une erreur lors de la connexion à pubrec",
+                "it": "Aggiungi l'opzione per inviare un messaggio usando messagebox\nRisolto un problema con l'accesso a pubrec",
+                "es": "Añadir opción para enviar mensaje usando el messagebox\nSolucionar error al iniciar sesión en pubrec.",
+                "pl": "Dodaj opcję wysyłania wiadomości przy użyciu skrzynki wiadomości\nNapraw błąd podczas logowania do pubrec",
+                "zh-cn": "添加使用消息框发送消息的选项\n登录pubrec修复错误"
+            },
             "2.0.6": {
                 "en": "Add Chinese support",
                 "de": "Chinesische Unterstützung hinzufügen",
@@ -80,69 +92,6 @@
                 "it": "La patch per wifi-iot è stata rimossa\nla libreria mqtt aggiornata",
                 "es": "El parche para wifi-iot eliminado\nla biblioteca mqtt actualizada",
                 "pl": "Łata dla wifi-iot została usunięta\nZaktualizowano bibliotekę mqtt"
-            },
-            "1.5.0": {
-                "en": "The patch for wifi-iot removed\nthe mqtt library updated",
-                "de": "Der Patch für wifi-iot wurde entfernt\nDie mqtt-Bibliothek wurde aktualisiert",
-                "ru": "Патч для wifi-iot удален\nобновлена ​​библиотека mqtt",
-                "pt": "O patch para o wifi foi removido\na biblioteca mqtt foi atualizada",
-                "nl": "De patch voor wifi-iot verwijderd\nde mqtt-bibliotheek is bijgewerkt",
-                "fr": "Le patch pour wifi-iot supprimé\nla bibliothèque mqtt mise à jour",
-                "it": "La patch per wifi-iot è stata rimossa\nla libreria mqtt aggiornata",
-                "es": "El parche para wifi-iot eliminado\nla biblioteca mqtt actualizada",
-                "pl": "Łata dla wifi-iot została usunięta\nZaktualizowano bibliotekę mqtt"
-            },
-            "1.4.2": {
-                "en": "Admin3 settings are corrected",
-                "de": "Admin3-Einstellungen sind korrigiert",
-                "ru": "Настройки Admin3 исправлены",
-                "pt": "As configurações do Admin3 são corrigidas",
-                "nl": "Admin3-instellingen zijn gecorrigeerd",
-                "fr": "Les paramètres Admin3 sont corrigés",
-                "it": "Le impostazioni di Admin3 sono corrette",
-                "es": "La configuración de Admin3 está corregida",
-                "pl": "Ustawienia Admin3 zostały poprawione"
-            },
-            "1.4.1": {
-                "en": "Convert error is caught\nReady for admin3",
-                "de": "Konvertierungsfehler wird abgefangen\nBereit für admin3",
-                "ru": "Ошибка конвертирования\nГотово для admin3",
-                "pt": "O erro de conversão é detectado\nPronto para admin3",
-                "nl": "Converteerfout wordt gepakt\nKlaar voor admin3",
-                "fr": "L'erreur de conversion est interceptée\nPrêt pour admin3",
-                "it": "L'errore di conversione viene catturato\nPronto per admin3",
-                "es": "El error de conversión está atrapado\nListo para admin3",
-                "pl": "Przekonwertowano błąd został złapany\nGotowy na admin3"
-            },
-            "1.3.3": {
-                "en": "Fix sending of QOS=2 if server",
-                "de": "Korregiere versendung von Packeten mit QOS=2 bei Server",
-                "ru": "Исправлена рассылка пакетов с QOS=2 у сервера"
-            },
-            "1.3.2": {
-                "en": "Fix convert of UTF8 payloads",
-                "de": "Korregiere die Konvertierung für UTF8 data",
-                "ru": "Исправлено конвертирование UTF8 данных"
-            },
-            "1.3.1": {
-                "en": "Update mqtt package\nadd Interval before send topics by connection ans send interval settings\nreorganise configuration dialog",
-                "de": "Update mqtt Packet\nNeue Einstellungen für Server hizugefügt\nÄndere Konfigurationsdialog",
-                "ru": "Обновлён mqtt модуль\nДобавлены новые настройки для сервера\nизменеён диалог настроек"
-            },
-            "1.3.0": {
-                "en": "Update mqtt package\nconfigurable client ID",
-                "de": "Update mqtt Packet\nEinstellbares Client ID",
-                "ru": "Обновлён mqtt модуль\nНастраиваемый Client ID"
-            },
-            "1.2.5": {
-                "en": "Fix server publishing",
-                "de": "Korregiere ServerPublish",
-                "ru": "Исправлен publish сервера"
-            },
-            "1.2.4": {
-                "en": "additional debug output",
-                "de": "Debug-Ausgaben hinzugefügt",
-                "ru": "Добавлена отладочная информация"
             }
         },
         "title": "MQTT Broker/Client",

@@ -124,6 +124,10 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.1.0 (2019-05-02)
+* (Zefau) Add option to send message using messagebox
+* (Zefau) Fix error with logging on pubrec
+
 ### 2.0.6 (2019-01-16)
 * (SchumyHao) Add Chinese support
 
