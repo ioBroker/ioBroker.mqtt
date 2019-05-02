@@ -69,6 +69,21 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - To receive all topics for "/4MS" set pattern to "/4MS/#"
 - To receive all topics for "/MS and "/floorish" set pattern to "/4MS/#, /floorish/#"
 
+### Sending messages
+You may send / publish messages on topics using ```sendTo``` method from your adapter via MQTT adapter, e.g.:
+
+```javascript
+/*
+ * @param {string}  MQTT instance     Specify MQTT instance to send message through (may be either server or client)
+ * @param {string}  action            Action to use (always 'sendMessage2Client' for sending plain messages)
+ * @param {object}  payload         
+ * @param {string}  payload.topic     Topic to publish message on
+ * @param {string}  payload.message   Message to be published on specified topic
+ *
+ */
+adapter.sendTo('mqtt.0', 'sendMessage2Client', {topic: '/your/topic/here', message: 'your message'});
+```
+
 ### Examples of using wildcards
 The following examples on the use of wildcards, builds on the example provided in topic strings.
 
