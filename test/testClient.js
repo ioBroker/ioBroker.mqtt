@@ -94,7 +94,7 @@ function checkConnectionOfAdapter(cb, counter) {
 
 function checkConnectionToServer(value, cb, counter) {
     counter = counter || 0;
-    if (counter > 20) {
+    if (counter > 60) {
         cb && cb('Cannot check connection to server for ' + value);
         return;
     }

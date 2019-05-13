@@ -144,7 +144,7 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
 
 function checkConnection(value, done, counter) {
     counter = counter || 0;
-    if (counter > 20) {
+    if (counter > 60) {
         done && done('Cannot check ' + value);
         return;
     }
