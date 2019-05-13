@@ -250,7 +250,7 @@ describe('MQTT server: Test mqtt server', () => {
                 done();
             });
         });
-    }).timeout(10000);
+    }).timeout(70000);
 
     after('MQTT server: Stop js-controller', function (done) {
         this.timeout(5000);

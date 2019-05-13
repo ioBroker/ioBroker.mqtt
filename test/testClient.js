@@ -209,7 +209,7 @@ describe('Test MQTT client', function() {
                 done();
             });
         });
-    }).timeout(20000);
+    }).timeout(70000);
 
     after('MQTT client: Stop js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(6000);
