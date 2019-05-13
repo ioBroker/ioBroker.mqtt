@@ -199,6 +199,7 @@ describe('Test MQTT client', function() {
     it('MQTT client: check reconnect if server is down', done => {
         mqttServer.stop();
         connected = false;
+        console.log('MQTT server stop ' + Date.now());
 
         checkConnectionToServer(false, error => {
             expect(error).to.be.not.ok;
