@@ -37,6 +37,7 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Use chunk patch** - There is a problem with last update of mqtt-packet, that frames will be sent directly to client and not first completely built and then sent to client. Some old clients do not like such a packets and do not work with new library. To fix it you can activate this flag.
+- **Force clean session** - Overwrite the client settings and clear or keep session.
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like "localhost".
@@ -124,6 +125,9 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.1.1 (2019-07-27)
+* (bluefox) Add option to overwrite the client "clean session" settings
+
 ### 2.1.0 (2019-05-02)
 * (Zefau) Add option to send message using messagebox
 * (Zefau) Fix error with logging on pubrec

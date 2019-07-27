@@ -43,6 +43,7 @@
             $('#_webSocket').hide();
             $('#_publishOnSubscribe').hide();
             $('#_persistent').show();
+            $('#_forceCleanSession').hide();
         } else {
             $('#_clientId').hide();
             $('#_url').hide();
@@ -50,6 +51,7 @@
             $('#_patterns').hide();
             $('#_webSocket').show();
             $('#_persistent').hide();
+            $('#_forceCleanSession').show();
 
             if ($('#ssl').prop('checked')) {
                 $('#_certPublic').show();
@@ -403,6 +405,14 @@
                     <div id="_persistent" class="input-field col s12 m6 l3">
                         <input id="persistent" type="checkbox" class="value filled-in" />
                         <span class="translate" for="persistent">Persistent Session</span>
+                    </div>
+                    <div id="_forceCleanSession" class="input-field col s12 m6 l3">
+                        <select id="forceCleanSession" class="value">
+                            <option value="no" class="translate">Use client settings</option>
+                            <option value="clean" class="translate">Always clean sessions for all clients</option>
+                            <option value="keep" class="translate">Always keep sessions for all clients</option>
+                        </select>
+                        <label class="translate" for="defaultQoS">Force clean session</label>
                     </div>
                 </div>
             </div>

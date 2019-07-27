@@ -176,6 +176,8 @@ function readStatesForPattern(pattern) {
 }
 
 function main() {
+    adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
+
     // Subscribe on own variables to publish it
     if (adapter.config.publish) {
         const parts = adapter.config.publish.split(',');

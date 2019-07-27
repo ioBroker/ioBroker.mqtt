@@ -48,4 +48,52 @@ systemDictionary = {
     "Enable first the adapter to test client.": {    "en": "Enable first the adapter to test client.",        "de": "Aktivieren Sie zuerst den Adapter, um den Client zu testen.", "ru": "Включите сначала адаптер для тестирования клиента.", "pt": "Ative primeiro o adaptador para testar o cliente.", "nl": "Schakel eerst de adapter in om de client te testen.", "fr": "Activez d'abord l'adaptateur pour tester le client.", "it": "Abilitare prima l'adattatore per testare il client.", "es": "Primero habilite el adaptador para probar el cliente.", "pl": "Najpierw włącz adapter, aby przetestować klienta.", "zh-cn": "首先启用适配器来测试客户端。"},
     "First save the adapter": {                      "en": "First save the adapter",                          "de": "Speichern Sie zuerst den Adapter",                "ru": "Сначала сохраните адаптер",                       "pt": "Primeiro salve o adaptador",                      "nl": "Sla eerst de adapter op",                         "fr": "D'abord enregistrer l'adaptateur",                "it": "Per prima cosa salva l'adattatore",               "es": "Primero guarde el adaptador",                     "pl": "Najpierw zapisz adapter",                         "zh-cn": "首先保存适配器"},
     "Persistent Session": {                          "en": "Persistent Session",                              "de": "Dauerhafte Sitzung",                              "ru": "Постоянная сессия",                               "pt": "Sessão Persistente",                              "nl": "Aanhoudende sessie",                              "fr": "Session persistante",                             "it": "Sessione persistente",                            "es": "Sesión persistente",                              "pl": "Trwała sesja",                                    "zh-cn": "持久会话"},
+    "Force clean session": {
+        "en": "Force clean session",
+        "de": "Bereinigungssitzung erzwingen",
+        "ru": "Принудительная чистая сессия",
+        "pt": "Forçar sessão limpa",
+        "nl": "Forceer schone sessie",
+        "fr": "Forcer la session propre",
+        "it": "Forza sessione pulita",
+        "es": "Forzar sesión limpia",
+        "pl": "Wymuś czystą sesję",
+        "zh-cn": "强制清理会话"
+    },
+    "Use client settings": {
+        "en": "Use client settings",
+        "de": "Verwenden Sie Clienteinstellungen",
+        "ru": "Используйте настройки клиента",
+        "pt": "Use as configurações do cliente",
+        "nl": "Gebruik clientinstellingen",
+        "fr": "Utiliser les paramètres du client",
+        "it": "Usa le impostazioni del client",
+        "es": "Usar la configuración del cliente",
+        "pl": "Użyj ustawień klienta",
+        "zh-cn": "使用客户端设置"
+    },
+    "Always clean sessions for all clients": {
+        "en": "Always clean sessions for all clients",
+        "de": "Immer saubere Sitzungen für alle Clients",
+        "ru": "Всегда чистые сессии для всех клиентов",
+        "pt": "Sempre limpar sessões para todos os clientes",
+        "nl": "Altijd schone sessies voor alle klanten",
+        "fr": "Toujours nettoyer les sessions pour tous les clients",
+        "it": "Sessioni sempre pulite per tutti i client",
+        "es": "Siempre limpie las sesiones para todos los clientes.",
+        "pl": "Zawsze czyste sesje dla wszystkich klientów",
+        "zh-cn": "始终为所有客户清理会话"
+    },
+    "Always keep sessions for all clients": {
+        "en": "Always keep sessions for all clients",
+        "de": "Halten Sie immer Sitzungen für alle Clients",
+        "ru": "Всегда держите сессии для всех клиентов",
+        "pt": "Sempre mantenha sessões para todos os clientes",
+        "nl": "Houd altijd sessies voor alle klanten",
+        "fr": "Toujours garder les sessions pour tous les clients",
+        "it": "Mantenere sempre sessioni per tutti i client",
+        "es": "Mantener siempre sesiones para todos los clientes.",
+        "pl": "Zawsze utrzymuj sesje dla wszystkich klientów",
+        "zh-cn": "始终为所有客户保留会话"
+    }
 };

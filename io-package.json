@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.0",
+        "version": "2.1.1",
         "news": {
+            "2.1.1": {
+                "en": "Added option to overwrite the client \"clean session\" settings",
+                "de": "Option zum Überschreiben der Einstellungen für \"saubere Sitzung\" des Clients hinzugefügt",
+                "ru": "Добавлена опция перезаписи настроек клиента \"чистый сеанс\"",
+                "pt": "Opção adicionada para sobrescrever as configurações de \"sessão limpa\" do cliente",
+                "nl": "Optie toegevoegd om de \"schone sessie\" -instellingen van de client te overschrijven",
+                "fr": "Ajout d'une option pour écraser les paramètres du client \"session propre\"",
+                "it": "Aggiunta opzione per sovrascrivere le impostazioni della \"sessione pulita\" del client",
+                "es": "Opción agregada para sobrescribir la configuración de \"sesión limpia\" del cliente",
+                "pl": "Dodano opcję nadpisania ustawień „czystej sesji” klienta",
+                "zh-cn": "添加了覆盖客户端“干净会话”设置的选项"
+            },
             "2.1.0": {
                 "en": "Add option to send message using messagebox\nFix error with logging on pubrec",
                 "de": "Option zum Senden von Nachrichten mithilfe von Messagebox hinzufügen\nFehler bei der pubrec-logging behoben",
@@ -48,50 +60,6 @@
                 "it": "Iscriviti agli argomenti dopo la connessione",
                 "es": "Suscribirse a temas después de conectarse",
                 "pl": "Subskrybuj tematy po nawiązaniu połączenia"
-            },
-            "2.0.3": {
-                "en": "Prefix in server was corrected",
-                "de": "Präfix im Server wurde korrigiert",
-                "ru": "Исправлен префикс на сервере",
-                "pt": "O prefixo no servidor foi corrigido",
-                "nl": "Prefix in server is gecorrigeerd",
-                "fr": "Le préfixe du serveur a été corrigé",
-                "it": "Il prefisso nel server è stato corretto",
-                "es": "El prefijo en el servidor fue corregido",
-                "pl": "Prefix na serwerze został poprawiony"
-            },
-            "2.0.2": {
-                "en": "Behaviour of set topics was changed",
-                "de": "Verhalten von Set -topics wurde geändert",
-                "ru": "Изменено поведение для set",
-                "pt": "O comportamento de topics definidos foi alterado",
-                "nl": "Gedrag van 'set'-onderwerpen is gewijzigd",
-                "fr": "Le comportement des sujets set a été modifié",
-                "it": "Il comportamento degli argomenti set è stato modificato",
-                "es": "Comportamiento de los temas establecidos fue cambiado",
-                "pl": "Zachowanie topics zestaw zostało zmienione"
-            },
-            "2.0.1": {
-                "en": "Double prefix by client was fixed",
-                "de": "Doppelter Präfix von Client wurde behoben",
-                "ru": "Был исправлен двойной префикс клиентом",
-                "pt": "Prefixo duplo por cliente foi corrigido",
-                "nl": "Dubbel voorvoegsel per klant is opgelost",
-                "fr": "Double préfixe par client a été fixé",
-                "it": "È stato corretto il doppio prefisso del client",
-                "es": "Se corrigió el doble prefijo por cliente",
-                "pl": "Poprawiono podwójny prefiks według klienta"
-            },
-            "2.0.0": {
-                "en": "The patch for wifi-iot removed\nthe mqtt library updated",
-                "de": "Der Patch für wifi-iot wurde entfernt\nDie mqtt-Bibliothek wurde aktualisiert",
-                "ru": "Патч для wifi-iot удален\nобновлена ​​библиотека mqtt",
-                "pt": "O patch para o wifi foi removido\na biblioteca mqtt foi atualizada",
-                "nl": "De patch voor wifi-iot verwijderd\nde mqtt-bibliotheek is bijgewerkt",
-                "fr": "Le patch pour wifi-iot supprimé\nla bibliothèque mqtt mise à jour",
-                "it": "La patch per wifi-iot è stata rimossa\nla libreria mqtt aggiornata",
-                "es": "El parche para wifi-iot eliminado\nla biblioteca mqtt actualizada",
-                "pl": "Łata dla wifi-iot została usunięta\nZaktualizowano bibliotekę mqtt"
             }
         },
         "title": "MQTT Broker/Client",
@@ -164,6 +132,7 @@
         "certPrivate": "",
         "certChained": "",
         "prefix": "",
+        "forceCleanSession": "no",
         "sendAckToo": false,
         "webSocket": false,
         "maxTopicLength": 100,
