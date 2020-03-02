@@ -99,7 +99,7 @@ function States(cb, stateChange) {
                 } else {
                     if (typeof options.stateChange === 'function') options.stateChange(id, state);
                     if (id.substring(0, 4) === 'log.') {
-                        console.log("LOG");
+                        console.log('LOG');
                     }
                     if (that.emit) {
                         // emit 'stateChange' event instantly
@@ -453,7 +453,7 @@ function States(cb, stateChange) {
         if (!id) return null;
         const parts = id.split('.');
         if (parts[0] + '.' + parts[1] !== that.namespace) {
-            that.log.warn("Try to decode id not from this adapter");
+            that.log.warn('Try to decode id not from this adapter');
             return null;
         }
         return {device: parts[2], channel: parts[3], state: parts[4]};

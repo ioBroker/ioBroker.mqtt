@@ -2,7 +2,6 @@
 const mqtt    = require('mqtt');
 
 function Client(cbConnected, cbChanged, config) {
-    let that = this;
     if (typeof config === 'string') config = {name: config};
     config = config || {};
     config.url = config.url || 'localhost';
@@ -24,7 +23,7 @@ function Client(cbConnected, cbChanged, config) {
 
          client.subscribe('arduino/kitchen/in/#');*/
         //client.subscribe('arduino/kitchen/in/updateInterval');
-        that.client.subscribe('#');
+        this.client.subscribe('#');
         if (cbConnected) cbConnected(true);
     });
 
@@ -62,22 +61,22 @@ function Client(cbConnected, cbChanged, config) {
             retain: retain || false,
             qos: qos || 0
         };
-        that.client.publish(topic,  message, opts, cb);
+        this.client.publish(topic,  message, opts, cb);
     };
     this.subscribe = (topic, opts, cb) => {
         if (typeof opts === 'function') {
             cb = opts;
             opts = null;
         }
-        that.client.subscribe(topic, opts, cb);
+        this.client.subscribe(topic, opts, cb);
     };
     this.unsubscribe = (topic, cb) => {
-        that.client.unsubscribe(topic, cb);
+        this.client.unsubscribe(topic, cb);
     };
     this.destroy = () => {
-        if (that.client) {
-            that.client.end();
-            that.client = null;
+        if (this.client) {
+            this.client.end();
+            this.client = null;
         }
     };
 

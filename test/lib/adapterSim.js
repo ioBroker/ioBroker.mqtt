@@ -47,7 +47,7 @@ module.exports = function (config) {
             state = {
                 val: state,
                 ack: ack || false
-            }
+            };
         }
         state.ts = Date.now();
         state.ack = !!state.ack;

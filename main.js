@@ -35,7 +35,6 @@ function startAdapter(options) {
 
     adapter.on('message', function (obj) {
         if (obj) processMessage(obj);
-        processMessages();
     });
 
     adapter.on('ready', function () {
@@ -90,36 +89,36 @@ function startAdapter(options) {
 function processMessage(obj) {
     if (!obj || !obj.command) return;
     switch (obj.command) {
-	case 'sendMessage2Client':
-		if (server)
-		{
-			adapter.log.debug('Sending message from server to clients via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
-			server.onMessage(obj.message.topic, obj.message.message);
-		}
-		else if (client)
-		{
-			adapter.log.debug('Sending message from client to server via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
-			client.onMessage(obj.message.topic, obj.message.message);
-		}
-		else
-			adapter.log.debug('Neither MQTT server nor client not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
-		break;
+        case 'sendMessage2Client':
+            if (server)
+            {
+                adapter.log.debug('Sending message from server to clients via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
+                server.onMessage(obj.message.topic, obj.message.message);
+            }
+            else if (client)
+            {
+                adapter.log.debug('Sending message from client to server via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
+                client.onMessage(obj.message.topic, obj.message.message);
+            }
+            else
+                adapter.log.debug('Neither MQTT server nor client not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
+            break;
 
-	case 'sendState2Client':
-		if (server)
-		{
-			adapter.log.debug('Sending message from server to clients ' + obj.message.id + ': ' + obj.message.state + ' ...')
-			server.onStateChange(obj.message.id, obj.message.state);
-		}
-		else if (client)
-		{
-			adapter.log.debug('Sending message from client to server ' + obj.message.id + ': ' + obj.message.state + ' ...')
-			client.onStateChange(obj.message.id, obj.message.state);
-		}
-		else
-			adapter.log.debug('Neither MQTT server nor client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
-		break;
-    	
+        case 'sendState2Client':
+            if (server)
+            {
+                adapter.log.debug('Sending message from server to clients ' + obj.message.id + ': ' + obj.message.state + ' ...');
+                server.onStateChange(obj.message.id, obj.message.state);
+            }
+            else if (client)
+            {
+                adapter.log.debug('Sending message from client to server ' + obj.message.id + ': ' + obj.message.state + ' ...');
+                client.onStateChange(obj.message.id, obj.message.state);
+            }
+            else
+                adapter.log.debug('Neither MQTT server nor client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
+            break;
+
         case 'test': {
             // Try to connect to mqtt broker
             if (obj.callback && obj.message) {
@@ -141,15 +140,6 @@ function processMessage(obj) {
             }
         }
     }
-}
-
-function processMessages() {
-    adapter.getMessage((err, obj) => {
-        if (obj) {
-            processMessage(obj.command, obj.message);
-            processMessages();
-        }
-    });
 }
 
 let cnt = 0;
