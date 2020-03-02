@@ -16,8 +16,8 @@ const rules = {
     'mqtt/0/test2':  'mqtt.0.test2',
     'test3':         'mqtt.0.test3',
     'te s t4':       'mqtt.0.te_s_t4',
-    'system/adapter/admin/upload':  'system.adapter.admin.upload',
-    '/system/adapter/admin/upload': 'system.adapter.admin.upload'
+    'testAdapter/0/testChannel/testState':  'testAdapter.0.testChannel.testState',
+    '/testAdapter/0/testChannel/testState': 'testAdapter.0.testChannel.testState'
 };
 
 function checkMqtt2Adapter(id, _expectedId, _it, _done) {
@@ -133,10 +133,12 @@ describe('Test MQTT client', function() {
                 objects = _objects;
                 states  = _states;
                 brokerStarted = true;
-                if (_done && clientConnected) {
-                    _done();
-                    _done = null;
-                }
+                objects.setObject('testAdapter.0.testChannel.testState', {type: 'state', common: {type: 'string'}, native: {}}, () => {
+                    if (_done && clientConnected) {
+                        _done();
+                        _done = null;
+                    }
+                });
             });
         });
 
