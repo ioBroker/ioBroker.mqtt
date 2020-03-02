@@ -35,7 +35,6 @@ function startAdapter(options) {
 
     adapter.on('message', function (obj) {
         if (obj) processMessage(obj);
-        processMessages();
     });
 
     adapter.on('ready', function () {
@@ -119,7 +118,7 @@ function processMessage(obj) {
 		else
 			adapter.log.debug('Neither MQTT server nor client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
 		break;
-    	
+
         case 'test': {
             // Try to connect to mqtt broker
             if (obj.callback && obj.message) {
@@ -141,15 +140,6 @@ function processMessage(obj) {
             }
         }
     }
-}
-
-function processMessages() {
-    adapter.getMessage((err, obj) => {
-        if (obj) {
-            processMessage(obj.command, obj.message);
-            processMessages();
-        }
-    });
 }
 
 let cnt = 0;

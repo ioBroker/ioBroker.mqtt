@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.1",
+        "version": "2.1.2",
         "news": {
+            "2.1.2": {
+                "en": "removed usage of getMessage",
+                "de": "Verwendung von getMessage entfernt",
+                "ru": "удалено использование getMessage",
+                "pt": "uso removido de getMessage",
+                "nl": "gebruik van getMessage verwijderd",
+                "fr": "suppression de l'utilisation de getMessage",
+                "it": "rimosso l'utilizzo di getMessage",
+                "es": "uso eliminado de getMessage",
+                "pl": "usunięto użycie getMessage",
+                "zh-cn": "删除了getMessage的用法"
+            },
             "2.1.1": {
                 "en": "Added option to overwrite the client \"clean session\" settings",
                 "de": "Option zum Überschreiben der Einstellungen für \"saubere Sitzung\" des Clients hinzugefügt",
