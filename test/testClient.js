@@ -119,7 +119,7 @@ describe('Test MQTT client', function() {
         let brokerStarted    = false;
         setup.adapterStarted = false;
 
-        setup.setupController(function () {
+        setup.setupController(() => {
             const config = setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
@@ -155,7 +155,7 @@ describe('Test MQTT client', function() {
                 _done();
                 _done = null;
             }
-        }, function (topic, message) {
+        }, (topic, message) => {
             console.log((new Date()).getTime() + ' emitter received ' + topic + ': ' + message.toString());
             //console.log('Test MQTT Client received "' + topic + '": ' + message);
             // on receive
