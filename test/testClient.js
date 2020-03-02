@@ -178,7 +178,7 @@ describe('Test MQTT client', function() {
         }, 1000);
     }).timeout(4000);
 
-    for (let rr in rules) {
+    for (const rr in rules) {
         (function(id, topic) {
             it('MQTT client: Check receive ' + id, function (done) { // let FUNCTION here
                 checkMqtt2Adapter(id, topic, this, done);
@@ -186,7 +186,7 @@ describe('Test MQTT client', function() {
         })(rr, rules[rr]);
     }
 
-    for (let r in rules) {
+    for (const r in rules) {
         (function(id, topic) {
             if (topic.indexOf('mqtt') !== -1) {
                 it('MQTT client: Check send ' + topic, function (done) { // let FUNCTION here
