@@ -130,6 +130,7 @@
     "native": {
         "type": "client",
         "clientId": "",
+        "bind": "0.0.0.0",
         "port": 1883,
         "ssl": false,
         "user": "",

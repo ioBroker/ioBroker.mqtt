@@ -2,7 +2,7 @@
  *
  *      ioBroker mqtt Adapter
  *
- *      (c) 2014-2019 bluefox
+ *      (c) 2014-2020 bluefox
  *
  *      MIT License
  *
@@ -13,9 +13,9 @@ const utils = require('@iobroker/adapter-core'); // Get common adapter utils
 const adapterName = require('./package.json').name.split('.').pop();
 let adapter;
 
-let server   = null;
-let client   = null;
-let states   = {};
+let server = null;
+let client = null;
+let states = {};
 
 const messageboxRegex = new RegExp('\.messagebox$');
 
@@ -37,12 +37,12 @@ function startAdapter(options) {
         if (obj) processMessage(obj);
     });
 
-    adapter.on('ready', function () {
+    adapter.on('ready', () => {
         adapter.config.pass = decrypt('Zgfr56gFe87jJOM', adapter.config.pass);
         adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
         if (adapter.config.ssl && adapter.config.type === 'server') {
             // Load certificates
-            adapter.getCertificates(function (err, certificates) {
+            adapter.getCertificates((err, certificates) => {
                 adapter.config.certificates = certificates;
                 main();
             });
@@ -52,9 +52,9 @@ function startAdapter(options) {
         }
     });
 
-    adapter.on('unload', function () {
-        if (client) client.destroy();
-        if (server) server.destroy();
+    adapter.on('unload', () => {
+        client && client.destroy();
+        server && server.destroy();
     });
 
     // is called if a subscribed state changes
@@ -77,9 +77,9 @@ function startAdapter(options) {
             // If value really changed
             if (!adapter.config.onchange || oldVal !== state.val || oldAck !== state.ack) {
                 // If SERVER
-                if (server) server.onStateChange(id, state);
+                server && server.onStateChange(id, state);
                 // if CLIENT
-                if (client) client.onStateChange(id, state);
+                client && client.onStateChange(id, state);
             }
         }
     });
@@ -90,33 +90,27 @@ function processMessage(obj) {
     if (!obj || !obj.command) return;
     switch (obj.command) {
         case 'sendMessage2Client':
-            if (server)
-            {
+            if (server) {
                 adapter.log.debug('Sending message from server to clients via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
                 server.onMessage(obj.message.topic, obj.message.message);
-            }
-            else if (client)
-            {
+            } else if (client) {
                 adapter.log.debug('Sending message from client to server via topic ' + obj.message.topic + ': ' + obj.message.message + ' ...');
                 client.onMessage(obj.message.topic, obj.message.message);
-            }
-            else
+            } else {
                 adapter.log.debug('Neither MQTT server nor client not started, thus not sending message via topic ' + obj.message.topic + ' (' + obj.message.message + ').');
+            }
             break;
 
         case 'sendState2Client':
-            if (server)
-            {
+            if (server) {
                 adapter.log.debug('Sending message from server to clients ' + obj.message.id + ': ' + obj.message.state + ' ...');
                 server.onStateChange(obj.message.id, obj.message.state);
-            }
-            else if (client)
-            {
+            } else if (client) {
                 adapter.log.debug('Sending message from client to server ' + obj.message.id + ': ' + obj.message.state + ' ...');
                 client.onStateChange(obj.message.id, obj.message.state);
-            }
-            else
+            } else {
                 adapter.log.debug('Neither MQTT server nor client not started, thus not sending message to client ' + obj.message.id + ' (' + obj.message.state + ').');
+            }
             break;
 
         case 'test': {
@@ -146,20 +140,17 @@ let cnt = 0;
 function readStatesForPattern(pattern) {
     adapter.getForeignStates(pattern, (err, res) => {
         if (!err && res) {
-            if (!states) states = {};
+            states = states || {};
 
-            for (const id in res) {
-                if (res.hasOwnProperty(id) &&  !messageboxRegex.test(id)) {
-                    states[id] = res[id];
-                }
-            }
+            Object.keys(res).filter(id => !messageboxRegex.test(id))
+                .forEach(id => states[id] = res[id]);
         }
         // If all patters answered, start client or server
         if (!--cnt) {
             if (adapter.config.type === 'client') {
-                client = new require(__dirname + '/lib/client')(adapter, states);
+                client = new require('./lib/client')(adapter, states);
             } else {
-                server = new require(__dirname + '/lib/server')(adapter, states);
+                server = new require('./lib/server')(adapter, states);
             }
         }
     });

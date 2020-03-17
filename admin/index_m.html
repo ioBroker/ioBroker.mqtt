@@ -35,6 +35,7 @@
         if ($('#type').val() === 'client') {
             $('#_clientId').show();
             $('#_url').show();
+            $('#_bind').hide();
             $('#test').show();
             $('#_patterns').show();
             $('#_certPublic').hide();
@@ -47,6 +48,7 @@
         } else {
             $('#_clientId').hide();
             $('#_url').hide();
+            $('#_bind').show();
             $('#test').hide();
             $('#_patterns').hide();
             $('#_webSocket').show();
@@ -158,8 +160,16 @@
         fillSelectCertificates('#certPublic',  'public',  settings.certPublic);
         fillSelectCertificates('#certPrivate', 'private', settings.certPrivate);
         fillSelectCertificates('#certChained', 'chained', settings.certChained);
+
+        getIPs(function(ips) {
+            for (var i = 0; i < ips.length; i++) {
+                $('#bind').append('<option value="' + ips[i].address + '">' + ips[i].name + '</option>');
+            }
+            $('#bind.value').val(settings.bind).select();
+        });
+
         onChange(false);
-        if (M) M.updateTextFields();
+        M && M.updateTextFields();
     }
 
     function test() {
@@ -278,6 +288,10 @@
                     <div class="input-field col s12 m6 l4" id="_url">
                         <input type="text" id="url" class="value" />
                         <label class="translate" for="url">URL:</label>
+                    </div>
+                    <div class="input-field col s12 m6 l4" id="_bind">
+                        <select class="value" id="bind"></select>
+                        <label class="translate" for="bind">IP address</label>
                     </div>
                     <div class="input-field col s12 m6 l4">
                         <input id="port" type="number" min="1" max="65565" class="value" />

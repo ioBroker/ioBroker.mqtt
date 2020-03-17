@@ -95,5 +95,17 @@ systemDictionary = {
         "es": "Mantener siempre sesiones para todos los clientes.",
         "pl": "Zawsze utrzymuj sesje dla wszystkich klientów",
         "zh-cn": "始终为所有客户保留会话"
+    },
+    "IP address": {
+        "en": "IP address",
+        "de": "IP Adresse",
+        "ru": "IP адрес",
+        "pt": "Endereço de IP",
+        "nl": "IP adres",
+        "fr": "Adresse IP",
+        "it": "Indirizzo IP",
+        "es": "Dirección IP",
+        "pl": "Adres IP",
+        "zh-cn": "IP地址"
     }
 };
