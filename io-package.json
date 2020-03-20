@@ -147,6 +147,7 @@
         "prefix": "",
         "forceCleanSession": "no",
         "sendAckToo": false,
+        "sendStateObject": true,
         "webSocket": false,
         "maxTopicLength": 100,
         "publishOnSubscribe": true,

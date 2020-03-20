@@ -142,6 +142,7 @@
         $('#tabs').tabs();
 		onChange = _onChange;
         settings.sendAckToo = settings.sendAckToo || false;
+        settings.sendStateObject = settings.sendStateObject || false;
         settings.webSocket  = settings.webSocket  || false;
         if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
         if (settings.sendInterval === undefined) settings.sendInterval = 10;
@@ -351,9 +352,14 @@
                     <td></td>
                 </tr>
                 <tr>
+                    <td><label class="translate" for="sendStateObject">Send state object as mqtt message 2222</label></td>
+                    <td><input id="sendStateObject" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
                     <td><label class="translate" for="maxTopicLength">Max topic length:</label></td>
-                    <td><input id="maxTopicLength" class="value" size="17"/></td>
-                    <td class="translate">chars</td>
+                    <td><input id="maxTopicLength" type="checkbox" class="value"/></td>
+                    <td></td>
                 </tr>
                 <tr id="_clientId">
                     <td><label class="translate" for="clientId">Client ID:</label></td>

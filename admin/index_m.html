@@ -148,6 +148,7 @@
         settings.retransmitInterval = settings.retransmitInterval || 2000;
         settings.retransmitCount = settings.retransmitCount || 10;
         settings.sendAckToo = settings.sendAckToo || false;
+        settings.sendStateObject = settings.sendStateObject || false;
         settings.webSocket  = settings.webSocket  || false;
         settings.defaultQoS = (settings.defaultQoS === '' || settings.defaultQoS === -1 || settings.defaultQoS === '-1') ? -1 : settings.defaultQoS || 0;
         if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
@@ -383,6 +384,10 @@
                     <div class="input-field col s12 m6 l3">
                         <input id="extraSet" type="checkbox" class="value filled-in" />
                         <span class="translate" for="extraSet">Use different topic names for set and get:</span>
+                    </div>
+                    <div class="input-field col s12 m6 l3">
+                        <input id="sendStateObject" type="checkbox" class="value filled-in" />
+                        <span class="translate" for="sendStateObject">Send state object as mqtt message</span>
                     </div>
                 </div>
                 <div class="row">
