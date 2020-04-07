@@ -142,6 +142,7 @@
         $('#tabs').tabs();
 		onChange = _onChange;
         settings.sendAckToo = settings.sendAckToo || false;
+        settings.sendStateObject = settings.sendStateObject || false;
         settings.webSocket  = settings.webSocket  || false;
         if (settings.sendOnStartInterval === undefined) settings.sendOnStartInterval = 2000;
         if (settings.sendInterval === undefined) settings.sendInterval = 10;
@@ -348,6 +349,11 @@
                 <tr>
                     <td><label class="translate" for="extraSet">Use different topic names for set and get:</label></td>
                     <td><input id="extraSet" type="checkbox" class="value"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><label class="translate" for="sendStateObject">Send state object as mqtt message 2222</label></td>
+                    <td><input id="sendStateObject" type="checkbox" class="value"/></td>
                     <td></td>
                 </tr>
                 <tr>
