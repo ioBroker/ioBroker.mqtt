@@ -4,16 +4,16 @@
         "version": "2.1.2",
         "news": {
             "2.1.2": {
-                "en": "removed usage of getMessage",
-                "de": "Verwendung von getMessage entfernt",
-                "ru": "удалено использование getMessage",
-                "pt": "uso removido de getMessage",
-                "nl": "gebruik van getMessage verwijderd",
-                "fr": "suppression de l'utilisation de getMessage",
-                "it": "rimosso l'utilizzo di getMessage",
-                "es": "uso eliminado de getMessage",
-                "pl": "usunięto użycie getMessage",
-                "zh-cn": "删除了getMessage的用法"
+                "en": "removed usage of getMessage, add send state as object",
+                "de": "Verwendung von getMessage entfernt, Sendestatus als Objekt hinzufügen",
+                "ru": "удалено использование getMessage, добавлено состояние отправки в качестве объекта",
+                "pt": "removido o uso de getMessage, adicione o estado de envio como objeto",
+                "nl": "verwijderd gebruik van getMessage, voeg verzendstatus toe als object",
+                "fr": "suppression de l'utilisation de getMessage, ajout d'un état d'envoi en tant qu'objet",
+                "it": "rimosso l'utilizzo di getMessage, aggiungi lo stato di invio come oggetto",
+                "es": "uso eliminado de getMessage, agregar estado de envío como objeto",
+                "pl": "usunięto użycie getMessage, dodaj stan wysyłania jako obiekt",
+                "zh-cn": "删除了getMessage的用法，将发送状态添加为对象"
             },
             "2.1.1": {
                 "en": "Added option to overwrite the client \"clean session\" settings",

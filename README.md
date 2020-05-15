@@ -128,6 +128,7 @@ The broker was tested with following clients:
 ## Changelog
 ### 2.1.2 (2020-03-02)
 * (foxriver76) removed usage of getMessage
+* (mbecker) send states as object in client mode
 
 ### 2.1.1 (2019-07-27)
 * (bluefox) Add option to overwrite the client "clean session" settings
