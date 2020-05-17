@@ -126,6 +126,9 @@ The broker was tested with following clients:
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 ## Changelog
+### 2.1.3 (2020- 05-17)
+* (bluefox) Caught some errors
+
 ### 2.1.2 (2020-03-02)
 * (foxriver76) removed usage of getMessage
 * (mbecker) send states as object in client mode
