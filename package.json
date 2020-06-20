@@ -21,10 +21,10 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^2.18.8",
+    "mqtt": "^4.1.0",
     "mqtt-connection": "^4.0.0",
     "websocket-stream": "^5.5.2",
-    "ws": "^5.2.2",
+    "ws": "^7.3.0",
     "@iobroker/adapter-core": "^2.4.0"
   },
   "devDependencies": {
@@ -43,7 +43,7 @@
     "release": "release-script"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=10.0.0"
   },
   "license": "MIT"
 }
