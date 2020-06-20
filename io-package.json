@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.4",
+        "version": "3.0.0",
         "news": {
+            "3.0.0": {
+                "en": "Update dependencies (mqtt/wss), nodejs 6 is not longer supported, nodejs 10 is minimum\nAdd info.connection to instance objects to be automatically created",
+                "de": "Abhängigkeiten aktualisieren (mqtt / wss), Knoten 6 wird nicht mehr unterstützt, Knoten 10 ist minimal\nFügen Sie info.connection zu Instanzobjekten hinzu, die automatisch erstellt werden sollen",
+                "ru": "Обновление зависимостей (mqtt / wss), nodejs 6 больше не поддерживается, nodejs 10 минимально\nДобавить info.connection к объектам экземпляра для автоматического создания",
+                "pt": "Atualizar dependências (mqtt / wss), o nodejs 6 não é mais suportado, o nodejs 10 é mínimo\nAdicione info.connection aos objetos da instância a serem criados automaticamente",
+                "nl": "Update afhankelijkheden (mqtt / wss), nodejs 6 wordt niet langer ondersteund, nodejs 10 is minimaal\nVoeg info.connection toe aan automatisch te maken instantieobjecten",
+                "fr": "Mettre à jour les dépendances (mqtt / wss), nodejs 6 n'est plus supporté, nodejs 10 est minimum\nAjouter info.connection aux objets d'instance à créer automatiquement",
+                "it": "Dipendenze di aggiornamento (mqtt / wss), nodejs 6 non è più supportato, nodejs 10 è minimo\nAggiungi info.connection agli oggetti istanza da creare automaticamente",
+                "es": "Actualizar dependencias (mqtt / wss), nodejs 6 ya no es compatible, nodejs 10 es mínimo\nAgregue info.connection a los objetos de instancia que se crearán automáticamente",
+                "pl": "Aktualizacja zależności (mqtt / wss), nodejs 6 nie jest już obsługiwany, nodejs 10 jest minimalny\nDodaj info.connection do obiektów instancji, które mają być automatycznie tworzone",
+                "zh-cn": "更新依赖项（mqtt / wss），不再支持nodejs 6，最小为nodejs 10\n将info.connection添加到实例对象以自动创建"
+            },
             "2.1.4": {
                 "en": "websocket do not have setTimeout method\nprevent messageID overflow",
                 "de": "Websocket hat keine setTimeout-Methode\nÜberlaufen von messageID verhindern",
