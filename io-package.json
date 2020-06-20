@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.3",
+        "version": "2.1.4",
         "news": {
+            "2.1.4": {
+                "en": "websocket do not have setTimeout method\nprevent messageID overflow",
+                "de": "Websocket hat keine setTimeout-Methode\nÜberlaufen von messageID verhindern",
+                "ru": "у websocket нет метода setTimeout\nпредотвратить переполнение messageID",
+                "pt": "websocket não possui o método setTimeout\nimpedir o estouro de messageID",
+                "nl": "websocket heeft geen setTimeout-methode\noverflow van messageID voorkomen",
+                "fr": "websocket n'a pas de méthode setTimeout\néviter le débordement de messageID",
+                "it": "websocket non ha il metodo setTimeout\nimpedire l'overflow di messageID",
+                "es": "websocket no tiene el método setTimeout\nevitar el desbordamiento de ID de mensaje",
+                "pl": "websocket nie ma metody setTimeout\nzapobiec przepełnieniu identyfikatora wiadomości",
+                "zh-cn": "websocket没有setTimeout方法\n防止messageID溢出"
+            },
             "2.1.3": {
                 "en": "Caught some errors",
                 "de": "Einige Fehler gefangen",

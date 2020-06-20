@@ -125,7 +125,12 @@ The broker was tested with following clients:
 * queue packets with "QoS 1/2" for the offline clients with persistent session.
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
+
 ## Changelog
+### 2.1.4 (2020-06-20)
+* (Apollon77) websocket do not have setTimeout method
+* (NorbGH) prevent messageID overflow
+
 ### 2.1.3 (2020- 05-17)
 * (bluefox) Caught some errors
 
