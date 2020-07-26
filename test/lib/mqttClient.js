@@ -8,6 +8,7 @@ function Client(cbConnected, cbChanged, config) {
     this.client = mqtt.connect('mqtt://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url  + (config.name ? '?clientId=' + config.name : ''), config);
 
     this.client.on('connect', () => {
+        if (!this.client) return;
         console.log((new Date()) + ' test client connected to localhost');
 
         /*that.client.publish('mqtt/0/test', 'Roger1');
