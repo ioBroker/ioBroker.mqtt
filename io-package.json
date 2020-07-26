@@ -149,6 +149,11 @@
             "height": 850,
             "minWidth": 400,
             "minHeight": 400
+        },
+        "plugins": {
+            "sentry": {
+                "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
+            }
         }
     },
     "native": {

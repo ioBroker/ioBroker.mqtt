@@ -18,6 +18,8 @@ Historically, the 'MQ' in 'MQTT' came from IBM's MQ message queuing product line
 
 This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 
+**This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
+
 ## Configuration
 - **Type** - Select "Client" (If you want to receive and send messages to other broker) or "Server" if you want create own MQTT broker.
 
@@ -127,6 +129,11 @@ The broker was tested with following clients:
 
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) try to prevent crashes on not existing state values
+* (Apollon77) Sentry added for crash reporting with js-controller 3.x+
+
 ### 2.1.4 (2020-06-20)
 * (Apollon77) websocket do not have setTimeout method
 * (NorbGH) prevent messageID overflow
