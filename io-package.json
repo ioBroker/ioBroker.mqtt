@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.4",
+        "version": "2.1.5",
         "news": {
+            "2.1.5": {
+                "en": "try to prevent crashes on not existing state values\nSentry added for crash reporting with js-controller 3.x+",
+                "de": "Versuchen Sie, Abstürze bei nicht vorhandenen Statuswerten zu verhindern\nSentry für Crash-Reporting mit js-controller 3.x + hinzugefügt",
+                "ru": "попытаться предотвратить сбои на несуществующих значениях состояния\nДобавлен Sentry для отчетов о сбоях с помощью js-controller 3.x +",
+                "pt": "tente evitar falhas em valores de estado inexistentes\nAdicionado sentinela para relatórios de falhas com o js-controller 3.x +",
+                "nl": "probeer crashes op niet bestaande statuswaarden te voorkomen\nSentry toegevoegd voor crashrapportage met js-controller 3.x +",
+                "fr": "essayez d'éviter les plantages sur des valeurs d'état non existantes\nSentry ajouté pour les rapports de plantage avec js-controller 3.x +",
+                "it": "provare a prevenire arresti anomali su valori di stato non esistenti\nSentry aggiunto per la segnalazione di crash con js-controller 3.x +",
+                "es": "intenta evitar bloqueos en valores de estado no existentes\nSentry agregado para informes de fallas con js-controller 3.x +",
+                "pl": "spróbuj zapobiec awariom na nieistniejących wartościach stanu\nDodano Sentry do raportowania awarii z js-controller 3.x +",
+                "zh-cn": "尝试防止不存在的状态值崩溃\nSentry已添加，用于使用js-controller 3.x +进行崩溃报告"
+            },
             "2.1.4": {
                 "en": "websocket do not have setTimeout method\nprevent messageID overflow",
                 "de": "Websocket hat keine setTimeout-Methode\nÜberlaufen von messageID verhindern",
