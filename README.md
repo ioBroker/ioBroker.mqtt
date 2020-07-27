@@ -130,6 +130,9 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (Apollon77) Try to prevent creation of objects with invalid IDs
+
 ### 2.1.5 (2020-07-26)
 * (Apollon77) try to prevent crashes on not existing state values
 * (Apollon77) Sentry added for crash reporting with js-controller 3.x+
