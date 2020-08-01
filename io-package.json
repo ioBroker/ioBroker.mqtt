@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.5",
+        "version": "2.1.6",
         "news": {
+            "2.1.6": {
+                "en": "Try to prevent creation of objects with invalid IDs\ncheck that state is set before accessing it (Sentry IOBROKER-MQTT-2)\nBetter handle disconnection cases (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "de": "Versuchen Sie, die Erstellung von Objekten mit ungültigen IDs zu verhindern\nÜberprüfen Sie, ob der Status festgelegt ist, bevor Sie darauf zugreifen (Sentry IOBROKER-MQTT-2).\nTrennungsfälle besser behandeln (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "ru": "Попробуйте предотвратить создание объектов с недействительными идентификаторами\nпроверьте, что состояние установлено перед доступом к нему (Sentry IOBROKER-MQTT-2)\nЛучшие случаи отключения ручки (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "pt": "Tente impedir a criação de objetos com IDs inválidos\nverifique se o estado está definido antes de acessá-lo (Sentry IOBROKER-MQTT-2)\nMelhor lidar com casos de desconexão (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "nl": "Probeer te voorkomen dat objecten met ongeldige ID's worden gemaakt\ncontroleer of de status is ingesteld voordat u deze opent (Sentry IOBROKER-MQTT-2)\nOntkoppelingsgevallen beter afhandelen (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "fr": "Essayez d'empêcher la création d'objets avec des ID invalides\nvérifier que l'état est défini avant d'y accéder (Sentry IOBROKER-MQTT-2)\nMieux gérer les cas de déconnexion (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "it": "Cerca di impedire la creazione di oggetti con ID non validi\nverificare che lo stato sia impostato prima di accedervi (Sentry IOBROKER-MQTT-2)\nGestire meglio i casi di disconnessione (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "es": "Intenta evitar la creación de objetos con ID no válidos\ncompruebe que el estado esté establecido antes de acceder a él (Sentry IOBROKER-MQTT-2)\nManejar mejor los casos de desconexión (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "pl": "Spróbuj zapobiec tworzeniu obiektów z nieprawidłowymi identyfikatorami\nsprawdź, czy stan jest ustawiony przed uzyskaniem do niego dostępu (Sentry IOBROKER-MQTT-2)\nLepsze przypadki rozłączania uchwytów (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
+                "zh-cn": "尝试防止创建具有无效ID的对象\n在访问之前检查状态是否已设置（Sentry IOBROKER-MQTT-2）\n更好地处理断开情况（哨兵IOBROKER-MQTT-3，IOBROKER-MQTT-6）"
+            },
             "2.1.5": {
                 "en": "try to prevent crashes on not existing state values\nSentry added for crash reporting with js-controller 3.x+",
                 "de": "Versuchen Sie, Abstürze bei nicht vorhandenen Statuswerten zu verhindern\nSentry für Crash-Reporting mit js-controller 3.x + hinzugefügt",
