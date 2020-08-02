@@ -130,6 +130,9 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (Apollon77) handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)
+
 ### 2.1.6 (2020-08-02)
 * (Apollon77) Try to prevent creation of objects with invalid IDs
 * (Apollon77) check that state is set before accessing it (Sentry IOBROKER-MQTT-2)
