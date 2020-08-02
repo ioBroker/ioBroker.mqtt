@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.6",
+        "version": "2.1.7",
         "news": {
+            "2.1.7": {
+                "en": "handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)",
+                "de": "Behandeln Sie ungültige mqtt-Servereinstellungen besser (Sentry IOBROKER-MQTT-9).",
+                "ru": "лучше обрабатывать неверные настройки сервера mqtt (Sentry IOBROKER-MQTT-9)",
+                "pt": "lidar melhor com configurações inválidas do servidor mqtt (Sentry IOBROKER-MQTT-9)",
+                "nl": "omgaan met ongeldige mqtt-serverinstellingen beter (Sentry IOBROKER-MQTT-9)",
+                "fr": "gérer mieux les paramètres de serveur mqtt invalides (Sentry IOBROKER-MQTT-9)",
+                "it": "gestire meglio le impostazioni del server mqtt non valide (Sentry IOBROKER-MQTT-9)",
+                "es": "manejar mejor la configuración inválida del servidor mqtt (Sentry IOBROKER-MQTT-9)",
+                "pl": "lepiej radzić sobie z nieprawidłowymi ustawieniami serwera mqtt (Sentry IOBROKER-MQTT-9)",
+                "zh-cn": "更好地处理无效的mqtt服务器设置（Sentry IOBROKER-MQTT-9）"
+            },
             "2.1.6": {
                 "en": "Try to prevent creation of objects with invalid IDs\ncheck that state is set before accessing it (Sentry IOBROKER-MQTT-2)\nBetter handle disconnection cases (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
                 "de": "Versuchen Sie, die Erstellung von Objekten mit ungültigen IDs zu verhindern\nÜberprüfen Sie, ob der Status festgelegt ist, bevor Sie darauf zugreifen (Sentry IOBROKER-MQTT-2).\nTrennungsfälle besser behandeln (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",

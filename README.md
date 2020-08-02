@@ -130,7 +130,7 @@ The broker was tested with following clients:
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.1.7 (2020-08-02)
 * (Apollon77) handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)
 
 ### 2.1.6 (2020-08-02)
