@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.7",
+        "version": "2.1.8",
         "news": {
+            "2.1.8": {
+                "en": "Crash case prevented on unsubscribe (Sentry IOBROKER-MQTT-D)",
+                "de": "Absturz beim Abbestellen verhindert (Sentry IOBROKER-MQTT-D)",
+                "ru": "При отказе от подписки предотвращен сбой (Sentry IOBROKER-MQTT-D)",
+                "pt": "Caso de falha impedido ao cancelar (Sentry IOBROKER-MQTT-D)",
+                "nl": "Crashcasus verhinderd bij uitschrijving (Sentry IOBROKER-MQTT-D)",
+                "fr": "Cas de crash empêché lors de la désinscription (Sentry IOBROKER-MQTT-D)",
+                "it": "Crash case impedito all'annullamento dell'iscrizione (Sentry IOBROKER-MQTT-D)",
+                "es": "Caso de choque evitado al cancelar la suscripción (Sentry IOBROKER-MQTT-D)",
+                "pl": "Awaria zapobiegająca anulowaniu subskrypcji (Sentry IOBROKER-MQTT-D)",
+                "zh-cn": "取消预订时避免发生崩溃情况（Sentry IOBROKER-MQTT-D）"
+            },
             "2.1.7": {
                 "en": "handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)",
                 "de": "Behandeln Sie ungültige mqtt-Servereinstellungen besser (Sentry IOBROKER-MQTT-9).",
