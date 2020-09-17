@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.8",
+        "version": "2.1.9",
         "news": {
+            "2.1.9": {
+                "en": "Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "fr": "Cas de crash évités (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
+                "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-E，IOBROKER-MQTT-F）"
+            },
             "2.1.8": {
                 "en": "Crash case prevented on unsubscribe (Sentry IOBROKER-MQTT-D)",
                 "de": "Absturz beim Abbestellen verhindert (Sentry IOBROKER-MQTT-D)",
