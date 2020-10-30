@@ -131,6 +131,13 @@ function processMessage(obj) {
                     clearTimeout(timeout);
                     adapter.sendTo(obj.from, obj.command, 'connected', obj.callback);
                 });
+                // If connected, return success
+                _client.on('error', (err) => {
+                    _client.end();
+                    clearTimeout(timeout);
+                    adapter.log.warn('Error on mqtt test: ' + err)
+                    adapter.sendTo(obj.from, obj.command, 'error', obj.callback);
+                });
             }
         }
     }
