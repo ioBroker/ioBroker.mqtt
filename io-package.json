@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.9",
+        "version": "2.1.10",
         "news": {
+            "2.1.10": {
+                "en": "Crash cases prevented (Sentry IOBROKER-MQTT-G)\nprevent errors on mqtt connection test",
+                "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-G)\nVerhindern Sie Fehler beim mqtt-Verbindungstest",
+                "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-G)\nпредотвратить ошибки при тестировании подключения mqtt",
+                "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-G)\nevitar erros no teste de conexão mqtt",
+                "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-G)\nvoorkom fouten bij de mqtt-verbindingstest",
+                "fr": "Cas de crash évités (Sentry IOBROKER-MQTT-G)\néviter les erreurs lors du test de connexion mqtt",
+                "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-G)\nprevenire errori nel test di connessione mqtt",
+                "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-G)\nevitar errores en la prueba de conexión mqtt",
+                "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-G)\nzapobiega błędom w teście połączenia mqtt",
+                "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-G）\n防止mqtt连接测试上的错误"
+            },
             "2.1.9": {
                 "en": "Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
                 "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
