@@ -31,8 +31,8 @@
     "@alcalzone/release-script": "^1.8.1",
     "chai": "^4.2.0",
     "gulp": "^4.0.2",
-    "mocha": "^8.2.0",
-    "eslint": "^7.12.1"
+    "mocha": "^8.2.1",
+    "eslint": "^7.13.0"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
