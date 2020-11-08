@@ -3,18 +3,6 @@
         "name": "mqtt",
         "version": "2.1.11",
         "news": {
-            "2.1.11": {
-                "en": "Crash cases prevented (Sentry IOBROKER-MQTT-M)",
-                "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-M)",
-                "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-M)",
-                "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-M)",
-                "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-M)",
-                "fr": "Crash cases évités (Sentry IOBROKER-MQTT-M)",
-                "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-M)",
-                "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-M)",
-                "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-M)",
-                "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-M）"
-            },
             "2.1.10": {
                 "en": "Crash cases prevented (Sentry IOBROKER-MQTT-G)\nprevent errors on mqtt connection test",
                 "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-G)\nVerhindern Sie Fehler beim mqtt-Verbindungstest",
