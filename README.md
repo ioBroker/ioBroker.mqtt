@@ -130,6 +130,9 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (Apollon77) Prevent crash case (Sentry IOBROKER-MQTT-Q)
+
 ### 2.1.12 (2020-11-08)
 * (Apollon77) Crash cases prevented (Sentry IOBROKER-MQTT-M)
 

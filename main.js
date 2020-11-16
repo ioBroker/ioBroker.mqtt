@@ -193,7 +193,9 @@ function main() {
     if (adapter.config.retransmitInterval < adapter.config.sendInterval) {
         adapter.config.retransmitInterval = adapter.config.sendInterval * 5;
     }
-    adapter.EXIT_CODES = utils.EXIT_CODES;
+    adapter.EXIT_CODES = utils.EXIT_CODES || {
+        ADAPTER_REQUESTED_TERMINATION: 11
+    };
 
     // If no subscription, start client or server
     if (!cnt) {
