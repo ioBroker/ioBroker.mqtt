@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.1.13",
+        "version": "2.1.14",
         "news": {
+            "2.1.14": {
+                "en": "Prevent crash case (Sentry IOBROKER-MQTT-11)",
+                "de": "Absturz verhindern (Sentry IOBROKER-MQTT-11)",
+                "ru": "Случай предотвращения сбоя (Sentry IOBROKER-MQTT-11)",
+                "pt": "Evitar caso de travamento (Sentry IOBROKER-MQTT-11)",
+                "nl": "Voorkom een crashcase (Sentry IOBROKER-MQTT-11)",
+                "fr": "Prévenir les cas de crash (Sentry IOBROKER-MQTT-11)",
+                "it": "Prevenire il crash case (Sentry IOBROKER-MQTT-11)",
+                "es": "Caso de prevención de accidentes (Sentry IOBROKER-MQTT-11)",
+                "pl": "Zapobiegaj awariom (Sentry IOBROKER-MQTT-11)",
+                "zh-cn": "防止发生崩溃情况（Sentry IOBROKER-MQTT-11）"
+            },
             "2.1.13": {
                 "en": "Prevent crash case (Sentry IOBROKER-MQTT-Q)",
                 "de": "Absturz verhindern (Sentry IOBROKER-MQTT-Q)",
