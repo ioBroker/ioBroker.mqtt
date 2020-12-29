@@ -130,7 +130,7 @@ The broker was tested with following clients:
 
 ## Changelog
 
-### 2.2.0 (2020-12-29)
+### __WORK IN PROGRESS__
 * (FunCyRanger) Add option to ignore SSL validation errors
 
 ### 2.1.14 (2020-11-30)

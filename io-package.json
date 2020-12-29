@@ -3,18 +3,6 @@
         "name": "mqtt",
         "version": "2.2.0",
         "news": {
-            "2.2.0": {
-                "en": "Add option to ignore SSL validation errors",
-                "de": "Option zum Ignorieren von SSL-Validierungsfehlern hinzufügen",
-                "ru": "Добавить возможность игнорировать ошибки проверки SSL",
-                "pt": "Adicionar opção para ignorar erros de validação de SSL",
-                "nl": "Optie toevoegen om SSL-validatiefouten te negeren",
-                "fr": "Ajouter une option pour ignorer les erreurs de validation SSL",
-                "it": "Aggiungi l'opzione per ignorare gli errori di convalida SSL",
-                "es": "Agregue la opción para ignorar los errores de validación SSL",
-                "pl": "Dodaj opcję ignorowania błędów weryfikacji SSL",
-                "zh-cn": "添加选项以忽略SSL验证错误"
-            },
             "2.1.14": {
                 "en": "Prevent crash case (Sentry IOBROKER-MQTT-11)",
                 "de": "Absturz verhindern (Sentry IOBROKER-MQTT-11)",
