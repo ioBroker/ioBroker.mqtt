@@ -273,7 +273,7 @@
         "bind": "0.0.0.0",
         "port": 1883,
         "ssl": false,
-        "rejectUnauthorized": true,
+        "rejectUnauthorized": false,
         "user": "",
         "pass": "",
         "url": "localhost",
