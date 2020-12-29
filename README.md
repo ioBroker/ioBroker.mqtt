@@ -130,6 +130,9 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (FunCyRanger) Add option to ignore SSL validation errors
+
 ### 2.1.14 (2020-11-30)
 * (Apollon77) Prevent crash case (Sentry IOBROKER-MQTT-11) 
 
