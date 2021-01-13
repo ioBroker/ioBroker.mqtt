@@ -130,6 +130,10 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (Apollon77) Check configured server port and reset to 1883 if invalid (Sentry IOBROKER-MQTT-1B)
+* (Apollon77) Catch error when server can not be started (Sentry IOBROKER-MQTT-1C)
+
 ### 2.3.1 (2020-12-30)
 * (FunCyRanger) Add option to ignore SSL validation errors
 

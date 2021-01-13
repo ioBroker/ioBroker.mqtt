@@ -28,11 +28,11 @@
     "@iobroker/adapter-core": "^2.3.1"
   },
   "devDependencies": {
-    "@alcalzone/release-script": "^1.8.1",
+    "@alcalzone/release-script": "^1.8.3",
     "chai": "^4.2.0",
     "gulp": "^4.0.2",
     "mocha": "^8.2.1",
-    "eslint": "^7.16.0"
+    "eslint": "^7.17.0"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
