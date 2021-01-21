@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.3.2",
+        "version": "2.3.3",
         "news": {
+            "2.3.3": {
+                "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1D)",
+                "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1D)",
+                "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1D)",
+                "pt": "Detectar erros ao definir estados (Sentry IOBROKER-MQTT-1D)",
+                "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1D)",
+                "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1D)",
+                "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1D)",
+                "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1D)",
+                "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1D)",
+                "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1D）"
+            },
             "2.3.2": {
                 "en": "Check configured server port and reset to 1883 if invalid (Sentry IOBROKER-MQTT-1B)\nCatch error when server can not be started (Sentry IOBROKER-MQTT-1C)",
                 "de": "Überprüfen Sie den konfigurierten Server-Port und setzen Sie ihn auf 1883 zurück, wenn er ungültig ist (Sentry IOBROKER-MQTT-1B).\nCatch-Fehler, wenn der Server nicht gestartet werden kann (Sentry IOBROKER-MQTT-1C)",
