@@ -130,6 +130,9 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (Apollon77) Catch errors when setting states (Sentry IOBROKER-MQTT-1F)
+
 ### 2.3.3 (2021-01-21)
 * (Apollon77) Catch errors when setting states (Sentry IOBROKER-MQTT-1D)
 
