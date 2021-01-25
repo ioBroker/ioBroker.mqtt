@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.3.3",
+        "version": "2.3.4",
         "news": {
+            "2.3.4": {
+                "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1F)",
+                "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1F)",
+                "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1F)",
+                "pt": "Capturar erros ao definir estados (Sentry IOBROKER-MQTT-1F)",
+                "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1F)",
+                "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1F)",
+                "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1F)",
+                "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1F)",
+                "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1F)",
+                "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1F）"
+            },
             "2.3.3": {
                 "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1D)",
                 "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1D)",
@@ -229,17 +241,6 @@
                 "it": "Supporto per la modalità compatta",
                 "es": "Soporte para el modo compacto",
                 "pl": "Obsługa trybu Compact"
-            },
-            "2.0.4": {
-                "en": "Subscribe to topics after connect",
-                "de": "Themen nach dem Verbinden abonnieren",
-                "ru": "Подписаться на темы после подключения",
-                "pt": "Inscrever-se para tópicos após conectar",
-                "nl": "Abonneer u op onderwerpen na verbinding maken",
-                "fr": "S'abonner aux sujets après la connexion",
-                "it": "Iscriviti agli argomenti dopo la connessione",
-                "es": "Suscribirse a temas después de conectarse",
-                "pl": "Subskrybuj tematy po nawiązaniu połączenia"
             }
         },
         "title": "MQTT Broker/Client",
