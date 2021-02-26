@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.3.4",
+        "version": "2.3.5",
         "news": {
+            "2.3.5": {
+                "en": "js-controller 2.0 is now required at least\nchange default subscribe to mqtt.0.*",
+                "de": "js-controller 2.0 ist jetzt mindestens erforderlich\nStandard ändern mqtt.0 abonnieren. *",
+                "ru": "js-controller 2.0 теперь требуется как минимум\nизменить подписку по умолчанию на mqtt.0. *",
+                "pt": "js-controller 2.0 agora é necessário pelo menos\nalterar padrão assinar mqtt.0. *",
+                "nl": "js-controller 2.0 is nu minimaal vereist\nverander standaard abonnement op mqtt.0. *",
+                "fr": "js-controller 2.0 est maintenant requis au moins\nchanger l'abonnement par défaut à mqtt.0. *",
+                "it": "js-controller 2.0 è ora almeno richiesto\ncambia la sottoscrizione predefinita a mqtt.0. *",
+                "es": "js-controller 2.0 ahora se requiere al menos\ncambiar suscripción predeterminada a mqtt.0. *",
+                "pl": "js-controller 2.0 jest teraz wymagany przynajmniej\nzmień domyślną subskrypcję mqtt.0. *",
+                "zh-cn": "现在至少需要js-controller 2.0\n更改默认值订阅mqtt.0。*"
+            },
             "2.3.4": {
                 "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1F)",
                 "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1F)",
@@ -230,17 +242,6 @@
                 "es": "Añadir soporte chino",
                 "pl": "Dodaj chińskie wsparcie",
                 "zh-cn": "添加中文支持"
-            },
-            "2.0.5": {
-                "en": "Support for Compact mode",
-                "de": "Unterstützung für den Kompaktmodus",
-                "ru": "Поддержка компактного режима",
-                "pt": "Suporte para o modo compacto",
-                "nl": "Ondersteuning voor de Compact-modus",
-                "fr": "Prise en charge du mode compact",
-                "it": "Supporto per la modalità compatta",
-                "es": "Soporte para el modo compacto",
-                "pl": "Obsługa trybu Compact"
             }
         },
         "title": "MQTT Broker/Client",

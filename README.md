@@ -130,7 +130,7 @@ The broker was tested with following clients:
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.3.5 (2021-02-27)
 * (Apollon77) js-controller 2.0 is now required at least
 * (arteck) change default subscribe to mqtt.0.*
 
