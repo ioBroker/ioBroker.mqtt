@@ -130,6 +130,10 @@ The broker was tested with following clients:
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* (Apollon77) js-controller 2.0 is now required at least
+* (arteck) change default subscribe to mqtt.0.*
+
 ### 2.3.4 (2021-01-25)
 * (Apollon77) Catch errors when setting states (Sentry IOBROKER-MQTT-1F)
 

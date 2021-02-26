@@ -214,13 +214,13 @@ describe('Test MQTT client', function() {
     }).timeout(70000);
 
     after('MQTT client: Stop js-controller', function (_done) { // let FUNCTION and not => here
-        this.timeout(6000);
+        this.timeout(10000);
         mqttServer.stop();
         mqttClient.stop();
 
         setup.stopController(function (normalTerminated) {
             console.log('Adapter normal terminated: ' + normalTerminated);
-            _done();
+            setTimeout(_done, 4000);
         });
     });
 });

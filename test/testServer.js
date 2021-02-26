@@ -255,11 +255,11 @@ describe('MQTT server: Test mqtt server', () => {
     }).timeout(70000);
 
     after('MQTT server: Stop js-controller', function (done) {
-        this.timeout(5000);
+        this.timeout(10000);
         mqttClientEmitter.stop();
         mqttClientDetector.stop();
         setup.stopController(() => {
-            done();
+            setTimeout(done, 4000);
         });
     });
 });
