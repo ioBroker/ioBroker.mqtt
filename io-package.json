@@ -318,7 +318,7 @@
         "onchange": true,
         "publishAllOnStart": true,
         "debug": false,
-        "publish": "*",
+        "publish": "mqtt.0.*",
         "certPublic": "",
         "certPrivate": "",
         "certChained": "",
