@@ -41,7 +41,7 @@ function startClients(_done) {
             }
         }
     }, (topic, message) => {
-        console.log((new Date()).getTime() + ' emitter received ' + topic + ': ' + message.toString());
+        console.log(`${(new Date()).getTime()} emitter received ${topic}: ${message.toString()}`);
         // on receive
         lastReceivedTopic1   = topic;
         lastReceivedMessage1 = message ? message.toString() : null;
@@ -59,7 +59,7 @@ function startClients(_done) {
             }
         }
     }, (topic, message) => {
-        console.log((new Date()).getTime() + ' detector received ' + topic + ': ' + message.toString());
+        console.log(`${(new Date()).getTime()} detector received ${topic}: ${message.toString()}`);
         // on receive
         lastReceivedTopic2   = topic;
         lastReceivedMessage2 = message ? message.toString() : null;
@@ -73,11 +73,15 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     const mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
-        if (id[0] === '.') id = id.substring(1);
+        if (id[0] === '.') {
+            id = id.substring(1);
+        }
     } else {
         id = _expectedId;
     }
-    if (id.indexOf('.') === -1) id = 'mqtt.0.' + id;
+    if (!id.includes('.')) {
+        id = 'mqtt.0.' + id;
+    }
 
     lastReceivedMessage1 = null;
     lastReceivedTopic1   = null;
@@ -96,7 +100,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
                 expect(obj._id).to.be.equal(id);
                 expect(obj.type).to.be.equal('state');
 
-                if (mqttid.indexOf('mqtt') != -1) {
+                if (mqttid.includes('mqtt')) {
                     expect(obj.native.topic).to.be.equal(mqttid);
                 }
 
@@ -112,10 +116,10 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 }
 
 function checkAdapter2Mqtt(id, mqttid, _it, _done) {
-    const value = 'NewRoger' + Math.round(Math.random() * 100);
+    const value = `NewRoger${Math.round(Math.random() * 100)}`;
     _it.timeout(5000);
 
-    console.log(new Date().getTime() + ' Send ' + id + ' with value '+ value);
+    console.log(`${new Date().getTime()} Send ${id} with value ${value}`);
 
     lastReceivedTopic1   = null;
     lastReceivedMessage1 = null;
