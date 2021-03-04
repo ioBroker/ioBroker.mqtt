@@ -7,8 +7,6 @@
 
 [![NPM](https://nodei.co/npm/iobroker.mqtt.png?downloads=true)](https://nodei.co/npm/iobroker.mqtt/)
 
-Requires node.js **6.0** or higher.
-
 ## MQ Telemetry Transport for ioBroker (MQTT).
 
 MQTT (formerly Message Queue Telemetry Transport) is a publish-subscribe based "light weight" messaging protocol for use on top of the TCP/IP protocol.
@@ -16,48 +14,48 @@ It is designed for connections with remote locations where a "small code footpri
 The Publish-Subscribe messaging pattern requires a message broker. The broker is responsible for distributing messages to interested clients based on the topic of a message.
 Historically, the 'MQ' in 'MQTT' came from IBM's MQ message queuing product line.
 
-This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
+This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](https://github.com/adamvr/MQTT.js/)
 
 **This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
 
 ## Configuration
-- **Type** - Select "Client" (If you want to receive and send messages to other broker) or "Server" if you want create own MQTT broker.
+- **Type** - Select "Client" (If you want to receive and send messages to other broker) or "Server" if you want to create own MQTT broker.
 
 ### Server settings
 - **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
 - **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
 - **SSL** - If TCP and WebSockets should run as secure server.
-- **Authentication/User name** - If authentication required, you can specify username. It is suggested to always use SSL with authentication to not send passwords over unsequre connection.  
+- **Authentication/User name** - If authentication required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
-- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*" to get all memory states of all adapters and all states of adapter mqtt.0
-- **Publish only on change** - New messages will be sent to client only if the state value changes. Every message sent by client will be accepted, even if the value does not changed.
-- **Publish own states on connect** - by every client connection the all known states will be sent to client (defined by state mask), to say him which states has the ioBroker.
-- **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g if prefix "iobroker/" all states will have names like "**iobroker**/mqtt/0/connected"
+- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter mqtt.0
+- **Publish only on change** - New messages will be sent to client only if the state value changes. Every message sent by the client will be accepted, even if the value does not change.
+- **Publish own states on connect** - by every client connection the all known states will be sent to client (defined by the state mask), to tell him which states has the ioBroker.
+- **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g. if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
 - **Trace output for every message** - Debug outputs.
-- **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
-- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true). The client will receive sent messages back in this mode.
+- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
+- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). The client will receive sent messages back in this mode.
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Use chunk patch** - There is a problem with last update of mqtt-packet, that frames will be sent directly to client and not first completely built and then sent to client. Some old clients do not like such a packets and do not work with new library. To fix it you can activate this flag.
 - **Force clean session** - Overwrite the client settings and clear or keep session.
 
 ### Client settings
-- **URL** - name or ip address of the broker/server. Like "localhost".
+- **URL** - name or ip address of the broker/server. Like `localhost`.
 - **Port** - Port of the MQTT broker. By default 1883
 - **Secure** - If secure (SSL) connection must be used.
-- **User** - if broker required authentication, define here the user name.
-- **Password** - if user name is not empty the password must be set. It can be empty.
+- **User** - if broker required authentication, define here the username.
+- **Password** - if the username is not empty the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
-- **Subscribe Patterns** - Subscribe pattern. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'mqtt/0/#,javascript/#' to subscribe for states of mqtt.0 and javascript
-- **Publish only on change** - Store incoming messages only if payload is differ from actual stored.
-- **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of "yr" and "hm-rpc" adapter.  
-- **Publish all states at start** - Publish all states (defined by state mask) every time by connection establishment to announce own available states and their values.
-- **Prefix for topics** - The prefix can be defined for own states. Like "/var/ioBroker/". Name of topics will be for example published with the name "/var/ioBroker/ping/192-168-1-5".
+- **Subscribe Patterns** - Subscribe by the pattern. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'mqtt/0/#,javascript/#' to subscribe for states of mqtt.0 and javascript
+- **Publish only on change** - Store incoming messages only if payload differs from actual stored.
+- **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter.  
+- **Publish all states at start** - Publish all states (defined by the state mask) every time by connection establishment to announce own available states and their values.
+- **Prefix for topics** - The prefix can be defined for own states. Like `/var/ioBroker/`. Name of topics will be for example published with the name `/var/ioBroker/ping/192-168-1-5`.
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
-- **Send states (ack=true) too** - Normally only the states/commands with ack=false will be sent to partner. If this flag is set every state independent from ack will be sent to partner. 
-- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with "/set" will be used to send non acknowledged commands (ack: false) and topic without "/set" to receive state updates (with ack: true).
+- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
+- **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true).
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: ```{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}```); if not the values ```states.val``` is sent as a single value (example state.val as single value: ```true```)
-- **Persistent Session** - When checked the broker saves the session information of the adapter. This means it tracks which messages have been send / received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
+- **Persistent Session** - When checked the broker saves the session information of the adapter. This means it tracks which messages have been sent/received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
 
 ## Install
 
@@ -66,12 +64,12 @@ This adapter uses the MQTT.js library from https://github.com/adamvr/MQTT.js/
 ## Usage
 
 ### How to test mqtt client:
-- Set type to "Client".
+- Set type to `Client`.
 - Leave port on 1883.
-- Set URL as "broker.mqttdashboard.com"
-- To get absolutely all topics(messages) set pattern to "#".
-- To receive all topics for "/4MS" set pattern to "/4MS/#"
-- To receive all topics for "/MS and "/floorish" set pattern to "/4MS/#, /floorish/#"
+- Set URL as `broker.mqttdashboard.com`
+- To get absolutely all topics(messages) set pattern to `#`.
+- To receive all topics for `/4MS` set pattern to `/4MS/#`
+- To receive all topics for `/MS` and `/floorish` set pattern to `/4MS/#, /floorish/#`
 
 ### Sending messages
 You may send / publish messages on topics using ```sendTo``` method from your adapter via MQTT adapter, e.g.:
@@ -91,27 +89,27 @@ adapter.sendTo('mqtt.0', 'sendMessage2Client', {topic: '/your/topic/here', messa
 ### Examples of using wildcards
 The following examples on the use of wildcards, builds on the example provided in topic strings.
 
-- "Sport"
-- "Sport/Tennis"
-- "Sport/Basketball"
-- "Sport/Swimming"
-- "Sport/Tennis/Finals"
-- "Sport/Basketball/Finals"
-- "Sport/Swimming/Finals"
+- `Sport`
+- `Sport/Tennis`
+- `Sport/Basketball`
+- `Sport/Swimming`
+- `Sport/Tennis/Finals`
+- `Sport/Basketball/Finals`
+- `Sport/Swimming/Finals`
 
 If you want to subscribe to all Tennis topics, you can use the number sign '#', or the plus sign '+'.
 
-- "Sport/Tennis/#" (this will receive "Sport/Tennis" and "Sport/Tennis/Finals")
-- "Sport/Tennis/+" (this will receive "Sport/Tennis/Finals" but not "Sport/Tennis")
+- `Sport/Tennis/#` (this will receive `Sport/Tennis` and `Sport/Tennis/Finals`)
+- `Sport/Tennis/+` (this will receive `Sport/Tennis/Finals` but not `Sport/Tennis`)
 
 For JMS topics, if you want to subscribe to all Finals topics, you can use the number sign '#', or the plus sign '+'.
 
-- "Sport/#/Finals"
-- "Sport/+/Finals"
+- `Sport/#/Finals`
+- `Sport/+/Finals`
 
 For MQTT topics, if you want to subscribe to all Finals topics, you can use the plus sign '+' .
 
-"Sport/+/Finals"
+`Sport/+/Finals`
 
 ### Tests
 The broker was tested with following clients:
@@ -121,10 +119,10 @@ The broker was tested with following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Todo
-* Implement resend of "QoS 2" messages after a while.
+* Implement resend of `QoS 2` messages after a while.
   Whenever a packet gets lost on the way, the sender is responsible for resending the last message after a reasonable amount of time. This is true when the sender is a MQTT client and also when a MQTT broker sends a message.
 
-* queue packets with "QoS 1/2" for the offline clients with persistent session.
+* queue packets with `QoS 1/2` for the offline clients with the persistent session.
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 
@@ -193,7 +191,7 @@ The broker was tested with following clients:
 * (bluefox) Add option to overwrite the client "clean session" settings
 
 ### 2.1.0 (2019-05-02)
-* (Zefau) Add option to send message using messagebox
+* (Zefau) Add option to send the message using messagebox
 * (Zefau) Fix error with logging on pubrec
 
 ### 2.0.6 (2019-01-16)
@@ -206,13 +204,13 @@ The broker was tested with following clients:
 * (Apollon77) Subscribe to topics after connect
 
 ### 2.0.3 (2018-08-11)
-* (bluefox) Prefix in server was corrected
+* (bluefox) Prefix in the server was corrected
 
 ### 2.0.2 (2018-08-09)
 * (bluefox) Behaviour of "set" topics was changed
 
 ### 2.0.1 (2018-07-06)
-* (bluefox) Double prefix by client was fixed
+* (bluefox) Double prefix by the client was fixed
 
 ### 2.0.0 (2018-03-05)
 * (bluefox) broke node.js 4 support
@@ -240,7 +238,7 @@ The broker was tested with following clients:
 
 ### 1.3.1 (2017-02-02)
 * (bluefox) Update mqtt packages
-* (bluefox) add Interval before send topics by connection ans send interval settings
+* (bluefox) add Interval before send topics by connection and send interval settings
 * (bluefox) reorganise configuration dialog
 
 ### 1.3.0 (2017-01-07)
@@ -264,13 +262,13 @@ The broker was tested with following clients:
 * (bluefox) fix authentication in server
 
 ### 1.1.1 (2016-09-12)
-* (bluefox) do not parse JSON states, that do not have attribute "val" to support other systems
+* (bluefox) do not parse JSON states, that do not have the attribute `val` to support other systems
 
 ### 1.1.0 (2016-07-23)
 * (bluefox) add new setting: Use different topic names for set and get
 
 ### 1.0.4 (2016-07-19)
-* (bluefox) convert values like "+58,890" into numbers too
+* (bluefox) convert values like `+58,890` into numbers too
 
 ### 1.0.3 (2016-05-14)
 * (cdjm) change client protocolID
@@ -289,7 +287,7 @@ The broker was tested with following clients:
 * (bluefox) fix SSL
 
 ### 0.4.2 (2016-02-10)
-* (bluefox) create object "info.connection"
+* (bluefox) create the object `info.connection`
 * (bluefox) add reconnection tests
 
 ### 0.4.1 (2016-02-04)
@@ -319,7 +317,7 @@ The broker was tested with following clients:
 
 ### 0.2.11 (2015-10-17)
 * (bluefox) set maximal length of topic name
-* (bluefox) convert "true" and "false" to boolean values
+* (bluefox) convert `true` and `false` to boolean values
 
 ### 0.2.10 (2015-09-16)
 * (bluefox) protect against empty topics
@@ -337,7 +335,7 @@ The broker was tested with following clients:
 * (bluefox) subscribe to all states if no mask defined
 
 ### 0.2.4 (2015-05-14)
-* (bluefox) add state "clients" to server with the list of clients
+* (bluefox) add state `clients` to server with the list of clients
 
 ### 0.2.3 (2015-05-14)
 * (bluefox) fix some errors
@@ -385,7 +383,7 @@ The broker was tested with following clients:
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2020, bluefox <dogafox@gmail.com>
+Copyright (c) 2014-2021, bluefox <dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
