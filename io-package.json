@@ -254,7 +254,8 @@
             "fr": "Courtier MQTT/Client",
             "it": "Broker/Cliente MQTT",
             "es": "Agente MQTT/Cliente",
-            "pl": "Broker/klient MQTT"
+            "pl": "Broker/klient MQTT",
+            "zh-cn": "MQTT经纪人/客户"
         },
         "desc": {
             "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
@@ -265,7 +266,8 @@
             "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
             "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
             "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
-            "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera"
+            "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera",
+            "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
         },
         "authors": [
             "bluefox <dogafox@gmail.com>"
