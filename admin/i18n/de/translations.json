@@ -16,7 +16,7 @@
     "Interval before send topics by connection:": "Interval vom Senden von allen Topics bei der verbindung",
     "MQTT Settings": "MQTT Einstellungen",
     "MQTT adapter settings": "MQTT Adapter-Einstellungen",
-    "Main settings": "Allgemeine Einstellungen",
+    "Main settings": "Haupteinstellungen",
     "Mask to publish": "z.B 'mqtt.0.*,javascript.*'",
     "Mask to publish own states:": "Maske für Bekanntgeben von eigenen States",
     "Max topic length:": "Maximale Topicnamelänge",
