@@ -35,7 +35,7 @@
     "Send interval:": "Send interval",
     "Send states (ack=true) too:": "Send states (ack=true) too",
     "Server": "Server/broker",
-    "Set certificates or load it first in the system settings (right top).": "Set certificates or load it first in the system settings (right top).",
+    "Set certificates or load it first in the system settings (right top).": "Set certificates or define it first in the system settings (right top).",
     "Store only on change:": "Publish only on change",
     "Test connection": "Test connection with Server",
     "Trace output for every message:": "Trace output for every message",
