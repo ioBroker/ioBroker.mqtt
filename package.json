@@ -33,7 +33,7 @@
     "chai": "^4.3.4",
     "gulp": "^4.0.2",
     "mocha": "^8.3.2",
-    "eslint": "^7.24.0"
+    "eslint": "^7.25.0"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
