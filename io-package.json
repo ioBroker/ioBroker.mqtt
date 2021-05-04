@@ -292,20 +292,19 @@
         ],
         "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
         "type": "protocols",
-        "config": {
-            "width": 800,
-            "height": 850,
-            "minWidth": 400,
-            "minHeight": 400
-        },
         "plugins": {
             "sentry": {
                 "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
             }
         },
-        "dependencies": {
-            "js-controller": ">=2.0.0"
-        }
+        "dependencies": [
+            {
+                "js-controller": ">=2.0.0"
+            }
+        ],
+        "tier": 2,
+        "connectionType": "local",
+        "dataSource": "push"
     },
     "native": {
         "type": "client",

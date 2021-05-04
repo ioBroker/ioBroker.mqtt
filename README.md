@@ -1,11 +1,13 @@
 ![Logo](admin/mqtt.png)
 # ioBroker MQTT
 
-![Number of Installations](http://iobroker.live/badges/mqtt-installed.svg) ![Number of Installations](http://iobroker.live/badges/mqtt-stable.svg) [![NPM version](http://img.shields.io/npm/v/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
-[![Tests](https://travis-ci.org/ioBroker/ioBroker.mqtt.svg?branch=master)](https://travis-ci.org/ioBroker/ioBroker.mqtt)
+![Number of Installations](http://iobroker.live/badges/mqtt-installed.svg)
+![Number of Installations](http://iobroker.live/badges/mqtt-stable.svg)
+[![NPM version](http://img.shields.io/npm/v/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
 
-[![NPM](https://nodei.co/npm/iobroker.mqtt.png?downloads=true)](https://nodei.co/npm/iobroker.mqtt/)
+![Test and Release](https://github.com/ioBroker/ioBroker.mqtt/workflows/Test%20and%20Release/badge.svg)
+[![Translation status](https://weblate.iobroker.net/widgets/adapters/-/mqtt/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.meross.svg)](https://www.npmjs.com/package/iobroker.mqtt)
 
 ## MQ Telemetry Transport for ioBroker (MQTT).
 
