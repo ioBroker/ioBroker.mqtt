@@ -132,6 +132,7 @@ The broker was tested with following clients:
 * (Apollon77) only remember messages for this client id and not from others
 * (Apollon77) do not remember last will and only process internally
 * (Apollon77) on "disconnect" message do not send last will as specified
+* (foxriver76) prevent errors in js-controller 3.3 and detect datatype changes for objects
 
 ### 2.3.5 (2021-02-27)
 * (Apollon77) js-controller 2.0 is now required at least
