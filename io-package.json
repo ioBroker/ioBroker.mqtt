@@ -353,6 +353,18 @@
                 "name": "Information"
             },
             "native": {}
-        }
-    ]
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "connected client for MQTT",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }    ]
 }
