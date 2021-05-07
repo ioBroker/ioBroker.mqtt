@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.3.5",
+        "version": "2.3.6",
         "news": {
             "2.3.5": {
                 "en": "js-controller 2.0 is now required at least\nchange default subscribe to mqtt.0.*",
