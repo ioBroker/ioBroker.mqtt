@@ -130,7 +130,7 @@ The broker was tested with following clients:
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.4.0 (2021-05-09)
 * (Apollon77) only remember the last message per topic for offline clients that subscribed the topics when using persistent sessions
 * (Apollon77) only remember last wills for clients that subscribed the topics
 * (Apollon77) on "disconnect" message do not send last will as defined by specs

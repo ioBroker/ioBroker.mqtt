@@ -1,8 +1,20 @@
 {
     "common": {
         "name": "mqtt",
-        "version": "2.3.6",
+        "version": "2.4.0",
         "news": {
+            "2.4.0": {
+                "en": "only remember the last message per topic for offline clients that subscribed the topics when using persistent sessions\nonly remember last wills for clients that subscribed the topics\non \"disconnect\" message do not send last will as defined by specs\nset a new messageId when sending remembered messages\nAdd small delay after subscribe before sending out topic values\noptimize for js-controller 3.3\nprevent errors in js-controller 3.3 and detect datatype changes for objects",
+                "de": "Denken Sie nur an die letzte Nachricht pro Thema für Offline-Clients, die die Themen abonniert haben, wenn Sie persistente Sitzungen verwenden\nDenken Sie nur an das letzte Testament für Kunden, die die Themen abonniert haben\nBei der Meldung \"Trennen\" wird nicht der letzte Wille gesendet, wie in den Spezifikationen definiert\nLegen Sie beim Senden gespeicherter Nachrichten eine neue Nachrichten-ID fest\nFügen Sie nach dem Abonnieren eine kleine Verzögerung hinzu, bevor Sie Themenwerte senden\noptimieren für js-controller 3.3\nVerhindern Sie Fehler in js-controller 3.3 und erkennen Sie Datentypänderungen für Objekte",
+                "ru": "запоминать только последнее сообщение для каждой темы для автономных клиентов, которые подписались на темы при использовании постоянных сеансов\nзапоминать только последние завещания клиентов, подписавшихся на темы\nпри сообщении \"отключить\" не отправлять последнюю волю, как определено спецификациями\nустановить новый messageId при отправке запомненных сообщений\nДобавьте небольшую задержку после подписки перед отправкой значений темы\nоптимизировать под js-controller 3.3\nпредотвращать ошибки в js-controller 3.3 и обнаруживать изменения типов данных для объектов",
+                "pt": "lembre-se apenas da última mensagem por tópico para clientes offline que assinaram os tópicos ao usar sessões persistentes\nlembre-se apenas das últimas vontades para os clientes que subscreveram os tópicos\nna mensagem \"desconectar\" não enviar última vontade conforme definido pelas especificações\ndefinir um novo messageId ao enviar mensagens memorizadas\nAdicione um pequeno atraso após a assinatura antes de enviar os valores do tópico\notimizar para js-controller 3.3\nevitar erros no js-controller 3.3 e detectar mudanças de tipo de dados para objetos",
+                "nl": "onthoud alleen het laatste bericht per onderwerp voor offline klanten die zich op de onderwerpen hebben geabonneerd bij het gebruik van persistente sessies\nonthoud alleen testamenten van klanten die zich op de onderwerpen hebben geabonneerd\nbij \"verbreken\" bericht geen laatste testament verzenden zoals gedefinieerd door de specificaties\nstel een nieuw bericht-ID in bij het verzenden van onthouden berichten\nVoeg een kleine vertraging toe na het abonneren voordat onderwerpwaarden worden verzonden\noptimaliseren voor js-controller 3.3\nvoorkom fouten in js-controller 3.3 en detecteer datatype-wijzigingen voor objecten",
+                "fr": "se souvenir uniquement du dernier message par sujet pour les clients hors ligne qui se sont abonnés aux sujets lors de l'utilisation de sessions persistantes\nsouvenez-vous uniquement des dernières volontés des clients qui ont souscrit aux sujets\nsur le message \"déconnecter\", ne pas envoyer le dernier testament tel que défini par les spécifications\ndéfinir un nouveau messageId lors de l'envoi de messages mémorisés\nAjouter un petit délai après l'abonnement avant d'envoyer des valeurs de sujet\noptimiser pour js-controller 3.3\néviter les erreurs dans js-controller 3.3 et détecter les changements de type de données pour les objets",
+                "it": "ricorda solo l'ultimo messaggio per argomento per i client offline che hanno sottoscritto gli argomenti quando utilizzano sessioni persistenti\nricorda solo le ultime volontà per i clienti che hanno sottoscritto gli argomenti\nnel messaggio di \"disconnessione\" non inviare l'ultima volontà come definito dalle specifiche\nimposta un nuovo ID messaggio durante l'invio di messaggi ricordati\nAggiungi un piccolo ritardo dopo l'iscrizione prima di inviare i valori dell'argomento\nottimizzare per js-controller 3.3\nprevenire errori in js-controller 3.3 e rilevare le modifiche al tipo di dati per gli oggetti",
+                "es": "solo recuerde el último mensaje por tema para los clientes fuera de línea que se suscribieron a los temas cuando usan sesiones persistentes\nsolo recuerda las últimas voluntades de los clientes que suscribieron los temas\nen el mensaje \"desconectar\" no enviar el último testamento según lo definido por las especificaciones\nestablecer un nuevo messageId al enviar mensajes recordados\nAgregue un pequeño retraso después de suscribirse antes de enviar valores de tema\noptimizar para js-controller 3.3\nprevenir errores en js-controller 3.3 y detectar cambios de tipo de datos para objetos",
+                "pl": "zapamiętuje tylko ostatnią wiadomość na temat dla klientów offline, którzy subskrybowali tematy podczas korzystania z sesji trwałych\npamiętaj tylko testamenty klientów, którzy subskrybowali tematy\nw wiadomości \"rozłącz\" nie wysyłaj ostatniej woli zgodnie ze specyfikacją\nustaw nowy identyfikator wiadomości podczas wysyłania zapamiętanych wiadomości\nDodaj małe opóźnienie po zasubskrybowaniu, zanim wyślesz wartości tematu\noptymalizacja dla kontrolera js 3.3\nZapobiegaj błędom w js-controller 3.3 i wykrywaj zmiany typów danych dla obiektów",
+                "zh-cn": "仅记住使用持久会话时订阅主题的脱机客户端每个主题的最后一条消息\n只记住订阅主题的客户的遗嘱\n在“断开连接”消息上不发送规范所定义的最后遗嘱\n在发送已记住的消息时设置一个新的messageId\n订阅后添加少量延迟，然后再发送主题值\n针对js-controller 3.3进行优化\n防止js-controller 3.3中的错误并检测对象的数据类型更改"
+            },
             "2.3.5": {
                 "en": "js-controller 2.0 is now required at least\nchange default subscribe to mqtt.0.*",
                 "de": "js-controller 2.0 ist jetzt mindestens erforderlich\nStandard ändern mqtt.0 abonnieren. *",
@@ -230,18 +242,6 @@
                 "es": "Añadir opción para enviar mensaje usando el messagebox\nSolucionar error al iniciar sesión en pubrec.",
                 "pl": "Dodaj opcję wysyłania wiadomości przy użyciu skrzynki wiadomości\nNapraw błąd podczas logowania do pubrec",
                 "zh-cn": "添加使用消息框发送消息的选项\n登录pubrec修复错误"
-            },
-            "2.0.6": {
-                "en": "Add Chinese support",
-                "de": "Chinesische Unterstützung hinzufügen",
-                "ru": "Добавить поддержку китайцев",
-                "pt": "Adicionar suporte chinês",
-                "nl": "Voeg Chinese ondersteuning toe",
-                "fr": "Ajouter un support chinois",
-                "it": "Aggiungi supporto cinese",
-                "es": "Añadir soporte chino",
-                "pl": "Dodaj chińskie wsparcie",
-                "zh-cn": "添加中文支持"
             }
         },
         "title": "MQTT Broker/Client",
@@ -366,5 +366,6 @@
                 "def": false
             },
             "native": {}
-        }    ]
+        }
+    ]
 }
