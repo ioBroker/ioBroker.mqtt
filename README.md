@@ -135,6 +135,7 @@ The broker was tested with following clients:
 * (Apollon77) only remember last wills for clients that subscribed the topics
 * (Apollon77) on "disconnect" message do not send last will as defined by specs
 * (Apollon77) set a new messageId when sending remembered messages
+* (Apollon77) Add small delay after subscribe before sending out topic values
 * (Apollon77) optimize for js-controller 3.3
 * (foxriver76) prevent errors in js-controller 3.3 and detect datatype changes for objects
 
