@@ -12,7 +12,7 @@
     "Enable first the adapter to test client.": "Включите сначала адаптер для тестирования клиента.",
     "First save the adapter": "Сначала сохраните адаптер",
     "Force clean session": "Принудительная чистая сессия",
-    "IP address": "IP адрес",
+    "IP address": "IP-адрес",
     "Interval before send topics by connection:": "Интервал перед отсылкой всей топиков после соединения",
     "MQTT Settings": "Настройки MQTT",
     "MQTT adapter settings": "Настройки драйвера MQTT",
