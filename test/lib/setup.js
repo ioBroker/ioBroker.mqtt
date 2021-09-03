@@ -320,11 +320,11 @@ function installJsController(cb) {
             setTimeout(function () {
                 client.destroy();
                 if (!fs.existsSync(rootDir + 'tmp/node_modules/' + appName + '.js-controller')) {
-                    console.log('installJsController: no js-controller => install from git');
+                    console.log('installJsController: no js-controller => install dev build from npm');
 
                     child_process.execSync('npm install ' + appName + '.js-controller@dev --prefix ./ --production', {
                         cwd:   rootDir + 'tmp/',
-                        stdio: ['inherit']
+                        stdio: [0, 1, 2]
                     });
                 } else {
                     console.log('Setup js-controller...');
