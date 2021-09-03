@@ -322,9 +322,9 @@ function installJsController(cb) {
                 if (!fs.existsSync(rootDir + 'tmp/node_modules/' + appName + '.js-controller')) {
                     console.log('installJsController: no js-controller => install from git');
 
-                    child_process.execSync('npm install iobroker.js-controller@dev --prefix ./  --production', {
+                    child_process.execSync('npm install ' + appName + '.js-controller@dev --prefix ./ --production', {
                         cwd:   rootDir + 'tmp/',
-                        stdio: [0, 1, 2]
+                        stdio: ['inherit']
                     });
                 } else {
                     console.log('Setup js-controller...');
