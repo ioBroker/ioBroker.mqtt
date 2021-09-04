@@ -473,6 +473,28 @@ function setupController(cb) {
     });
 }
 
+function getSecret() {
+    var dataDir = rootDir + 'tmp/' + appName + '-data/';
+
+    try {
+        var objs = fs.readFileSync(dataDir + 'objects.json');
+        objs = JSON.parse(objs);
+
+        return objs['system.config'].native.secret;
+    } catch (e) {
+        console.warn("Could not load secret. Reason: " + e);
+        return null;
+    }
+}
+
+function encrypt (key, value) {
+    var result = '';
+    for (var i = 0; i < value.length; ++i) {
+        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+    }
+    return result;
+}
+
 function startAdapter(objects, states, callback) {
     if (adapterStarted) {
         console.log('Adapter already started ...');
@@ -726,4 +748,6 @@ if (typeof module !== undefined && module.parent) {
     module.exports.appName          = appName;
     module.exports.adapterName      = adapterName;
     module.exports.adapterStarted   = adapterStarted;
+    module.exports.getSecret        = getSecret;
+    module.exports.encrypt          = encrypt;
 }
