@@ -127,8 +127,14 @@ The broker was tested with following clients:
 * queue packets with `QoS 1/2` for the offline clients with the persistent session.
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
+<!--
+	Placeholder for the next version (at the beginning of the line):
+	### __WORK IN PROGRESS__
+-->
 
 ## Changelog
+### __WORK IN PROGRESS__
+* (MichaelDvP) Added wildcard regex for "/#"
 
 ### 2.4.0 (2021-05-09)
 * (Apollon77) only remember the last message per topic for offline clients that subscribed the topics when using persistent sessions
