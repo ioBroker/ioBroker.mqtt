@@ -1,371 +1,215 @@
 {
-    "common": {
-        "name": "mqtt",
-        "version": "2.4.0",
-        "news": {
-            "2.4.0": {
-                "en": "only remember the last message per topic for offline clients that subscribed the topics when using persistent sessions\nonly remember last wills for clients that subscribed the topics\non \"disconnect\" message do not send last will as defined by specs\nset a new messageId when sending remembered messages\nAdd small delay after subscribe before sending out topic values\noptimize for js-controller 3.3\nprevent errors in js-controller 3.3 and detect datatype changes for objects",
-                "de": "Denken Sie nur an die letzte Nachricht pro Thema für Offline-Clients, die die Themen abonniert haben, wenn Sie persistente Sitzungen verwenden\nDenken Sie nur an das letzte Testament für Kunden, die die Themen abonniert haben\nBei der Meldung \"Trennen\" wird nicht der letzte Wille gesendet, wie in den Spezifikationen definiert\nLegen Sie beim Senden gespeicherter Nachrichten eine neue Nachrichten-ID fest\nFügen Sie nach dem Abonnieren eine kleine Verzögerung hinzu, bevor Sie Themenwerte senden\noptimieren für js-controller 3.3\nVerhindern Sie Fehler in js-controller 3.3 und erkennen Sie Datentypänderungen für Objekte",
-                "ru": "запоминать только последнее сообщение для каждой темы для автономных клиентов, которые подписались на темы при использовании постоянных сеансов\nзапоминать только последние завещания клиентов, подписавшихся на темы\nпри сообщении \"отключить\" не отправлять последнюю волю, как определено спецификациями\nустановить новый messageId при отправке запомненных сообщений\nДобавьте небольшую задержку после подписки перед отправкой значений темы\nоптимизировать под js-controller 3.3\nпредотвращать ошибки в js-controller 3.3 и обнаруживать изменения типов данных для объектов",
-                "pt": "lembre-se apenas da última mensagem por tópico para clientes offline que assinaram os tópicos ao usar sessões persistentes\nlembre-se apenas das últimas vontades para os clientes que subscreveram os tópicos\nna mensagem \"desconectar\" não enviar última vontade conforme definido pelas especificações\ndefinir um novo messageId ao enviar mensagens memorizadas\nAdicione um pequeno atraso após a assinatura antes de enviar os valores do tópico\notimizar para js-controller 3.3\nevitar erros no js-controller 3.3 e detectar mudanças de tipo de dados para objetos",
-                "nl": "onthoud alleen het laatste bericht per onderwerp voor offline klanten die zich op de onderwerpen hebben geabonneerd bij het gebruik van persistente sessies\nonthoud alleen testamenten van klanten die zich op de onderwerpen hebben geabonneerd\nbij \"verbreken\" bericht geen laatste testament verzenden zoals gedefinieerd door de specificaties\nstel een nieuw bericht-ID in bij het verzenden van onthouden berichten\nVoeg een kleine vertraging toe na het abonneren voordat onderwerpwaarden worden verzonden\noptimaliseren voor js-controller 3.3\nvoorkom fouten in js-controller 3.3 en detecteer datatype-wijzigingen voor objecten",
-                "fr": "se souvenir uniquement du dernier message par sujet pour les clients hors ligne qui se sont abonnés aux sujets lors de l'utilisation de sessions persistantes\nsouvenez-vous uniquement des dernières volontés des clients qui ont souscrit aux sujets\nsur le message \"déconnecter\", ne pas envoyer le dernier testament tel que défini par les spécifications\ndéfinir un nouveau messageId lors de l'envoi de messages mémorisés\nAjouter un petit délai après l'abonnement avant d'envoyer des valeurs de sujet\noptimiser pour js-controller 3.3\néviter les erreurs dans js-controller 3.3 et détecter les changements de type de données pour les objets",
-                "it": "ricorda solo l'ultimo messaggio per argomento per i client offline che hanno sottoscritto gli argomenti quando utilizzano sessioni persistenti\nricorda solo le ultime volontà per i clienti che hanno sottoscritto gli argomenti\nnel messaggio di \"disconnessione\" non inviare l'ultima volontà come definito dalle specifiche\nimposta un nuovo ID messaggio durante l'invio di messaggi ricordati\nAggiungi un piccolo ritardo dopo l'iscrizione prima di inviare i valori dell'argomento\nottimizzare per js-controller 3.3\nprevenire errori in js-controller 3.3 e rilevare le modifiche al tipo di dati per gli oggetti",
-                "es": "solo recuerde el último mensaje por tema para los clientes fuera de línea que se suscribieron a los temas cuando usan sesiones persistentes\nsolo recuerda las últimas voluntades de los clientes que suscribieron los temas\nen el mensaje \"desconectar\" no enviar el último testamento según lo definido por las especificaciones\nestablecer un nuevo messageId al enviar mensajes recordados\nAgregue un pequeño retraso después de suscribirse antes de enviar valores de tema\noptimizar para js-controller 3.3\nprevenir errores en js-controller 3.3 y detectar cambios de tipo de datos para objetos",
-                "pl": "zapamiętuje tylko ostatnią wiadomość na temat dla klientów offline, którzy subskrybowali tematy podczas korzystania z sesji trwałych\npamiętaj tylko testamenty klientów, którzy subskrybowali tematy\nw wiadomości \"rozłącz\" nie wysyłaj ostatniej woli zgodnie ze specyfikacją\nustaw nowy identyfikator wiadomości podczas wysyłania zapamiętanych wiadomości\nDodaj małe opóźnienie po zasubskrybowaniu, zanim wyślesz wartości tematu\noptymalizacja dla kontrolera js 3.3\nZapobiegaj błędom w js-controller 3.3 i wykrywaj zmiany typów danych dla obiektów",
-                "zh-cn": "仅记住使用持久会话时订阅主题的脱机客户端每个主题的最后一条消息\n只记住订阅主题的客户的遗嘱\n在“断开连接”消息上不发送规范所定义的最后遗嘱\n在发送已记住的消息时设置一个新的messageId\n订阅后添加少量延迟，然后再发送主题值\n针对js-controller 3.3进行优化\n防止js-controller 3.3中的错误并检测对象的数据类型更改"
-            },
-            "2.3.5": {
-                "en": "js-controller 2.0 is now required at least\nchange default subscribe to mqtt.0.*",
-                "de": "js-controller 2.0 ist jetzt mindestens erforderlich\nStandard ändern mqtt.0 abonnieren. *",
-                "ru": "js-controller 2.0 теперь требуется как минимум\nизменить подписку по умолчанию на mqtt.0. *",
-                "pt": "js-controller 2.0 agora é necessário pelo menos\nalterar padrão assinar mqtt.0. *",
-                "nl": "js-controller 2.0 is nu minimaal vereist\nverander standaard abonnement op mqtt.0. *",
-                "fr": "js-controller 2.0 est maintenant requis au moins\nchanger l'abonnement par défaut à mqtt.0. *",
-                "it": "js-controller 2.0 è ora almeno richiesto\ncambia la sottoscrizione predefinita a mqtt.0. *",
-                "es": "js-controller 2.0 ahora se requiere al menos\ncambiar suscripción predeterminada a mqtt.0. *",
-                "pl": "js-controller 2.0 jest teraz wymagany przynajmniej\nzmień domyślną subskrypcję mqtt.0. *",
-                "zh-cn": "现在至少需要js-controller 2.0\n更改默认值订阅mqtt.0。*"
-            },
-            "2.3.4": {
-                "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1F)",
-                "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1F)",
-                "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1F)",
-                "pt": "Capturar erros ao definir estados (Sentry IOBROKER-MQTT-1F)",
-                "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1F)",
-                "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1F)",
-                "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1F)",
-                "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1F)",
-                "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1F)",
-                "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1F）"
-            },
-            "2.3.3": {
-                "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1D)",
-                "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1D)",
-                "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1D)",
-                "pt": "Detectar erros ao definir estados (Sentry IOBROKER-MQTT-1D)",
-                "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1D)",
-                "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1D)",
-                "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1D)",
-                "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1D)",
-                "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1D)",
-                "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1D）"
-            },
-            "2.3.2": {
-                "en": "Check configured server port and reset to 1883 if invalid (Sentry IOBROKER-MQTT-1B)\nCatch error when server can not be started (Sentry IOBROKER-MQTT-1C)",
-                "de": "Überprüfen Sie den konfigurierten Server-Port und setzen Sie ihn auf 1883 zurück, wenn er ungültig ist (Sentry IOBROKER-MQTT-1B).\nCatch-Fehler, wenn der Server nicht gestartet werden kann (Sentry IOBROKER-MQTT-1C)",
-                "ru": "Проверьте настроенный порт сервера и сбросьте его на 1883, если он недействителен (Sentry IOBROKER-MQTT-1B)\nОшибка перехвата при невозможности запуска сервера (Sentry IOBROKER-MQTT-1C)",
-                "pt": "Verifique a porta do servidor configurada e redefina para 1883 se for inválido (Sentry IOBROKER-MQTT-1B)\nErro de captura quando o servidor não pode ser iniciado (Sentry IOBROKER-MQTT-1C)",
-                "nl": "Controleer de geconfigureerde serverpoort en reset deze naar 1883 als deze ongeldig is (Sentry IOBROKER-MQTT-1B)\nVang een fout op wanneer de server niet kan worden gestart (Sentry IOBROKER-MQTT-1C)",
-                "fr": "Vérifiez le port du serveur configuré et réinitialisez à 1883 s'il n'est pas valide (Sentry IOBROKER-MQTT-1B)\nErreur de capture lorsque le serveur ne peut pas être démarré (Sentry IOBROKER-MQTT-1C)",
-                "it": "Controlla la porta del server configurata e reimposta a 1883 se non valida (Sentry IOBROKER-MQTT-1B)\nErrore di rilevamento quando il server non può essere avviato (Sentry IOBROKER-MQTT-1C)",
-                "es": "Verifique el puerto del servidor configurado y restablezca a 1883 si no es válido (Sentry IOBROKER-MQTT-1B)\nDetectar el error cuando el servidor no se puede iniciar (Sentry IOBROKER-MQTT-1C)",
-                "pl": "Sprawdź skonfigurowany port serwera i zresetuj do 1883, jeśli jest nieprawidłowy (Sentry IOBROKER-MQTT-1B)\nBłąd przechwytywania, gdy nie można uruchomić serwera (Sentry IOBROKER-MQTT-1C)",
-                "zh-cn": "检查配置的服务器端口，如果无效，则重置为1883（Sentry IOBROKER-MQTT-1B）\n无法启动服务器时捕获错误（Sentry IOBROKER-MQTT-1C）"
-            },
-            "2.3.1": {
-                "en": "Add option to ignore SSL validation errors",
-                "de": "Option zum Ignorieren von SSL-Validierungsfehlern hinzufügen",
-                "ru": "Добавить возможность игнорировать ошибки проверки SSL",
-                "pt": "Adicionar opção para ignorar erros de validação de SSL",
-                "nl": "Optie toevoegen om SSL-validatiefouten te negeren",
-                "fr": "Ajouter une option pour ignorer les erreurs de validation SSL",
-                "it": "Aggiungi l'opzione per ignorare gli errori di convalida SSL",
-                "es": "Agregue la opción para ignorar los errores de validación SSL",
-                "pl": "Dodaj opcję ignorowania błędów weryfikacji SSL",
-                "zh-cn": "添加选项以忽略SSL验证错误"
-            },
-            "2.1.14": {
-                "en": "Prevent crash case (Sentry IOBROKER-MQTT-11)",
-                "de": "Absturz verhindern (Sentry IOBROKER-MQTT-11)",
-                "ru": "Случай предотвращения сбоя (Sentry IOBROKER-MQTT-11)",
-                "pt": "Evitar caso de travamento (Sentry IOBROKER-MQTT-11)",
-                "nl": "Voorkom een crashcase (Sentry IOBROKER-MQTT-11)",
-                "fr": "Prévenir les cas de crash (Sentry IOBROKER-MQTT-11)",
-                "it": "Prevenire il crash case (Sentry IOBROKER-MQTT-11)",
-                "es": "Caso de prevención de accidentes (Sentry IOBROKER-MQTT-11)",
-                "pl": "Zapobiegaj awariom (Sentry IOBROKER-MQTT-11)",
-                "zh-cn": "防止发生崩溃情况（Sentry IOBROKER-MQTT-11）"
-            },
-            "2.1.13": {
-                "en": "Prevent crash case (Sentry IOBROKER-MQTT-Q)",
-                "de": "Absturz verhindern (Sentry IOBROKER-MQTT-Q)",
-                "ru": "Случай предотвращения сбоя (Sentry IOBROKER-MQTT-Q)",
-                "pt": "Evitar caso de travamento (Sentry IOBROKER-MQTT-Q)",
-                "nl": "Voorkom een crashcase (Sentry IOBROKER-MQTT-Q)",
-                "fr": "Prévenir les cas de crash (Sentry IOBROKER-MQTT-Q)",
-                "it": "Prevenire il crash case (Sentry IOBROKER-MQTT-Q)",
-                "es": "Prevenir caso de accidente (Sentry IOBROKER-MQTT-Q)",
-                "pl": "Zapobiegaj awariom (Sentry IOBROKER-MQTT-Q)",
-                "zh-cn": "防止发生崩溃情况（Sentry IOBROKER-MQTT-Q）"
-            },
-            "2.1.12": {
-                "en": "Crash cases prevented (Sentry IOBROKER-MQTT-M)",
-                "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-M)",
-                "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-M)",
-                "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-M)",
-                "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-M)",
-                "fr": "Crash cases évités (Sentry IOBROKER-MQTT-M)",
-                "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-M)",
-                "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-M)",
-                "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-M)",
-                "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-M）"
-            },
-            "2.1.10": {
-                "en": "Crash cases prevented (Sentry IOBROKER-MQTT-G)\nprevent errors on mqtt connection test",
-                "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-G)\nVerhindern Sie Fehler beim mqtt-Verbindungstest",
-                "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-G)\nпредотвратить ошибки при тестировании подключения mqtt",
-                "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-G)\nevitar erros no teste de conexão mqtt",
-                "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-G)\nvoorkom fouten bij de mqtt-verbindingstest",
-                "fr": "Cas de crash évités (Sentry IOBROKER-MQTT-G)\néviter les erreurs lors du test de connexion mqtt",
-                "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-G)\nprevenire errori nel test di connessione mqtt",
-                "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-G)\nevitar errores en la prueba de conexión mqtt",
-                "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-G)\nzapobiega błędom w teście połączenia mqtt",
-                "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-G）\n防止mqtt连接测试上的错误"
-            },
-            "2.1.9": {
-                "en": "Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "de": "Absturzfälle verhindert (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "ru": "Предотвращение сбоев (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "pt": "Casos de falha evitados (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "nl": "Crashcases voorkomen (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "fr": "Cas de crash évités (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "it": "Casi di crash prevenuti (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "es": "Casos de accidentes prevenidos (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "pl": "Zapobieganie przypadkom awarii (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)",
-                "zh-cn": "避免发生崩溃案例（Sentry IOBROKER-MQTT-E，IOBROKER-MQTT-F）"
-            },
-            "2.1.8": {
-                "en": "Crash case prevented on unsubscribe (Sentry IOBROKER-MQTT-D)",
-                "de": "Absturz beim Abbestellen verhindert (Sentry IOBROKER-MQTT-D)",
-                "ru": "При отказе от подписки предотвращен сбой (Sentry IOBROKER-MQTT-D)",
-                "pt": "Caso de falha impedido ao cancelar (Sentry IOBROKER-MQTT-D)",
-                "nl": "Crashcasus verhinderd bij uitschrijving (Sentry IOBROKER-MQTT-D)",
-                "fr": "Cas de crash empêché lors de la désinscription (Sentry IOBROKER-MQTT-D)",
-                "it": "Crash case impedito all'annullamento dell'iscrizione (Sentry IOBROKER-MQTT-D)",
-                "es": "Caso de choque evitado al cancelar la suscripción (Sentry IOBROKER-MQTT-D)",
-                "pl": "Awaria zapobiegająca anulowaniu subskrypcji (Sentry IOBROKER-MQTT-D)",
-                "zh-cn": "取消预订时避免发生崩溃情况（Sentry IOBROKER-MQTT-D）"
-            },
-            "2.1.7": {
-                "en": "handle invalid mqtt server settings better (Sentry IOBROKER-MQTT-9)",
-                "de": "Behandeln Sie ungültige mqtt-Servereinstellungen besser (Sentry IOBROKER-MQTT-9).",
-                "ru": "лучше обрабатывать неверные настройки сервера mqtt (Sentry IOBROKER-MQTT-9)",
-                "pt": "lidar melhor com configurações inválidas do servidor mqtt (Sentry IOBROKER-MQTT-9)",
-                "nl": "omgaan met ongeldige mqtt-serverinstellingen beter (Sentry IOBROKER-MQTT-9)",
-                "fr": "gérer mieux les paramètres de serveur mqtt invalides (Sentry IOBROKER-MQTT-9)",
-                "it": "gestire meglio le impostazioni del server mqtt non valide (Sentry IOBROKER-MQTT-9)",
-                "es": "manejar mejor la configuración inválida del servidor mqtt (Sentry IOBROKER-MQTT-9)",
-                "pl": "lepiej radzić sobie z nieprawidłowymi ustawieniami serwera mqtt (Sentry IOBROKER-MQTT-9)",
-                "zh-cn": "更好地处理无效的mqtt服务器设置（Sentry IOBROKER-MQTT-9）"
-            },
-            "2.1.6": {
-                "en": "Try to prevent creation of objects with invalid IDs\ncheck that state is set before accessing it (Sentry IOBROKER-MQTT-2)\nBetter handle disconnection cases (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "de": "Versuchen Sie, die Erstellung von Objekten mit ungültigen IDs zu verhindern\nÜberprüfen Sie, ob der Status festgelegt ist, bevor Sie darauf zugreifen (Sentry IOBROKER-MQTT-2).\nTrennungsfälle besser behandeln (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "ru": "Попробуйте предотвратить создание объектов с недействительными идентификаторами\nпроверьте, что состояние установлено перед доступом к нему (Sentry IOBROKER-MQTT-2)\nЛучшие случаи отключения ручки (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "pt": "Tente impedir a criação de objetos com IDs inválidos\nverifique se o estado está definido antes de acessá-lo (Sentry IOBROKER-MQTT-2)\nMelhor lidar com casos de desconexão (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "nl": "Probeer te voorkomen dat objecten met ongeldige ID's worden gemaakt\ncontroleer of de status is ingesteld voordat u deze opent (Sentry IOBROKER-MQTT-2)\nOntkoppelingsgevallen beter afhandelen (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "fr": "Essayez d'empêcher la création d'objets avec des ID invalides\nvérifier que l'état est défini avant d'y accéder (Sentry IOBROKER-MQTT-2)\nMieux gérer les cas de déconnexion (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "it": "Cerca di impedire la creazione di oggetti con ID non validi\nverificare che lo stato sia impostato prima di accedervi (Sentry IOBROKER-MQTT-2)\nGestire meglio i casi di disconnessione (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "es": "Intenta evitar la creación de objetos con ID no válidos\ncompruebe que el estado esté establecido antes de acceder a él (Sentry IOBROKER-MQTT-2)\nManejar mejor los casos de desconexión (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "pl": "Spróbuj zapobiec tworzeniu obiektów z nieprawidłowymi identyfikatorami\nsprawdź, czy stan jest ustawiony przed uzyskaniem do niego dostępu (Sentry IOBROKER-MQTT-2)\nLepsze przypadki rozłączania uchwytów (Sentry IOBROKER-MQTT-3, IOBROKER-MQTT-6)",
-                "zh-cn": "尝试防止创建具有无效ID的对象\n在访问之前检查状态是否已设置（Sentry IOBROKER-MQTT-2）\n更好地处理断开情况（哨兵IOBROKER-MQTT-3，IOBROKER-MQTT-6）"
-            },
-            "2.1.5": {
-                "en": "try to prevent crashes on not existing state values\nSentry added for crash reporting with js-controller 3.x+",
-                "de": "Versuchen Sie, Abstürze bei nicht vorhandenen Statuswerten zu verhindern\nSentry für Crash-Reporting mit js-controller 3.x + hinzugefügt",
-                "ru": "попытаться предотвратить сбои на несуществующих значениях состояния\nДобавлен Sentry для отчетов о сбоях с помощью js-controller 3.x +",
-                "pt": "tente evitar falhas em valores de estado inexistentes\nAdicionado sentinela para relatórios de falhas com o js-controller 3.x +",
-                "nl": "probeer crashes op niet bestaande statuswaarden te voorkomen\nSentry toegevoegd voor crashrapportage met js-controller 3.x +",
-                "fr": "essayez d'éviter les plantages sur des valeurs d'état non existantes\nSentry ajouté pour les rapports de plantage avec js-controller 3.x +",
-                "it": "provare a prevenire arresti anomali su valori di stato non esistenti\nSentry aggiunto per la segnalazione di crash con js-controller 3.x +",
-                "es": "intenta evitar bloqueos en valores de estado no existentes\nSentry agregado para informes de fallas con js-controller 3.x +",
-                "pl": "spróbuj zapobiec awariom na nieistniejących wartościach stanu\nDodano Sentry do raportowania awarii z js-controller 3.x +",
-                "zh-cn": "尝试防止不存在的状态值崩溃\nSentry已添加，用于使用js-controller 3.x +进行崩溃报告"
-            },
-            "2.1.4": {
-                "en": "websocket do not have setTimeout method\nprevent messageID overflow",
-                "de": "Websocket hat keine setTimeout-Methode\nÜberlaufen von messageID verhindern",
-                "ru": "у websocket нет метода setTimeout\nпредотвратить переполнение messageID",
-                "pt": "websocket não possui o método setTimeout\nimpedir o estouro de messageID",
-                "nl": "websocket heeft geen setTimeout-methode\noverflow van messageID voorkomen",
-                "fr": "websocket n'a pas de méthode setTimeout\néviter le débordement de messageID",
-                "it": "websocket non ha il metodo setTimeout\nimpedire l'overflow di messageID",
-                "es": "websocket no tiene el método setTimeout\nevitar el desbordamiento de ID de mensaje",
-                "pl": "websocket nie ma metody setTimeout\nzapobiec przepełnieniu identyfikatora wiadomości",
-                "zh-cn": "websocket没有setTimeout方法\n防止messageID溢出"
-            },
-            "2.1.3": {
-                "en": "Caught some errors",
-                "de": "Einige Fehler gefangen",
-                "ru": "Поймал некоторые ошибки",
-                "pt": "Detectou alguns erros",
-                "nl": "Er zijn fouten opgetreden",
-                "fr": "Pris quelques erreurs",
-                "it": "Preso alcuni errori",
-                "es": "Atrapado algunos errores",
-                "pl": "Złapałem kilka błędów",
-                "zh-cn": "抓到一些错误"
-            },
-            "2.1.2": {
-                "en": "removed usage of getMessage, add send state as object",
-                "de": "Verwendung von getMessage entfernt, Sendestatus als Objekt hinzufügen",
-                "ru": "удалено использование getMessage, добавлено состояние отправки в качестве объекта",
-                "pt": "removido o uso de getMessage, adicione o estado de envio como objeto",
-                "nl": "verwijderd gebruik van getMessage, voeg verzendstatus toe als object",
-                "fr": "suppression de l'utilisation de getMessage, ajout d'un état d'envoi en tant qu'objet",
-                "it": "rimosso l'utilizzo di getMessage, aggiungi lo stato di invio come oggetto",
-                "es": "uso eliminado de getMessage, agregar estado de envío como objeto",
-                "pl": "usunięto użycie getMessage, dodaj stan wysyłania jako obiekt",
-                "zh-cn": "删除了getMessage的用法，将发送状态添加为对象"
-            },
-            "2.1.1": {
-                "en": "Added option to overwrite the client \"clean session\" settings",
-                "de": "Option zum Überschreiben der Einstellungen für \"saubere Sitzung\" des Clients hinzugefügt",
-                "ru": "Добавлена опция перезаписи настроек клиента \"чистый сеанс\"",
-                "pt": "Opção adicionada para sobrescrever as configurações de \"sessão limpa\" do cliente",
-                "nl": "Optie toegevoegd om de \"schone sessie\" -instellingen van de client te overschrijven",
-                "fr": "Ajout d'une option pour écraser les paramètres du client \"session propre\"",
-                "it": "Aggiunta opzione per sovrascrivere le impostazioni della \"sessione pulita\" del client",
-                "es": "Opción agregada para sobrescribir la configuración de \"sesión limpia\" del cliente",
-                "pl": "Dodano opcję nadpisania ustawień „czystej sesji” klienta",
-                "zh-cn": "添加了覆盖客户端“干净会话”设置的选项"
-            },
-            "2.1.0": {
-                "en": "Add option to send message using messagebox\nFix error with logging on pubrec",
-                "de": "Option zum Senden von Nachrichten mithilfe von Messagebox hinzufügen\nFehler bei der pubrec-logging behoben",
-                "ru": "Добавить опцию для отправки сообщения с помощью messagebox\nИсправлена ​​ошибка при входе в pubrec",
-                "pt": "Adicionar opção para enviar mensagem usando messagebox\nCorrigir erro com o registro em pubrec",
-                "nl": "Optie toevoegen om een ​​bericht te verzenden via messagebox\nFout bij herstellen met inloggen op pubrec",
-                "fr": "Ajouter une option pour envoyer un message en utilisant la messagebox\nCorrection d'une erreur lors de la connexion à pubrec",
-                "it": "Aggiungi l'opzione per inviare un messaggio usando messagebox\nRisolto un problema con l'accesso a pubrec",
-                "es": "Añadir opción para enviar mensaje usando el messagebox\nSolucionar error al iniciar sesión en pubrec.",
-                "pl": "Dodaj opcję wysyłania wiadomości przy użyciu skrzynki wiadomości\nNapraw błąd podczas logowania do pubrec",
-                "zh-cn": "添加使用消息框发送消息的选项\n登录pubrec修复错误"
-            }
-        },
-        "title": "MQTT Broker/Client",
-        "titleLang": {
-            "en": "MQTT Broker/Client",
-            "de": "MQTT Broker/Client",
-            "ru": "Брокер MQTT/Клиент",
-            "pt": "MQTT Broker/Cliente",
-            "nl": "MQTT-makelaar/klant",
-            "fr": "Courtier MQTT/Client",
-            "it": "Broker/Cliente MQTT",
-            "es": "Agente MQTT/Cliente",
-            "pl": "Broker/klient MQTT",
-            "zh-cn": "MQTT经纪人/客户"
-        },
-        "desc": {
-            "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
-            "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
-            "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера",
-            "pt": "Este adaptador permite enviar e receber mensagens MQTT da ioBroker e ser um corretor",
-            "nl": "Met deze adapter kunt u MQTT-berichten van ioBroker verzenden en ontvangen en makelaar worden",
-            "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
-            "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
-            "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
-            "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera",
-            "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
-        },
-        "authors": [
-            "bluefox <dogafox@gmail.com>"
-        ],
-        "docs": {
-            "en": "docs/en/mqtt.md",
-            "ru": "docs/ru/mqtt.md"
-        },
-        "license": "MIT",
-        "platform": "Javascript/Node.js",
-        "mode": "daemon",
-        "compact": true,
-        "messagebox": true,
-        "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
-        "loglevel": "info",
-        "icon": "mqtt.png",
-        "materialize": true,
-        "keywords": [
-            "notification",
-            "MQTT",
-            "message"
-        ],
-        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
-        "type": "protocols",
-        "plugins": {
-            "sentry": {
-                "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
-            }
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=2.0.0"
-            }
-        ],
-        "tier": 2,
-        "connectionType": "local",
-        "dataSource": "push"
+  "common": {
+    "name": "mqtt",
+    "version": "2.4.1",
+    "news": {
+      "2.4.1": {
+        "en": "Added wildcard regex for \"/#\"",
+        "de": "Platzhalter-Regex für \"/#\" hinzugefügt",
+        "ru": "Добавлено регулярное выражение с подстановочными знаками для \"/ #\"",
+        "pt": "Adicionado regex curinga para \"/ #\"",
+        "nl": "Wildcard-regex toegevoegd voor \"/#\"",
+        "fr": "Ajout d'une regex générique pour \"/#\"",
+        "it": "Aggiunta espressione regolare con caratteri jolly per \"/#\"",
+        "es": "Se agregó una expresión regular comodín para \"/ #\"",
+        "pl": "Dodano wyrażenie regularne z symbolem wieloznacznym dla „/#”",
+        "zh-cn": "为“/#”添加了通配符正则表达式"
+      },
+      "2.4.0": {
+        "en": "only remember the last message per topic for offline clients that subscribed the topics when using persistent sessions\nonly remember last wills for clients that subscribed the topics\non \"disconnect\" message do not send last will as defined by specs\nset a new messageId when sending remembered messages\nAdd small delay after subscribe before sending out topic values\noptimize for js-controller 3.3\nprevent errors in js-controller 3.3 and detect datatype changes for objects",
+        "de": "Denken Sie nur an die letzte Nachricht pro Thema für Offline-Clients, die die Themen abonniert haben, wenn Sie persistente Sitzungen verwenden\nDenken Sie nur an das letzte Testament für Kunden, die die Themen abonniert haben\nBei der Meldung \"Trennen\" wird nicht der letzte Wille gesendet, wie in den Spezifikationen definiert\nLegen Sie beim Senden gespeicherter Nachrichten eine neue Nachrichten-ID fest\nFügen Sie nach dem Abonnieren eine kleine Verzögerung hinzu, bevor Sie Themenwerte senden\noptimieren für js-controller 3.3\nVerhindern Sie Fehler in js-controller 3.3 und erkennen Sie Datentypänderungen für Objekte",
+        "ru": "запоминать только последнее сообщение для каждой темы для автономных клиентов, которые подписались на темы при использовании постоянных сеансов\nзапоминать только последние завещания клиентов, подписавшихся на темы\nпри сообщении \"отключить\" не отправлять последнюю волю, как определено спецификациями\nустановить новый messageId при отправке запомненных сообщений\nДобавьте небольшую задержку после подписки перед отправкой значений темы\nоптимизировать под js-controller 3.3\nпредотвращать ошибки в js-controller 3.3 и обнаруживать изменения типов данных для объектов",
+        "pt": "lembre-se apenas da última mensagem por tópico para clientes offline que assinaram os tópicos ao usar sessões persistentes\nlembre-se apenas das últimas vontades para os clientes que subscreveram os tópicos\nna mensagem \"desconectar\" não enviar última vontade conforme definido pelas especificações\ndefinir um novo messageId ao enviar mensagens memorizadas\nAdicione um pequeno atraso após a assinatura antes de enviar os valores do tópico\notimizar para js-controller 3.3\nevitar erros no js-controller 3.3 e detectar mudanças de tipo de dados para objetos",
+        "nl": "onthoud alleen het laatste bericht per onderwerp voor offline klanten die zich op de onderwerpen hebben geabonneerd bij het gebruik van persistente sessies\nonthoud alleen testamenten van klanten die zich op de onderwerpen hebben geabonneerd\nbij \"verbreken\" bericht geen laatste testament verzenden zoals gedefinieerd door de specificaties\nstel een nieuw bericht-ID in bij het verzenden van onthouden berichten\nVoeg een kleine vertraging toe na het abonneren voordat onderwerpwaarden worden verzonden\noptimaliseren voor js-controller 3.3\nvoorkom fouten in js-controller 3.3 en detecteer datatype-wijzigingen voor objecten",
+        "fr": "se souvenir uniquement du dernier message par sujet pour les clients hors ligne qui se sont abonnés aux sujets lors de l'utilisation de sessions persistantes\nsouvenez-vous uniquement des dernières volontés des clients qui ont souscrit aux sujets\nsur le message \"déconnecter\", ne pas envoyer le dernier testament tel que défini par les spécifications\ndéfinir un nouveau messageId lors de l'envoi de messages mémorisés\nAjouter un petit délai après l'abonnement avant d'envoyer des valeurs de sujet\noptimiser pour js-controller 3.3\néviter les erreurs dans js-controller 3.3 et détecter les changements de type de données pour les objets",
+        "it": "ricorda solo l'ultimo messaggio per argomento per i client offline che hanno sottoscritto gli argomenti quando utilizzano sessioni persistenti\nricorda solo le ultime volontà per i clienti che hanno sottoscritto gli argomenti\nnel messaggio di \"disconnessione\" non inviare l'ultima volontà come definito dalle specifiche\nimposta un nuovo ID messaggio durante l'invio di messaggi ricordati\nAggiungi un piccolo ritardo dopo l'iscrizione prima di inviare i valori dell'argomento\nottimizzare per js-controller 3.3\nprevenire errori in js-controller 3.3 e rilevare le modifiche al tipo di dati per gli oggetti",
+        "es": "solo recuerde el último mensaje por tema para los clientes fuera de línea que se suscribieron a los temas cuando usan sesiones persistentes\nsolo recuerda las últimas voluntades de los clientes que suscribieron los temas\nen el mensaje \"desconectar\" no enviar el último testamento según lo definido por las especificaciones\nestablecer un nuevo messageId al enviar mensajes recordados\nAgregue un pequeño retraso después de suscribirse antes de enviar valores de tema\noptimizar para js-controller 3.3\nprevenir errores en js-controller 3.3 y detectar cambios de tipo de datos para objetos",
+        "pl": "zapamiętuje tylko ostatnią wiadomość na temat dla klientów offline, którzy subskrybowali tematy podczas korzystania z sesji trwałych\npamiętaj tylko testamenty klientów, którzy subskrybowali tematy\nw wiadomości \"rozłącz\" nie wysyłaj ostatniej woli zgodnie ze specyfikacją\nustaw nowy identyfikator wiadomości podczas wysyłania zapamiętanych wiadomości\nDodaj małe opóźnienie po zasubskrybowaniu, zanim wyślesz wartości tematu\noptymalizacja dla kontrolera js 3.3\nZapobiegaj błędom w js-controller 3.3 i wykrywaj zmiany typów danych dla obiektów",
+        "zh-cn": "仅记住使用持久会话时订阅主题的脱机客户端每个主题的最后一条消息\n只记住订阅主题的客户的遗嘱\n在“断开连接”消息上不发送规范所定义的最后遗嘱\n在发送已记住的消息时设置一个新的messageId\n订阅后添加少量延迟，然后再发送主题值\n针对js-controller 3.3进行优化\n防止js-controller 3.3中的错误并检测对象的数据类型更改"
+      },
+      "2.3.5": {
+        "en": "js-controller 2.0 is now required at least\nchange default subscribe to mqtt.0.*",
+        "de": "js-controller 2.0 ist jetzt mindestens erforderlich\nStandard ändern mqtt.0 abonnieren. *",
+        "ru": "js-controller 2.0 теперь требуется как минимум\nизменить подписку по умолчанию на mqtt.0. *",
+        "pt": "js-controller 2.0 agora é necessário pelo menos\nalterar padrão assinar mqtt.0. *",
+        "nl": "js-controller 2.0 is nu minimaal vereist\nverander standaard abonnement op mqtt.0. *",
+        "fr": "js-controller 2.0 est maintenant requis au moins\nchanger l'abonnement par défaut à mqtt.0. *",
+        "it": "js-controller 2.0 è ora almeno richiesto\ncambia la sottoscrizione predefinita a mqtt.0. *",
+        "es": "js-controller 2.0 ahora se requiere al menos\ncambiar suscripción predeterminada a mqtt.0. *",
+        "pl": "js-controller 2.0 jest teraz wymagany przynajmniej\nzmień domyślną subskrypcję mqtt.0. *",
+        "zh-cn": "现在至少需要js-controller 2.0\n更改默认值订阅mqtt.0。*"
+      },
+      "2.3.4": {
+        "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1F)",
+        "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1F)",
+        "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1F)",
+        "pt": "Capturar erros ao definir estados (Sentry IOBROKER-MQTT-1F)",
+        "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1F)",
+        "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1F)",
+        "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1F)",
+        "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1F)",
+        "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1F)",
+        "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1F）"
+      },
+      "2.3.3": {
+        "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1D)",
+        "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1D)",
+        "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1D)",
+        "pt": "Detectar erros ao definir estados (Sentry IOBROKER-MQTT-1D)",
+        "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1D)",
+        "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1D)",
+        "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1D)",
+        "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1D)",
+        "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1D)",
+        "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1D）"
+      },
+      "2.3.2": {
+        "en": "Check configured server port and reset to 1883 if invalid (Sentry IOBROKER-MQTT-1B)\nCatch error when server can not be started (Sentry IOBROKER-MQTT-1C)",
+        "de": "Überprüfen Sie den konfigurierten Server-Port und setzen Sie ihn auf 1883 zurück, wenn er ungültig ist (Sentry IOBROKER-MQTT-1B).\nCatch-Fehler, wenn der Server nicht gestartet werden kann (Sentry IOBROKER-MQTT-1C)",
+        "ru": "Проверьте настроенный порт сервера и сбросьте его на 1883, если он недействителен (Sentry IOBROKER-MQTT-1B)\nОшибка перехвата при невозможности запуска сервера (Sentry IOBROKER-MQTT-1C)",
+        "pt": "Verifique a porta do servidor configurada e redefina para 1883 se for inválido (Sentry IOBROKER-MQTT-1B)\nErro de captura quando o servidor não pode ser iniciado (Sentry IOBROKER-MQTT-1C)",
+        "nl": "Controleer de geconfigureerde serverpoort en reset deze naar 1883 als deze ongeldig is (Sentry IOBROKER-MQTT-1B)\nVang een fout op wanneer de server niet kan worden gestart (Sentry IOBROKER-MQTT-1C)",
+        "fr": "Vérifiez le port du serveur configuré et réinitialisez à 1883 s'il n'est pas valide (Sentry IOBROKER-MQTT-1B)\nErreur de capture lorsque le serveur ne peut pas être démarré (Sentry IOBROKER-MQTT-1C)",
+        "it": "Controlla la porta del server configurata e reimposta a 1883 se non valida (Sentry IOBROKER-MQTT-1B)\nErrore di rilevamento quando il server non può essere avviato (Sentry IOBROKER-MQTT-1C)",
+        "es": "Verifique el puerto del servidor configurado y restablezca a 1883 si no es válido (Sentry IOBROKER-MQTT-1B)\nDetectar el error cuando el servidor no se puede iniciar (Sentry IOBROKER-MQTT-1C)",
+        "pl": "Sprawdź skonfigurowany port serwera i zresetuj do 1883, jeśli jest nieprawidłowy (Sentry IOBROKER-MQTT-1B)\nBłąd przechwytywania, gdy nie można uruchomić serwera (Sentry IOBROKER-MQTT-1C)",
+        "zh-cn": "检查配置的服务器端口，如果无效，则重置为1883（Sentry IOBROKER-MQTT-1B）\n无法启动服务器时捕获错误（Sentry IOBROKER-MQTT-1C）"
+      },
+      "2.3.1": {
+        "en": "Add option to ignore SSL validation errors",
+        "de": "Option zum Ignorieren von SSL-Validierungsfehlern hinzufügen",
+        "ru": "Добавить возможность игнорировать ошибки проверки SSL",
+        "pt": "Adicionar opção para ignorar erros de validação de SSL",
+        "nl": "Optie toevoegen om SSL-validatiefouten te negeren",
+        "fr": "Ajouter une option pour ignorer les erreurs de validation SSL",
+        "it": "Aggiungi l'opzione per ignorare gli errori di convalida SSL",
+        "es": "Agregue la opción para ignorar los errores de validación SSL",
+        "pl": "Dodaj opcję ignorowania błędów weryfikacji SSL",
+        "zh-cn": "添加选项以忽略SSL验证错误"
+      }
     },
-    "native": {
-        "type": "client",
-        "clientId": "",
-        "bind": "0.0.0.0",
-        "port": 1883,
-        "ssl": false,
-        "rejectUnauthorized": true,
-        "user": "",
-        "pass": "",
-        "url": "localhost",
-        "patterns": "#",
-        "onchange": true,
-        "publishAllOnStart": true,
-        "debug": false,
-        "publish": "mqtt.0.*",
-        "certPublic": "",
-        "certPrivate": "",
-        "certChained": "",
-        "prefix": "",
-        "forceCleanSession": "no",
-        "sendAckToo": false,
-        "sendStateObject": false,
-        "webSocket": false,
-        "maxTopicLength": 100,
-        "publishOnSubscribe": true,
-        "extraSet": false,
-        "sendOnStartInterval": 2000,
-        "sendInterval": 10,
-        "keepalive": 1000,
-        "reconnectPeriod": 10,
-        "connectTimeout": 30,
-        "persistent": false,
-        "defaultQoS": 0,
-        "retain": false,
-        "retransmitInterval": 2000,
-        "retransmitCount": 10,
-        "storeClientsTime": 1440
+    "title": "MQTT Broker/Client",
+    "titleLang": {
+      "en": "MQTT Broker/Client",
+      "de": "MQTT Broker/Client",
+      "ru": "Брокер MQTT/Клиент",
+      "pt": "MQTT Broker/Cliente",
+      "nl": "MQTT-makelaar/klant",
+      "fr": "Courtier MQTT/Client",
+      "it": "Broker/Cliente MQTT",
+      "es": "Agente MQTT/Cliente",
+      "pl": "Broker/klient MQTT",
+      "zh-cn": "MQTT经纪人/客户"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "connected client for MQTT",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
-    ]
+    "desc": {
+      "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
+      "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
+      "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера",
+      "pt": "Este adaptador permite enviar e receber mensagens MQTT da ioBroker e ser um corretor",
+      "nl": "Met deze adapter kunt u MQTT-berichten van ioBroker verzenden en ontvangen en makelaar worden",
+      "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
+      "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
+      "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
+      "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera",
+      "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
+    },
+    "authors": [
+      "bluefox <dogafox@gmail.com>"
+    ],
+    "docs": {
+      "en": "docs/en/mqtt.md",
+      "ru": "docs/ru/mqtt.md"
+    },
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "mode": "daemon",
+    "compact": true,
+    "messagebox": true,
+    "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
+    "loglevel": "info",
+    "icon": "mqtt.png",
+    "materialize": true,
+    "keywords": [
+      "notification",
+      "MQTT",
+      "message"
+    ],
+    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.png",
+    "type": "protocols",
+    "plugins": {
+      "sentry": {
+        "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
+      }
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=2.0.0"
+      }
+    ],
+    "tier": 2,
+    "connectionType": "local",
+    "dataSource": "push"
+  },
+  "native": {
+    "type": "client",
+    "clientId": "",
+    "bind": "0.0.0.0",
+    "port": 1883,
+    "ssl": false,
+    "rejectUnauthorized": true,
+    "user": "",
+    "pass": "",
+    "url": "localhost",
+    "patterns": "#",
+    "onchange": true,
+    "publishAllOnStart": true,
+    "debug": false,
+    "publish": "mqtt.0.*",
+    "certPublic": "",
+    "certPrivate": "",
+    "certChained": "",
+    "prefix": "",
+    "forceCleanSession": "no",
+    "sendAckToo": false,
+    "sendStateObject": false,
+    "webSocket": false,
+    "maxTopicLength": 100,
+    "publishOnSubscribe": true,
+    "extraSet": false,
+    "sendOnStartInterval": 2000,
+    "sendInterval": 10,
+    "keepalive": 1000,
+    "reconnectPeriod": 10,
+    "connectTimeout": 30,
+    "persistent": false,
+    "defaultQoS": 0,
+    "retain": false,
+    "retransmitInterval": 2000,
+    "retransmitCount": 10,
+    "storeClientsTime": 1440
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "connected client for MQTT",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }
