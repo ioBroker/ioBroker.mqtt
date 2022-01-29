@@ -119,7 +119,7 @@ describe('Test MQTT client', function() {
         let brokerStarted    = false;
         setup.adapterStarted = false;
 
-        setup.setupController(() => {
+        setup.setupController(async () => {
             const config = await setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
