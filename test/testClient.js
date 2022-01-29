@@ -120,14 +120,14 @@ describe('Test MQTT client', function() {
         setup.adapterStarted = false;
 
         setup.setupController(() => {
-            const config = setup.getAdapterConfig();
+            const config = await setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
             config.native.publish  = 'mqtt.0.*';
             config.native.user     = 'user';
             config.native.pass     = '*\u0006\u0015\u0001\u0004';
-            setup.setAdapterConfig(config.common, config.native);
+            await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {
                 objects = _objects;
