@@ -18,7 +18,7 @@
     "mqtt": "^2.18.8",
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
-    "ws": "^8.3.0",
+    "ws": "^8.4.2",
     "@iobroker/adapter-core": "^2.5.1"
   },
   "devDependencies": {
