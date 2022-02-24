@@ -37,8 +37,10 @@
   "main": "main.js",
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha --exit",
-    "release": "release-script patch --yes",
-    "release-minor": "release-script minor --yes"
+    "release": "release-script",
+    "release-patch": "release-script patch --yes",
+    "release-minor": "release-script minor --yes",
+    "release-major": "release-script major --yes"
   },
   "engines": {
     "node": ">=8.0.0"
