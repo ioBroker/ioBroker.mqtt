@@ -116,7 +116,7 @@ function processMessage(obj) {
             // Try to connect to mqtt broker
             if (obj.callback && obj.message) {
                 const mqtt = require('mqtt');
-                const _url = `mqtt://${obj.message.user ? (`${obj.message.user}:${obj.message.pass}@`) : ''}${obj.message.url}${obj.message.port ? (':' + obj.message.port) : ''}?clientId=ioBroker.${adapter.namespace}`;
+                const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.user ? (`${obj.message.user}:${obj.message.pass}@`) : ''}${obj.message.url}${obj.message.port ? (':' + obj.message.port) : ''}?clientId=ioBroker.${adapter.namespace}`;
                 const _client = mqtt.connect(_url);
                 // Set timeout for connection
                 const timeout = setTimeout(() => {

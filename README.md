@@ -38,7 +38,6 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Use different topic names for set and get** - if active, so every state will have two topics: ```adapter/instance/stateName``` and ```adapter/instance/stateName/set```. In this case topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). The client will receive sent messages back in this mode.
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
-- **Use chunk patch** - There is a problem with last update of mqtt-packet, that frames will be sent directly to client and not first completely built and then sent to client. Some old clients do not like such a packets and do not work with new library. To fix it you can activate this flag.
 - **Force clean session** - Overwrite the client settings and clear or keep session.
 
 ### Client settings
@@ -133,6 +132,12 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WOK IN PROGRESS__
+* (uwesimon/Apollon77) fix test connection with mqtts
+* (uwesimon/Apollon77) ReconnectTimeout is now handled in seconds, so default is 10s instead of 10ms
+* (Apollon77) Correct info.connection object default values
+
 ### 2.4.1 (2021-11-08)
 * (MichaelDvP) Added wildcard regex for "/#"
 
@@ -400,7 +405,7 @@ The broker was tested with following clients:
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2021, bluefox <dogafox@gmail.com>
+Copyright (c) 2014-2022, bluefox <dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
