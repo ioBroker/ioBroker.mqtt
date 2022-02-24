@@ -3,18 +3,6 @@
     "name": "mqtt",
     "version": "2.4.2",
     "news": {
-      "2.4.2": {
-        "en": "fix test connection with mqtts\nReconnectTimeout is now handled in seconds, so default is 10s instead of 10ms\nCorrect info.connection object default values",
-        "de": "Testverbindung mit mqtts reparieren\nReconnectTimeout wird jetzt in Sekunden behandelt, daher ist der Standardwert 10 s statt 10 ms\nKorrigieren Sie die Standardwerte des info.connection-Objekts",
-        "ru": "исправить тестовое соединение с mqtts\nReconnectTimeout теперь обрабатывается в секундах, поэтому по умолчанию 10 с вместо 10 мс.\nПравильные значения объекта info.connection по умолчанию",
-        "pt": "corrigir conexão de teste com mqtts\nReconnectTimeout agora é tratado em segundos, então o padrão é 10s em vez de 10ms\nCorrigir os valores padrão do objeto info.connection",
-        "nl": "testverbinding repareren met mqtts\nReconnectTimeout wordt nu afgehandeld in seconden, dus standaard is 10s in plaats van 10ms\nCorrigeer de standaardwaarden van het info.connection-object",
-        "fr": "correction de la connexion de test avec mqtts\nReconnectTimeout est maintenant géré en quelques secondes, donc la valeur par défaut est de 10 s au lieu de 10 ms\nCorriger les valeurs par défaut de l'objet info.connection",
-        "it": "correggere la connessione di prova con mqtts\nReconnectTimeout ora viene gestito in secondi, quindi l'impostazione predefinita è 10 secondi anziché 10 ms\nCorreggere i valori predefiniti dell'oggetto info.connection",
-        "es": "arreglar la conexión de prueba con mqtts\nReconnectTimeout ahora se maneja en segundos, por lo que el valor predeterminado es 10 s en lugar de 10 ms\nCorregir los valores predeterminados del objeto info.connection",
-        "pl": "napraw połączenie testowe za pomocą mqtts\nReconnectTimeout jest teraz obsługiwany w sekundach, więc domyślnie jest to 10s zamiast 10ms\nPrawidłowe wartości domyślne obiektu info.connection",
-        "zh-cn": "修复与 mqtts 的测试连接\nReconnectTimeout 现在以秒为单位处理，因此默认为 10 秒而不是 10 毫秒\n更正 info.connection 对象的默认值"
-      },
       "2.4.1": {
         "en": "Added wildcard regex for \"/#\"",
         "de": "Platzhalter-Regex für \"/#\" hinzugefügt",
