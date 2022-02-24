@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "news": {
+      "2.4.2": {
+        "en": "fix test connection with mqtts\nReconnectTimeout is now handled in seconds, so default is 10s instead of 10ms\nCorrect info.connection object default values",
+        "de": "Testverbindung mit mqtts reparieren\nReconnectTimeout wird jetzt in Sekunden behandelt, daher ist der Standardwert 10 s statt 10 ms\nKorrigieren Sie die Standardwerte des info.connection-Objekts",
+        "ru": "исправить тестовое соединение с mqtts\nReconnectTimeout теперь обрабатывается в секундах, поэтому по умолчанию 10 с вместо 10 мс.\nПравильные значения объекта info.connection по умолчанию",
+        "pt": "corrigir conexão de teste com mqtts\nReconnectTimeout agora é tratado em segundos, então o padrão é 10s em vez de 10ms\nCorrigir os valores padrão do objeto info.connection",
+        "nl": "testverbinding repareren met mqtts\nReconnectTimeout wordt nu afgehandeld in seconden, dus standaard is 10s in plaats van 10ms\nCorrigeer de standaardwaarden van het info.connection-object",
+        "fr": "correction de la connexion de test avec mqtts\nReconnectTimeout est maintenant géré en quelques secondes, donc la valeur par défaut est de 10 s au lieu de 10 ms\nCorriger les valeurs par défaut de l'objet info.connection",
+        "it": "correggere la connessione di prova con mqtts\nReconnectTimeout ora viene gestito in secondi, quindi l'impostazione predefinita è 10 secondi anziché 10 ms\nCorreggere i valori predefiniti dell'oggetto info.connection",
+        "es": "arreglar la conexión de prueba con mqtts\nReconnectTimeout ahora se maneja en segundos, por lo que el valor predeterminado es 10 s en lugar de 10 ms\nCorregir los valores predeterminados del objeto info.connection",
+        "pl": "napraw połączenie testowe za pomocą mqtts\nReconnectTimeout jest teraz obsługiwany w sekundach, więc domyślnie jest to 10s zamiast 10ms\nPrawidłowe wartości domyślne obiektu info.connection",
+        "zh-cn": "修复与 mqtts 的测试连接\nReconnectTimeout 现在以秒为单位处理，因此默认为 10 秒而不是 10 毫秒\n更正 info.connection 对象的默认值"
+      },
       "2.4.1": {
         "en": "Added wildcard regex for \"/#\"",
         "de": "Platzhalter-Regex für \"/#\" hinzugefügt",
@@ -74,18 +86,6 @@
         "es": "Verifique el puerto del servidor configurado y restablezca a 1883 si no es válido (Sentry IOBROKER-MQTT-1B)\nDetectar el error cuando el servidor no se puede iniciar (Sentry IOBROKER-MQTT-1C)",
         "pl": "Sprawdź skonfigurowany port serwera i zresetuj do 1883, jeśli jest nieprawidłowy (Sentry IOBROKER-MQTT-1B)\nBłąd przechwytywania, gdy nie można uruchomić serwera (Sentry IOBROKER-MQTT-1C)",
         "zh-cn": "检查配置的服务器端口，如果无效，则重置为1883（Sentry IOBROKER-MQTT-1B）\n无法启动服务器时捕获错误（Sentry IOBROKER-MQTT-1C）"
-      },
-      "2.3.1": {
-        "en": "Add option to ignore SSL validation errors",
-        "de": "Option zum Ignorieren von SSL-Validierungsfehlern hinzufügen",
-        "ru": "Добавить возможность игнорировать ошибки проверки SSL",
-        "pt": "Adicionar opção para ignorar erros de validação de SSL",
-        "nl": "Optie toevoegen om SSL-validatiefouten te negeren",
-        "fr": "Ajouter une option pour ignorer les erreurs de validation SSL",
-        "it": "Aggiungi l'opzione per ignorare gli errori di convalida SSL",
-        "es": "Agregue la opción para ignorar los errores de validación SSL",
-        "pl": "Dodaj opcję ignorowania błędów weryfikacji SSL",
-        "zh-cn": "添加选项以忽略SSL验证错误"
       }
     },
     "title": "MQTT Broker/Client",
