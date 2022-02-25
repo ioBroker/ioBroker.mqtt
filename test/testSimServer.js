@@ -243,7 +243,7 @@ describe('MQTT server', () => {
                         emitterClient.destroy();
                         done();
                     };
-                    emitterClient.publish(id, data.toString(), 1); // Send QoS 2
+                    emitterClient.publish(id, data.toString(), 1, () => { }); // Send QoS 2
                     setTimeout(() => resolve(), 100);
                 });
             });
