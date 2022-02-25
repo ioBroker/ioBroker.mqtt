@@ -36,7 +36,7 @@
   },
   "main": "main.js",
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha --exit",
+    "test": "DEBUG=mqttjs* node node_modules/mocha/bin/mocha --exit",
     "release": "release-script",
     "release-patch": "release-script patch --yes",
     "release-minor": "release-script minor --yes",
