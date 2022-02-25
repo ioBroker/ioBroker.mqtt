@@ -6,10 +6,11 @@ const Client = require('./lib/mqttClient');
 
 let port = 1883;
 
-describe('MQTT server', () => {
+describe('MQTT server', function () {
     let adapter;
     let server;
     const states   = {};
+    this.timeout(3000);
 
     before('MQTT server: Start MQTT server', done => {
         adapter = new Adapter({
@@ -301,5 +302,5 @@ describe('MQTT server', () => {
 
     after('MQTT server: Stop MQTT server', done => {
         server.destroy(done);
-    }).timeout(3000);
+    });
 });
