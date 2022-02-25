@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.6.0",
+    "version": "2.6.1",
     "news": {
+      "2.6.1": {
+        "en": "Fix object structure sync for server usage",
+        "de": "Korrigieren Sie die Synchronisierung der Objektstruktur für die Servernutzung",
+        "ru": "Исправить синхронизацию структуры объекта для использования сервера",
+        "pt": "Corrija a sincronização da estrutura do objeto para uso do servidor",
+        "nl": "Synchronisatie van objectstructuur voor servergebruik repareren",
+        "fr": "Correction de la synchronisation de la structure des objets pour l'utilisation du serveur",
+        "it": "Risolto il problema con la sincronizzazione della struttura degli oggetti per l'utilizzo del server",
+        "es": "Arreglar la sincronización de la estructura del objeto para el uso del servidor",
+        "pl": "Napraw synchronizację struktury obiektu dla użycia serwera",
+        "zh-cn": "修复服务器使用的对象结构同步"
+      },
       "2.6.0": {
         "en": "Update objects if data type changes also for \"client\" usage\nUpdate mqtt library\nCreate a folder object structure if objects do not exist in the adapter namespace",
         "de": "Aktualisieren Sie Objekte, wenn sich der Datentyp auch für die \"Client\"-Nutzung ändert\nmqtt-Bibliothek aktualisieren\nErstellen Sie eine Ordnerobjektstruktur, wenn im Adapter-Namespace keine Objekte vorhanden sind",
@@ -74,18 +86,6 @@
         "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1F)",
         "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1F)",
         "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1F）"
-      },
-      "2.3.3": {
-        "en": "Catch errors when setting states (Sentry IOBROKER-MQTT-1D)",
-        "de": "Fehler beim Festlegen von Status abfangen (Sentry IOBROKER-MQTT-1D)",
-        "ru": "Отловить ошибки при настройке состояний (Sentry IOBROKER-MQTT-1D)",
-        "pt": "Detectar erros ao definir estados (Sentry IOBROKER-MQTT-1D)",
-        "nl": "Vang fouten bij het instellen van statussen (Sentry IOBROKER-MQTT-1D)",
-        "fr": "Attraper les erreurs lors de la définition des états (Sentry IOBROKER-MQTT-1D)",
-        "it": "Rilevamento degli errori durante l'impostazione degli stati (Sentry IOBROKER-MQTT-1D)",
-        "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1D)",
-        "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1D)",
-        "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1D）"
       }
     },
     "title": "MQTT Broker/Client",

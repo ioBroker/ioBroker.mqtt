@@ -132,8 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.6.1 (2022-02-25)
 * (Apollon77) Fix object structure sync for server usage
 
 ### 2.6.0 (2022-02-25)
