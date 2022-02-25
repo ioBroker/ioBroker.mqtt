@@ -6,10 +6,11 @@ const Client = require('./lib/mqttClient');
 
 let port = 1883;
 
-describe('MQTT server', () => {
+describe('MQTT server', function () {
     let adapter;
     let server;
     const states   = {};
+    this.timeout(3000);
 
     before('MQTT server: Start MQTT server', done => {
         adapter = new Adapter({
@@ -110,14 +111,14 @@ describe('MQTT server', () => {
             }
             );
             sendPacket = client.client._sendPacket;
-            client.client._sendPacket = function (packet, cb) {
+            client.client._sendPacket = function (packet, cb, cbStorePut) {
                 // ignore puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;
                     cb && cb();
                     return;
                 }
-                sendPacket.call(this, packet, cb);
+                sendPacket.call(this, packet, cb, cbStorePut);
             };
         })
             .then(() => {
@@ -171,7 +172,7 @@ describe('MQTT server', () => {
                 }
             );
             sendPacket = receiverClient.client._sendPacket;
-            receiverClient.client._sendPacket = function (packet, cb) {
+            receiverClient.client._sendPacket = function (packet, cb, cbStorePut) {
                 // ignore pubrec
                 if (packet.cmd === 'pubrec' && !allowPubrec) {
                     count++;
@@ -183,7 +184,7 @@ describe('MQTT server', () => {
         })
             .then(() => {
                 return new Promise(resolve => {
-                    emitterClient.publish(id, data.toString(), 2); // Send QoS 2
+                    emitterClient.publish(id, data.toString(), 2, () => { }); // Send QoS 2
                     setTimeout(() => resolve(), 100);
                 });
             })
@@ -238,7 +239,7 @@ describe('MQTT server', () => {
                         emitterClient.destroy();
                         done();
                     };
-                    emitterClient.publish(id, data.toString(), 1); // Send QoS 2
+                    emitterClient.publish(id, data.toString(), 1, () => { }); // Send QoS 2
                     setTimeout(() => resolve(), 100);
                 });
             });

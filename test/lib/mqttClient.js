@@ -62,6 +62,7 @@ function Client(cbConnected, cbChanged, config) {
             retain: retain || false,
             qos: qos || 0
         };
+        console.log(`Test MQTT Client publish "${topic}" -> "${message}" : ${JSON.stringify(opts)}`);
         this.client.publish(topic,  message, opts, cb);
     };
     this.subscribe = (topic, opts, cb) => {
