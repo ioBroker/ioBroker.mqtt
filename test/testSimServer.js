@@ -110,14 +110,15 @@ describe('MQTT server', () => {
             }
             );
             sendPacket = client.client._sendPacket;
-            client.client._sendPacket = function (packet, cb) {
+            client.client._sendPacket = function (packet, cb, cbStorePut) {
+                console.log('Overwritten _sendPacket called for ' + JSON.stringify(packet));
                 // ignore puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;
                     cb && cb();
                     return;
                 }
-                sendPacket.call(this, packet, cb);
+                sendPacket.call(this, packet, cb, cbStorePut);
             };
         })
             .then(() => {
