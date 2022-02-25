@@ -171,6 +171,9 @@ describe('MQTT server', () => {
                     resubscribe: false
                 }
             );
+            receiverClient.client.on('packetreceive', packet => {
+               console.log('Receiving client received ' + JSON.stringify(packet));
+            });
             sendPacket = receiverClient.client._sendPacket;
             receiverClient.client._sendPacket = function (packet, cb, cbStorePut) {
                 console.log('Overwritten _sendPacket-QoS2 called for ' + JSON.stringify(packet));
