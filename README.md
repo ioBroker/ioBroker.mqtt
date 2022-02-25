@@ -132,6 +132,10 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRES__
+* (Apollon77) Upgrade used mqtt library
+
 ### 2.5.0 (2022-02-24)
 * (uwesimon/Apollon77) fix test connection with mqtts
 * (uwesimon/Apollon77) ReconnectTimeout is now handled in seconds, so default is 10s instead of 10ms
