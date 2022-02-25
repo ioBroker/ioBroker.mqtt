@@ -132,8 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.6.0 (2022-02-25)
 * (Apollon77) Update objects if data type changes also for "client" usage
 * (Apollon77) Update mqtt library
 * (Apollon77) Create a folder object structure if objects do not exist in the adapter namespace

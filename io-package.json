@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.5.0",
+    "version": "2.6.0",
     "news": {
+      "2.6.0": {
+        "en": "Update objects if data type changes also for \"client\" usage\nUpdate mqtt library\nCreate a folder object structure if objects do not exist in the adapter namespace",
+        "de": "Aktualisieren Sie Objekte, wenn sich der Datentyp auch für die \"Client\"-Nutzung ändert\nmqtt-Bibliothek aktualisieren\nErstellen Sie eine Ordnerobjektstruktur, wenn im Adapter-Namespace keine Objekte vorhanden sind",
+        "ru": "Обновлять объекты, если тип данных изменяется также для «клиентского» использования.\nОбновите библиотеку mqtt\nСоздайте структуру объекта папки, если объекты не существуют в пространстве имен адаптера.",
+        "pt": "Atualizar objetos se o tipo de dados mudar também para uso \"cliente\"\nAtualizar biblioteca mqtt\nCrie uma estrutura de objeto de pasta se os objetos não existirem no namespace do adaptador",
+        "nl": "Werk objecten bij als het gegevenstype ook verandert voor \"client\"-gebruik\nUpdate mqtt-bibliotheek\nMaak een mapobjectstructuur als objecten niet bestaan in de naamruimte van de adapter",
+        "fr": "Mettre à jour les objets si le type de données change également pour l'utilisation \"client\"\nMettre à jour la bibliothèque mqtt\nCréer une structure d'objet de dossier si les objets n'existent pas dans l'espace de noms de l'adaptateur",
+        "it": "Aggiorna gli oggetti se il tipo di dati cambia anche per l'utilizzo \"client\".\nAggiorna libreria mqtt\nCreare una struttura di oggetti cartella se gli oggetti non esistono nello spazio dei nomi dell'adattatore",
+        "es": "Actualice los objetos si el tipo de datos cambia también para el uso del \"cliente\"\nActualizar biblioteca mqtt\nCree una estructura de objeto de carpeta si los objetos no existen en el espacio de nombres del adaptador",
+        "pl": "Aktualizuj obiekty, jeśli typ danych zmieni się również w przypadku użycia „klienta”\nZaktualizuj bibliotekę mqtt\nUtwórz strukturę obiektu folderu, jeśli obiekty nie istnieją w przestrzeni nazw adaptera",
+        "zh-cn": "如果数据类型也为“客户端”使用而更改，则更新对象\n更新 mqtt 库\n如果适配器命名空间中不存在对象，则创建文件夹对象结构"
+      },
       "2.5.0": {
         "en": "fix test connection with mqtts\nReconnectTimeout is now handled in seconds, so default is 10s instead of 10ms\nCorrect info.connection object default values",
         "de": "Testverbindung mit mqtts reparieren\nReconnectTimeout wird jetzt in Sekunden behandelt, daher ist der Standardwert 10 s statt 10 ms\nKorrigieren Sie die Standardwerte des info.connection-Objekts",
@@ -74,18 +86,6 @@
         "es": "Detectar errores al establecer estados (Sentry IOBROKER-MQTT-1D)",
         "pl": "Wyłap błędy podczas ustawiania stanów (Sentry IOBROKER-MQTT-1D)",
         "zh-cn": "设置状态时捕获错误（Sentry IOBROKER-MQTT-1D）"
-      },
-      "2.3.2": {
-        "en": "Check configured server port and reset to 1883 if invalid (Sentry IOBROKER-MQTT-1B)\nCatch error when server can not be started (Sentry IOBROKER-MQTT-1C)",
-        "de": "Überprüfen Sie den konfigurierten Server-Port und setzen Sie ihn auf 1883 zurück, wenn er ungültig ist (Sentry IOBROKER-MQTT-1B).\nCatch-Fehler, wenn der Server nicht gestartet werden kann (Sentry IOBROKER-MQTT-1C)",
-        "ru": "Проверьте настроенный порт сервера и сбросьте его на 1883, если он недействителен (Sentry IOBROKER-MQTT-1B)\nОшибка перехвата при невозможности запуска сервера (Sentry IOBROKER-MQTT-1C)",
-        "pt": "Verifique a porta do servidor configurada e redefina para 1883 se for inválido (Sentry IOBROKER-MQTT-1B)\nErro de captura quando o servidor não pode ser iniciado (Sentry IOBROKER-MQTT-1C)",
-        "nl": "Controleer de geconfigureerde serverpoort en reset deze naar 1883 als deze ongeldig is (Sentry IOBROKER-MQTT-1B)\nVang een fout op wanneer de server niet kan worden gestart (Sentry IOBROKER-MQTT-1C)",
-        "fr": "Vérifiez le port du serveur configuré et réinitialisez à 1883 s'il n'est pas valide (Sentry IOBROKER-MQTT-1B)\nErreur de capture lorsque le serveur ne peut pas être démarré (Sentry IOBROKER-MQTT-1C)",
-        "it": "Controlla la porta del server configurata e reimposta a 1883 se non valida (Sentry IOBROKER-MQTT-1B)\nErrore di rilevamento quando il server non può essere avviato (Sentry IOBROKER-MQTT-1C)",
-        "es": "Verifique el puerto del servidor configurado y restablezca a 1883 si no es válido (Sentry IOBROKER-MQTT-1B)\nDetectar el error cuando el servidor no se puede iniciar (Sentry IOBROKER-MQTT-1C)",
-        "pl": "Sprawdź skonfigurowany port serwera i zresetuj do 1883, jeśli jest nieprawidłowy (Sentry IOBROKER-MQTT-1B)\nBłąd przechwytywania, gdy nie można uruchomić serwera (Sentry IOBROKER-MQTT-1C)",
-        "zh-cn": "检查配置的服务器端口，如果无效，则重置为1883（Sentry IOBROKER-MQTT-1B）\n无法启动服务器时捕获错误（Sentry IOBROKER-MQTT-1C）"
       }
     },
     "title": "MQTT Broker/Client",
