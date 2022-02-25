@@ -71,7 +71,10 @@ jobs:
 
       - name: Run local tests
         if: startsWith(runner.OS, 'windows') == false
-        run: npm test
+        run: DEBUG=mqttjs* npm test
+      - name: Run integration tests # (windows)
+        if: startsWith(runner.OS, 'windows')
+        run: set DEBUG=mqttjs:* & npm run test
 #      - name: Run unit tests
 #        run: npm run test:unit
 #      - name: Run integration tests # (linux/osx)
