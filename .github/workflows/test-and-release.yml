@@ -70,6 +70,7 @@ jobs:
         run: npm install
 
       - name: Run local tests
+        if: startsWith(runner.OS, 'windows') == false
         run: npm test
 #      - name: Run unit tests
 #        run: npm run test:unit
