@@ -112,7 +112,6 @@ describe('MQTT server', function () {
             );
             sendPacket = client.client._sendPacket;
             client.client._sendPacket = function (packet, cb, cbStorePut) {
-                console.log('Overwritten _sendPacket-QoS1 called for ' + JSON.stringify(packet));
                 // ignore puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;
@@ -172,12 +171,8 @@ describe('MQTT server', function () {
                     resubscribe: false
                 }
             );
-            receiverClient.client.on('packetreceive', packet => {
-               console.log('Receiving client received ' + JSON.stringify(packet));
-            });
             sendPacket = receiverClient.client._sendPacket;
             receiverClient.client._sendPacket = function (packet, cb, cbStorePut) {
-                console.log('Overwritten _sendPacket-QoS2 called for ' + JSON.stringify(packet));
                 // ignore pubrec
                 if (packet.cmd === 'pubrec' && !allowPubrec) {
                     count++;
@@ -190,7 +185,7 @@ describe('MQTT server', function () {
             .then(() => {
                 return new Promise(resolve => {
                     emitterClient.publish(id, data.toString(), 2, () => { }); // Send QoS 2
-                    setTimeout(() => resolve(), 500);
+                    setTimeout(() => resolve(), 100);
                 });
             })
             .then(() => {
