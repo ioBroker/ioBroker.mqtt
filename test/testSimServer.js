@@ -250,7 +250,7 @@ describe('MQTT server', () => {
     }).timeout(1000);
 
     // check unsubscribe
-    it('MQTT server: Check if unsubscribes works', () => {
+    it('MQTT server: Check if unsubscribes works', function() {
         let client;
         const data = 1;
         let count = 0;
