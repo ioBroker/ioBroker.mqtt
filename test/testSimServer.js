@@ -184,7 +184,7 @@ describe('MQTT server', () => {
             .then(() => {
                 return new Promise(resolve => {
                     emitterClient.publish(id, data.toString(), 2); // Send QoS 2
-                    setTimeout(() => resolve(), 100);
+                    setTimeout(() => resolve(), 500);
                 });
             })
             .then(() => {
