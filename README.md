@@ -132,6 +132,10 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) If datatypes of objects change during an adapter run, adjust datatype of mqtt.X.* objects to "mixed" to prevent issues
+
 ### 2.6.1 (2022-02-25)
 * (Apollon77) Fix object structure sync for server usage
 
