@@ -132,6 +132,11 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) Prevent Client or server to overwrite the own info.connection state
+* (Apollon77) replace # and + characters by _ when publishing a value because these characters are forbidden when publishing for most brokers
+
 ### 2.6.2 (2022-03-03)
 * (Apollon77) If datatypes of objects change during an adapter run, adjust datatype of mqtt.X.* objects to "mixed" to prevent issues
 
