@@ -132,8 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.7.0 (2022-03-09)
 * (Apollon77) Prevent Client or server to overwrite the own info.connection state
 * (Apollon77) replace # and + characters by _ when publishing a value because these characters are forbidden when publishing for most brokers
 

@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.6.2",
+    "version": "2.7.0",
     "news": {
+      "2.7.0": {
+        "en": "Prevent Client or server to overwrite the own info.connection state\nreplace # and + characters by _ when publishing a value because these characters are forbidden when publishing for most brokers",
+        "de": "Client oder Server daran hindern, den eigenen info.connection-Status zu überschreiben\nErsetzen Sie die Zeichen # und + durch _, wenn Sie einen Wert veröffentlichen, da diese Zeichen bei der Veröffentlichung für die meisten Broker verboten sind",
+        "ru": "Запретить клиенту или серверу перезаписывать собственное состояние info.connection\nзамените символы # и + на _ при публикации значения, потому что эти символы запрещены при публикации для большинства брокеров",
+        "pt": "Impedir que o cliente ou servidor sobrescreva o próprio estado info.connection\nsubstitua os caracteres # e + por _ ao publicar um valor porque esses caracteres são proibidos ao publicar para a maioria dos corretores",
+        "nl": "Voorkom dat Client of server de eigen info.connection-status overschrijft\nvervang # en + tekens door _ bij het publiceren van een waarde, omdat deze tekens bij het publiceren voor de meeste brokers verboden zijn",
+        "fr": "Empêcher le client ou le serveur d'écraser son propre état d'info.connexion\nremplacer les caractères # et + par _ lors de la publication d'une valeur car ces caractères sont interdits lors de la publication pour la plupart des brokers",
+        "it": "Impedisci al client o al server di sovrascrivere il proprio stato info.connection\nsostituire i caratteri # e + con _ quando si pubblica un valore perché questi caratteri sono vietati durante la pubblicazione per la maggior parte dei broker",
+        "es": "Impedir que el cliente o el servidor sobrescriban el propio estado de info.connection\nreemplace los caracteres # y + por _ al publicar un valor porque estos caracteres están prohibidos al publicar para la mayoría de los corredores",
+        "pl": "Uniemożliwić klientowi lub serwerowi nadpisanie własnego stanu połączenia informacji\nzamień znaki # i + na _ podczas publikowania wartości, ponieważ te znaki są zabronione podczas publikowania dla większości brokerów",
+        "zh-cn": "防止客户端或服务器覆盖自己的 info.connection 状态\n发布值时用 _ 替换 # 和 + 字符，因为大多数经纪人发布时禁止使用这些字符"
+      },
       "2.6.2": {
         "en": "If datatypes of objects change during an adapter run, adjust datatype of mqtt.X.* objects to \"mixed\" to prevent issues",
         "de": "Wenn sich Datentypen von Objekten während einer Adapterausführung ändern, passen Sie den Datentyp von mqtt.X.*-Objekten auf „gemischt“ an, um Probleme zu vermeiden",
@@ -74,18 +86,6 @@
         "es": "solo recuerde el último mensaje por tema para los clientes fuera de línea que se suscribieron a los temas cuando usan sesiones persistentes\nsolo recuerda las últimas voluntades de los clientes que suscribieron los temas\nen el mensaje \"desconectar\" no enviar el último testamento según lo definido por las especificaciones\nestablecer un nuevo messageId al enviar mensajes recordados\nAgregue un pequeño retraso después de suscribirse antes de enviar valores de tema\noptimizar para js-controller 3.3\nprevenir errores en js-controller 3.3 y detectar cambios de tipo de datos para objetos",
         "pl": "zapamiętuje tylko ostatnią wiadomość na temat dla klientów offline, którzy subskrybowali tematy podczas korzystania z sesji trwałych\npamiętaj tylko testamenty klientów, którzy subskrybowali tematy\nw wiadomości \"rozłącz\" nie wysyłaj ostatniej woli zgodnie ze specyfikacją\nustaw nowy identyfikator wiadomości podczas wysyłania zapamiętanych wiadomości\nDodaj małe opóźnienie po zasubskrybowaniu, zanim wyślesz wartości tematu\noptymalizacja dla kontrolera js 3.3\nZapobiegaj błędom w js-controller 3.3 i wykrywaj zmiany typów danych dla obiektów",
         "zh-cn": "仅记住使用持久会话时订阅主题的脱机客户端每个主题的最后一条消息\n只记住订阅主题的客户的遗嘱\n在“断开连接”消息上不发送规范所定义的最后遗嘱\n在发送已记住的消息时设置一个新的messageId\n订阅后添加少量延迟，然后再发送主题值\n针对js-controller 3.3进行优化\n防止js-controller 3.3中的错误并检测对象的数据类型更改"
-      },
-      "2.3.5": {
-        "en": "js-controller 2.0 is now required at least\nchange default subscribe to mqtt.0.*",
-        "de": "js-controller 2.0 ist jetzt mindestens erforderlich\nStandard ändern mqtt.0 abonnieren. *",
-        "ru": "js-controller 2.0 теперь требуется как минимум\nизменить подписку по умолчанию на mqtt.0. *",
-        "pt": "js-controller 2.0 agora é necessário pelo menos\nalterar padrão assinar mqtt.0. *",
-        "nl": "js-controller 2.0 is nu minimaal vereist\nverander standaard abonnement op mqtt.0. *",
-        "fr": "js-controller 2.0 est maintenant requis au moins\nchanger l'abonnement par défaut à mqtt.0. *",
-        "it": "js-controller 2.0 è ora almeno richiesto\ncambia la sottoscrizione predefinita a mqtt.0. *",
-        "es": "js-controller 2.0 ahora se requiere al menos\ncambiar suscripción predeterminada a mqtt.0. *",
-        "pl": "js-controller 2.0 jest teraz wymagany przynajmniej\nzmień domyślną subskrypcję mqtt.0. *",
-        "zh-cn": "现在至少需要js-controller 2.0\n更改默认值订阅mqtt.0。*"
       }
     },
     "title": "MQTT Broker/Client",
