@@ -132,7 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### 2.7.1 (2022-03-11)
+### __WORK IN PROGRESS__
 * (Apollon77) Optimize the automatic folder creation and allow to automatically overwrite these objects when needed
 
 ### 2.7.0 (2022-03-09)

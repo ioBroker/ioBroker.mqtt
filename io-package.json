@@ -3,18 +3,6 @@
     "name": "mqtt",
     "version": "2.7.1",
     "news": {
-      "2.7.1": {
-        "en": "Optimize the automatic folder creation and allow to automatically overwrite these objects when needed",
-        "de": "Optimieren Sie die automatische Ordnererstellung und lassen Sie diese Objekte bei Bedarf automatisch überschreiben",
-        "ru": "Оптимизируйте автоматическое создание папок и разрешите автоматически перезаписывать эти объекты при необходимости.",
-        "pt": "Otimize a criação automática de pastas e permita sobrescrever automaticamente esses objetos quando necessário",
-        "nl": "Optimaliseer het automatisch aanmaken van mappen en laat deze objecten automatisch overschrijven wanneer dat nodig is",
-        "fr": "Optimisez la création automatique de dossiers et permettez d'écraser automatiquement ces objets en cas de besoin",
-        "it": "Ottimizza la creazione automatica delle cartelle e consenti di sovrascrivere automaticamente questi oggetti quando necessario",
-        "es": "Optimice la creación automática de carpetas y permita sobrescribir automáticamente estos objetos cuando sea necesario",
-        "pl": "Zoptymalizuj automatyczne tworzenie folderów i pozwól na automatyczne nadpisywanie tych obiektów w razie potrzeby",
-        "zh-cn": "优化自动创建文件夹并允许在需要时自动覆盖这些对象"
-      },
       "2.7.0": {
         "en": "Prevent Client or server to overwrite the own info.connection state\nreplace # and + characters by _ when publishing a value because these characters are forbidden when publishing for most brokers",
         "de": "Client oder Server daran hindern, den eigenen info.connection-Status zu überschreiben\nErsetzen Sie die Zeichen # und + durch _, wenn Sie einen Wert veröffentlichen, da diese Zeichen bei der Veröffentlichung für die meisten Broker verboten sind",
