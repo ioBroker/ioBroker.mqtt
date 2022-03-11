@@ -132,8 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.7.3 (2022-03-11)
 * (Apollon77) Further optimization of automatic folder creation
 
 ### 2.7.2 (2022-03-11)
