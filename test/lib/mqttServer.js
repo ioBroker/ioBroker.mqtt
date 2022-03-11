@@ -39,6 +39,7 @@ function Server(config) {
                 client.connack({returnCode: 0});
 
                 client.publish({topic: 'testServer/connected', payload: 'true'});
+                client.publish({topic: 'testServer/long/test/path/into/ioBroker/connected', payload: 'true'});
             });
 
             client.on('publish', function (packet) {
