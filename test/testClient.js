@@ -180,6 +180,30 @@ describe('Test MQTT client', function() {
         }, 1000);
     }).timeout(4000);
 
+    it('MQTT client: check folder objects', done => {
+        objects.getObject('mqtt.0.testServer', (err, obj) => {
+            expect(err).to.be.not.ok;
+            expect(obj).to.be.ok;
+            expect(obj.type).equal('folder');
+            objects.getObject('mqtt.0.testServer.long.test.path.into.ioBroker', (err, obj) => {
+                expect(err).to.be.not.ok;
+                expect(obj).to.be.ok;
+                expect(obj.type).equal('folder');
+                objects.getObject('mqtt.0.testServer.long.test.path.into.ioBroker.connected', (err, obj) => {
+                    expect(err).to.be.not.ok;
+                    expect(obj).to.be.ok;
+                    expect(obj.type).equal('state');
+                    states.getState('mqtt.0.testServer.long.test.path.into.ioBroker.connected', (err, state) => {
+                        expect(err).to.be.not.ok;
+                        expect(state).to.be.ok;
+                        expect(state.val).equal(true);
+                        done();
+                    })
+                });
+            });
+        });
+    }).timeout(4000);
+
     for (const rr in rules) {
         (function(id, topic) {
             it('MQTT client: Check receive ' + id, function (done) { // let FUNCTION here
