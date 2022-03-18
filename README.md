@@ -132,6 +132,10 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) Update mqtt library dependency
+
 ### 2.7.3 (2022-03-11)
 * (Apollon77) Further optimization of automatic folder creation
 
