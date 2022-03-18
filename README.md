@@ -132,8 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.7.4 (2022-03-18)
 * (Apollon77) Update mqtt library dependency
 
 ### 2.7.3 (2022-03-11)
