@@ -15,7 +15,7 @@
     "message"
   ],
   "dependencies": {
-    "mqtt": "^4.3.6",
+    "mqtt": "^4.3.7",
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
     "ws": "^8.5.0",
