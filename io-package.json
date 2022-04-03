@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "2.7.4",
+    "version": "3.0.0",
     "news": {
+      "3.0.0": {
+        "en": "BREAKING CHANGE: password must be set anew",
+        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
+        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
+        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
+        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
+        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
+        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
+        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
+        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
+        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
+      },
       "2.7.4": {
         "en": "Update mqtt library dependency",
         "de": "Aktualisieren Sie die mqtt-Bibliotheksabhängigkeit",
@@ -74,18 +86,6 @@
         "es": "Arreglar la sincronización de la estructura del objeto para el uso del servidor",
         "pl": "Napraw synchronizację struktury obiektu dla użycia serwera",
         "zh-cn": "修复服务器使用的对象结构同步"
-      },
-      "2.6.0": {
-        "en": "Update objects if data type changes also for \"client\" usage\nUpdate mqtt library\nCreate a folder object structure if objects do not exist in the adapter namespace",
-        "de": "Aktualisieren Sie Objekte, wenn sich der Datentyp auch für die \"Client\"-Nutzung ändert\nmqtt-Bibliothek aktualisieren\nErstellen Sie eine Ordnerobjektstruktur, wenn im Adapter-Namespace keine Objekte vorhanden sind",
-        "ru": "Обновлять объекты, если тип данных изменяется также для «клиентского» использования.\nОбновите библиотеку mqtt\nСоздайте структуру объекта папки, если объекты не существуют в пространстве имен адаптера.",
-        "pt": "Atualizar objetos se o tipo de dados mudar também para uso \"cliente\"\nAtualizar biblioteca mqtt\nCrie uma estrutura de objeto de pasta se os objetos não existirem no namespace do adaptador",
-        "nl": "Werk objecten bij als het gegevenstype ook verandert voor \"client\"-gebruik\nUpdate mqtt-bibliotheek\nMaak een mapobjectstructuur als objecten niet bestaan in de naamruimte van de adapter",
-        "fr": "Mettre à jour les objets si le type de données change également pour l'utilisation \"client\"\nMettre à jour la bibliothèque mqtt\nCréer une structure d'objet de dossier si les objets n'existent pas dans l'espace de noms de l'adaptateur",
-        "it": "Aggiorna gli oggetti se il tipo di dati cambia anche per l'utilizzo \"client\".\nAggiorna libreria mqtt\nCreare una struttura di oggetti cartella se gli oggetti non esistono nello spazio dei nomi dell'adattatore",
-        "es": "Actualice los objetos si el tipo de datos cambia también para el uso del \"cliente\"\nActualizar biblioteca mqtt\nCree una estructura de objeto de carpeta si los objetos no existen en el espacio de nombres del adaptador",
-        "pl": "Aktualizuj obiekty, jeśli typ danych zmieni się również w przypadku użycia „klienta”\nZaktualizuj bibliotekę mqtt\nUtwórz strukturę obiektu folderu, jeśli obiekty nie istnieją w przestrzeni nazw adaptera",
-        "zh-cn": "如果数据类型也为“客户端”使用而更改，则更新对象\n更新 mqtt 库\n如果适配器命名空间中不存在对象，则创建文件夹对象结构"
       }
     },
     "title": "MQTT Broker/Client",
@@ -152,8 +152,12 @@
     "adminUI": {
       "config": "json"
     },
-    "encryptedNative": ["pass"],
-    "protectedNative": ["pass"]
+    "encryptedNative": [
+      "pass"
+    ],
+    "protectedNative": [
+      "pass"
+    ]
   },
   "native": {
     "type": "client",
