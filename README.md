@@ -42,7 +42,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like `localhost`.
-- **Port** - Port of the MQTT broker. By default 1883
+- **Port** - Port of the MQTT broker. By default, 1883
 - **Secure** - If secure (SSL) connection must be used.
 - **User** - if broker required authentication, define here the username.
 - **Password** - if the username is not empty the password must be set. It can be empty.
@@ -136,7 +136,7 @@ The broker was tested with following clients:
 * (bluefox) BREAKING CHANGE: password must be set anew
 
 ### 2.7.4 (2022-03-18)
-* (Apollon77) Update mqtt library dependency
+* (Apollon77) Update MQTT library dependency
 
 ### 2.7.3 (2022-03-11)
 * (Apollon77) Further optimization of automatic folder creation
@@ -145,11 +145,11 @@ The broker was tested with following clients:
 * (Apollon77) Optimize the automatic folder creation and allow to automatically overwrite these objects when needed
 
 ### 2.7.0 (2022-03-09)
-* (Apollon77) Prevent Client or server to overwrite the own info.connection state
+* (Apollon77) Prevent Client or server to overwrite the own `info.connection` state
 * (Apollon77) replace # and + characters by _ when publishing a value because these characters are forbidden when publishing for most brokers
 
 ### 2.6.2 (2022-03-03)
-* (Apollon77) If datatypes of objects change during an adapter run, adjust datatype of mqtt.X.* objects to "mixed" to prevent issues
+* (Apollon77) If data types of objects change during an adapter run, adjust datatype of `mqtt.X.*` objects to "mixed" to prevent issues
 
 ### 2.6.1 (2022-02-25)
 * (Apollon77) Fix object structure sync for server usage
@@ -160,9 +160,9 @@ The broker was tested with following clients:
 * (Apollon77) Create a folder object structure if objects do not exist in the adapter namespace
 
 ### 2.5.0 (2022-02-24)
-* (uwesimon/Apollon77) fix test connection with mqtts
+* (uwesimon/Apollon77) fix test connection with MQTTs
 * (uwesimon/Apollon77) ReconnectTimeout is now handled in seconds, so default is 10s instead of 10ms
-* (Apollon77) Correct info.connection object default values
+* (Apollon77) Correct `info.connection` object default values
 
 ### 2.4.1 (2021-11-08)
 * (MichaelDvP) Added wildcard regex for "/#"
@@ -178,7 +178,7 @@ The broker was tested with following clients:
 
 ### 2.3.5 (2021-02-27)
 * (Apollon77) js-controller 2.0 is now required at least
-* (arteck) change default subscribe to mqtt.0.*
+* (arteck) change default subscribe to `mqtt.0.*`
 
 ### 2.3.4 (2021-01-25)
 * (Apollon77) Catch errors when setting states (Sentry IOBROKER-MQTT-1F)
@@ -204,7 +204,7 @@ The broker was tested with following clients:
 
 ### 2.1.10 (2020-10-30)
 * (Apollon77) Crash cases prevented (Sentry IOBROKER-MQTT-G)
-* (Apollon77) prevent errors on mqtt connection test
+* (Apollon77) prevent errors on MQTT connection test
 
 ### 2.1.9 (2020-09-17)
 * (Apollon77) Crash cases prevented (Sentry IOBROKER-MQTT-E, IOBROKER-MQTT-F)
@@ -240,7 +240,7 @@ The broker was tested with following clients:
 
 ### 2.1.0 (2019-05-02)
 * (Zefau) Add option to send the message using messagebox
-* (Zefau) Fix error with logging on pubrec
+* (Zefau) Fix error with logging on `pubrec`
 
 ### 2.0.6 (2019-01-16)
 * (SchumyHao) Add Chinese support
