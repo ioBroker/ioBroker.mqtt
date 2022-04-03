@@ -148,7 +148,12 @@
     ],
     "tier": 2,
     "connectionType": "local",
-    "dataSource": "push"
+    "dataSource": "push",
+    "adminUI": {
+      "config": "json"
+    },
+    "encryptedNative": ["pass"],
+    "protectedNative": ["pass"]
   },
   "native": {
     "type": "client",
@@ -186,7 +191,8 @@
     "retain": false,
     "retransmitInterval": 2000,
     "retransmitCount": 10,
-    "storeClientsTime": 1440
+    "storeClientsTime": 1440,
+    "removePrefix": ""
   },
   "objects": [],
   "instanceObjects": [

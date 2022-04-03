@@ -128,10 +128,13 @@ The broker was tested with following clients:
 
 <!--
 	Placeholder for the next version (at the beginning of the line):
-	### __WORK IN PROGRESS__
+	### **WORK IN PROGRESS**
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) BREAKING CHANGE: password must be set anew
+
 ### 2.7.4 (2022-03-18)
 * (Apollon77) Update mqtt library dependency
 

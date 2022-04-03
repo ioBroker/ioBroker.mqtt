@@ -35,6 +35,13 @@
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
   },
   "main": "main.js",
+  "files": [
+    "admin/",
+    "main.js",
+    "LICENSE",
+    "docs/",
+    "lib/"
+  ],
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha --exit",
     "release": "release-script",
@@ -43,7 +50,7 @@
     "release-major": "release-script major --yes"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.0.0"
   },
   "license": "MIT"
 }
