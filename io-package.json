@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "news": {
+      "3.0.1": {
+        "en": "BREAKING CHANGE: password must be set anew",
+        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
+        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
+        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
+        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
+        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
+        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
+        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
+        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
+        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
+      },
       "3.0.0": {
         "en": "BREAKING CHANGE: password must be set anew",
         "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
@@ -74,18 +86,6 @@
         "es": "Si los tipos de datos de los objetos cambian durante la ejecución de un adaptador, ajuste el tipo de datos de los objetos mqtt.X.* a \"mixtos\" para evitar problemas",
         "pl": "Jeśli typy danych obiektów zmieniają się podczas uruchamiania adaptera, zmień typ danych obiektów mqtt.X.* na „mieszany”, aby zapobiec problemom",
         "zh-cn": "如果在适配器运行期间对象的数据类型发生变化，请将 mqtt.X.* 对象的数据类型调整为“混合”以防止出现问题"
-      },
-      "2.6.1": {
-        "en": "Fix object structure sync for server usage",
-        "de": "Korrigieren Sie die Synchronisierung der Objektstruktur für die Servernutzung",
-        "ru": "Исправить синхронизацию структуры объекта для использования сервера",
-        "pt": "Corrija a sincronização da estrutura do objeto para uso do servidor",
-        "nl": "Synchronisatie van objectstructuur voor servergebruik repareren",
-        "fr": "Correction de la synchronisation de la structure des objets pour l'utilisation du serveur",
-        "it": "Risolto il problema con la sincronizzazione della struttura degli oggetti per l'utilizzo del server",
-        "es": "Arreglar la sincronización de la estructura del objeto para el uso del servidor",
-        "pl": "Napraw synchronizację struktury obiektu dla użycia serwera",
-        "zh-cn": "修复服务器使用的对象结构同步"
       }
     },
     "title": "MQTT Broker/Client",
