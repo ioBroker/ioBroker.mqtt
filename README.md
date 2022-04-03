@@ -132,7 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-**WORK IN PROGRESS**
+### **WORK IN PROGRESS**
 * (bluefox) BREAKING CHANGE: password must be set anew
 
 ### 2.7.4 (2022-03-18)
