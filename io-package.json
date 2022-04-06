@@ -3,42 +3,6 @@
     "name": "mqtt",
     "version": "3.0.2",
     "news": {
-      "3.0.2": {
-        "en": "BREAKING CHANGE: password must be set anew",
-        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
-        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
-        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
-        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
-        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
-        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
-        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
-        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
-        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
-      },
-      "3.0.1": {
-        "en": "BREAKING CHANGE: password must be set anew",
-        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
-        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
-        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
-        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
-        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
-        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
-        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
-        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
-        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
-      },
-      "3.0.0": {
-        "en": "BREAKING CHANGE: password must be set anew",
-        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
-        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
-        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
-        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
-        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
-        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
-        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
-        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
-        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
-      },
       "2.7.4": {
         "en": "Update mqtt library dependency",
         "de": "Aktualisieren Sie die mqtt-Bibliotheksabhängigkeit",
@@ -152,13 +116,54 @@
     "adminUI": {
       "config": "json"
     },
-    "encryptedNative": [
-      "pass"
-    ],
-    "protectedNative": [
-      "pass"
+    "messages": [
+      {
+        "condition": {
+          "operand": "and",
+          "rules": [
+            "oldVersion<3.0.0",
+            "newVersion>=3.0.0"
+          ]
+        },
+        "title": {
+          "en": "Re-enter the password after Update!",
+          "de": "Passwort muss nach dem Update erneut eingegeben werden!",
+          "ru": "Повторно введите пароль после обновления!",
+          "pt": "Digite novamente a senha após Atualizar!",
+          "nl": "Voer het wachtwoord opnieuw in na Update!",
+          "fr": "Entrez à nouveau le mot de passe après la mise à jour !",
+          "it": "Reinserire la password dopo l'aggiornamento!",
+          "es": "Vuelva a ingresar la contraseña después de ¡Actualizar!",
+          "pl": "Wprowadź hasło ponownie po aktualizacji!",
+          "zh-cn": "更新后重新输入密码！"
+        },
+        "text": {
+          "en": "After installing this update the password needs to be re-entered in the Instance-Settings!",
+          "de": "Nach der Installation dieses Updates muss das Passwort in den Instanz-Einstellungen neu eingegeben werden!",
+          "ru": "После установки этого обновления необходимо заново ввести пароль в Instance-Settings!",
+          "pt": "Depois de instalar esta atualização, a senha precisa ser reinserida nas configurações da instância!",
+          "nl": "Na het installeren van deze update moet het wachtwoord opnieuw worden ingevoerd in de Instance-Settings!",
+          "fr": "Après avoir installé cette mise à jour, le mot de passe doit être ressaisi dans les paramètres de l'instance !",
+          "it": "Dopo aver installato questo aggiornamento, è necessario reinserire la password nelle impostazioni dell'istanza!",
+          "es": "¡Después de instalar esta actualización, la contraseña debe volver a ingresarse en la Configuración de instancia!",
+          "pl": "Po zainstalowaniu tej aktualizacji hasło należy ponownie wprowadzić w ustawieniach instancji!",
+          "zh-cn": "安装此更新后，需要在实例设置中重新输入密码！"
+        },
+        "level": "warn",
+        "buttons": [
+          "agree",
+          "cancel"
+        ]
+      }
     ]
-  },
+  }
+},
+  "encryptedNative": [
+    "pass"
+  ],
+  "protectedNative": [
+    "pass"
+  ],
   "native": {
     "type": "client",
     "clientId": "",
