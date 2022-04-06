@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "news": {
+      "3.0.2": {
+        "en": "BREAKING CHANGE: password must be set anew",
+        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
+        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
+        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
+        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
+        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
+        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
+        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
+        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
+        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
+      },
       "3.0.1": {
         "en": "BREAKING CHANGE: password must be set anew",
         "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
@@ -74,18 +86,6 @@
         "es": "Impedir que el cliente o el servidor sobrescriban el propio estado de info.connection\nreemplace los caracteres # y + por _ al publicar un valor porque estos caracteres están prohibidos al publicar para la mayoría de los corredores",
         "pl": "Uniemożliwić klientowi lub serwerowi nadpisanie własnego stanu połączenia informacji\nzamień znaki # i + na _ podczas publikowania wartości, ponieważ te znaki są zabronione podczas publikowania dla większości brokerów",
         "zh-cn": "防止客户端或服务器覆盖自己的 info.connection 状态\n发布值时用 _ 替换 # 和 + 字符，因为大多数经纪人发布时禁止使用这些字符"
-      },
-      "2.6.2": {
-        "en": "If datatypes of objects change during an adapter run, adjust datatype of mqtt.X.* objects to \"mixed\" to prevent issues",
-        "de": "Wenn sich Datentypen von Objekten während einer Adapterausführung ändern, passen Sie den Datentyp von mqtt.X.*-Objekten auf „gemischt“ an, um Probleme zu vermeiden",
-        "ru": "Если типы данных объектов изменяются во время работы адаптера, измените тип данных объектов mqtt.X.* на «смешанный», чтобы предотвратить проблемы.",
-        "pt": "Se os tipos de dados dos objetos forem alterados durante a execução de um adaptador, ajuste o tipo de dados dos objetos mqtt.X.* para \"misto\" para evitar problemas",
-        "nl": "Als datatypes van objecten veranderen tijdens het uitvoeren van een adapter, pas dan het datatype van mqtt.X.* objecten aan naar \"gemengd\" om problemen te voorkomen",
-        "fr": "Si les types de données des objets changent pendant l'exécution d'un adaptateur, ajustez le type de données des objets mqtt.X.* sur \"mixte\" pour éviter les problèmes",
-        "it": "Se i tipi di dati degli oggetti cambiano durante l'esecuzione di un adattatore, regolare il tipo di dati degli oggetti mqtt.X.* su \"misti\" per evitare problemi",
-        "es": "Si los tipos de datos de los objetos cambian durante la ejecución de un adaptador, ajuste el tipo de datos de los objetos mqtt.X.* a \"mixtos\" para evitar problemas",
-        "pl": "Jeśli typy danych obiektów zmieniają się podczas uruchamiania adaptera, zmień typ danych obiektów mqtt.X.* na „mieszany”, aby zapobiec problemom",
-        "zh-cn": "如果在适配器运行期间对象的数据类型发生变化，请将 mqtt.X.* 对象的数据类型调整为“混合”以防止出现问题"
       }
     },
     "title": "MQTT Broker/Client",
