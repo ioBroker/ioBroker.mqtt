@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "news": {
+      "3.0.3": {
+        "en": "BREAKING CHANGE: password must be set anew",
+        "de": "BREAKING CHANGE: Passwort muss neu gesetzt werden",
+        "ru": "BREAKING CHANGE: пароль необходимо установить заново",
+        "pt": "BREAKING CHANGE: a senha deve ser definida novamente",
+        "nl": "BREAKING CHANGE: wachtwoord moet opnieuw worden ingesteld",
+        "fr": "BREAKING CHANGE : le mot de passe doit être défini à nouveau",
+        "it": "MODIFICA INTERNA: la password deve essere reimpostata",
+        "es": "CAMBIO IMPORTANTE: la contraseña debe configurarse de nuevo",
+        "pl": "ZŁAMANIE ZMIANY: hasło należy ustawić od nowa",
+        "zh-cn": "BREAKING CHANGE：必须重新设置密码"
+      },
       "2.7.4": {
         "en": "Update mqtt library dependency",
         "de": "Aktualisieren Sie die mqtt-Bibliotheksabhängigkeit",
