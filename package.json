@@ -40,6 +40,7 @@
     "main.js",
     "LICENSE",
     "docs/",
+    "io-package.json",
     "lib/"
   ],
   "scripts": {
