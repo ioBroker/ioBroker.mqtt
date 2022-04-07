@@ -132,7 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 3.0.5 (2022-04-07)
 * (bluefox) BREAKING CHANGE: password is now stored encrypted, and so must be set anew after update!
 
 ### 2.7.4 (2022-03-18)
