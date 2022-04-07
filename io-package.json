@@ -3,18 +3,6 @@
     "name": "mqtt",
     "version": "3.0.4",
     "news": {
-      "3.0.4": {
-        "en": "BREAKING CHANGE: password is now stored encrypted, and so must be set anew after update!",
-        "de": "BREAKING CHANGE: Passwort wird jetzt verschlüsselt gespeichert und muss daher nach Update neu gesetzt werden!",
-        "ru": "ВАЖНОЕ ИЗМЕНЕНИЕ: пароль теперь хранится в зашифрованном виде, поэтому после обновления его необходимо установить заново!",
-        "pt": "BREAKING CHANGE: a senha agora é armazenada criptografada e, portanto, deve ser definida novamente após a atualização!",
-        "nl": "BAANBREKENDE VERANDERING: het wachtwoord wordt nu versleuteld opgeslagen en moet dus opnieuw worden ingesteld na de update!",
-        "fr": "BREAKING CHANGE : le mot de passe est maintenant stocké crypté et doit donc être défini à nouveau après la mise à jour !",
-        "it": "MODIFICA INTERNA: la password è ora memorizzata crittografata, quindi deve essere reimpostata dopo l'aggiornamento!",
-        "es": "CAMBIO IMPORTANTE: ¡la contraseña ahora se almacena cifrada, por lo que debe configurarse de nuevo después de la actualización!",
-        "pl": "ZŁAMANIE ZMIANY: hasło jest teraz przechowywane w postaci zaszyfrowanej, dlatego po aktualizacji należy je ustawić od nowa!",
-        "zh-cn": "重大更改：密码现在以加密方式存储，因此必须在更新后重新设置！"
-      },
       "2.7.4": {
         "en": "Update mqtt library dependency",
         "de": "Aktualisieren Sie die mqtt-Bibliotheksabhängigkeit",
