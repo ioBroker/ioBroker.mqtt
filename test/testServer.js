@@ -166,12 +166,20 @@ function checkConnection(value, done, counter) {
     });
 }
 
+function encrypt(key, value) {
+    let result = '';
+    for(let i = 0; i < value.length; ++i) {
+        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+    }
+    return result;
+}
+
 describe('MQTT server: Test mqtt server', () => {
     before('MQTT server: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
         setup.adapterStarted = false;
 
-        setup.setupController(async () => {
+        setup.setupController(async systemConfig => {
             const config = await setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
@@ -179,7 +187,7 @@ describe('MQTT server: Test mqtt server', () => {
             config.native.publish  = 'mqtt.0.*';
             config.native.type     = 'server';
             config.native.user     = 'user';
-            config.native.pass     = '*\u0006\u0015\u0001\u0004';
+            config.native.pass     = encrypt(systemConfig.native.secret, '*\u0006\u0015\u0001\u0004');
             await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {

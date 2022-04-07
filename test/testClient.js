@@ -112,6 +112,14 @@ function checkConnectionToServer(value, cb, counter) {
     });
 }
 
+function encrypt(key, value) {
+    let result = '';
+    for(let i = 0; i < value.length; ++i) {
+        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
+    }
+    return result;
+}
+
 describe('Test MQTT client', function() {
     before('MQTT client: Start js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(600000); // because of first install from npm
@@ -119,14 +127,14 @@ describe('Test MQTT client', function() {
         let brokerStarted    = false;
         setup.adapterStarted = false;
 
-        setup.setupController(async () => {
+        setup.setupController(async systemConfig => {
             const config = await setup.getAdapterConfig();
             // enable adapter
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
             config.native.publish  = 'mqtt.0.*';
             config.native.user     = 'user';
-            config.native.pass     = '*\u0006\u0015\u0001\u0004';
+            config.native.pass     = encrypt(systemConfig.native.secret, '*\u0006\u0015\u0001\u0004');
             await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {
