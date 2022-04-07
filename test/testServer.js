@@ -187,7 +187,7 @@ describe('MQTT server: Test mqtt server', () => {
             config.native.publish  = 'mqtt.0.*';
             config.native.type     = 'server';
             config.native.user     = 'user';
-            config.native.pass     = encrypt(systemConfig.native.secret, '*\u0006\u0015\u0001\u0004');
+            config.native.pass     = encrypt(systemConfig.native.secret, 'pass1');
             await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {
