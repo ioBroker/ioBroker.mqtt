@@ -133,7 +133,7 @@ The broker was tested with following clients:
 
 ## Changelog
 ### **WORK IN PROGRESS**
-* (bluefox) BREAKING CHANGE: password is now stored encryted, and so must be set anew after update!
+* (bluefox) BREAKING CHANGE: password is now stored encrypted, and so must be set anew after update!
 
 ### 2.7.4 (2022-03-18)
 * (Apollon77) Update MQTT library dependency
