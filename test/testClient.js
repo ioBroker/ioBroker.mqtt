@@ -134,7 +134,7 @@ describe('Test MQTT client', function() {
             config.common.loglevel = 'debug';
             config.native.publish  = 'mqtt.0.*';
             config.native.user     = 'user';
-            config.native.pass     = encrypt(systemConfig.native.secret, 'pass1');
+            config.native.pass     = encrypt(systemConfig.native.secret, 'pass#1');
             await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {
@@ -154,7 +154,7 @@ describe('Test MQTT client', function() {
         MqttServer = require(__dirname + '/lib/mqttServer.js');
         const MqttClient = require(__dirname + '/lib/mqttClient.js');
 
-        mqttServer = new MqttServer({user: 'user', pass: 'pass1'});
+        mqttServer = new MqttServer({user: 'user', pass: 'pass#1'});
 
         // Start client to emit topics
         mqttClient = new MqttClient(() => {
@@ -171,7 +171,7 @@ describe('Test MQTT client', function() {
             // on receive
             lastReceivedTopic   = topic;
             lastReceivedMessage = message ? message.toString() : null;
-        }, {name: 'Emitter', user: 'user', pass: 'pass1'});
+        }, {name: 'Emitter', user: 'user', pass: 'pass#1'});
     });
 
     it('MQTT client: Check if connected to MQTT broker', done => {
