@@ -132,6 +132,10 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) Allows to use some special characters like # in client passwords
+
 ### 3.0.5 (2022-04-07)
 * (bluefox) BREAKING CHANGE: password is now stored encrypted, and so must be set anew after update!
 
