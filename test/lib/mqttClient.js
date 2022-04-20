@@ -9,7 +9,9 @@ function Client(cbConnected, cbChanged, config) {
         config.username = config.user;
         config.password = config.pass;
     }
-    config.clientId = config.name;
+    if (config.name) {
+        config.clientId = config.name;
+    }
     this.client = mqtt.connect(`mqtt://${config.url}`, config);
 
     this.client.on('connect', () => {
