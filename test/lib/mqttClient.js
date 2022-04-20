@@ -5,8 +5,10 @@ function Client(cbConnected, cbChanged, config) {
     if (typeof config === 'string') config = {name: config};
     config = config || {};
     config.url = config.url || 'localhost';
-    config.username = config.user;
-    config.password = config.pass;
+    if (config.user) {
+        config.username = config.user;
+        config.password = config.pass;
+    }
     config.clientId = config.name;
     this.client = mqtt.connect(`mqtt://${config.url}`, config);
 
