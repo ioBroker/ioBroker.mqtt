@@ -5,11 +5,14 @@ function Client(cbConnected, cbChanged, config) {
     if (typeof config === 'string') config = {name: config};
     config = config || {};
     config.url = config.url || 'localhost';
-    this.client = mqtt.connect('mqtt://' + (config.user ? (config.user + ':' + config.pass + '@') : '') + config.url  + (config.name ? '?clientId=' + config.name : ''), config);
+    config.username = config.user;
+    config.password = config.pass;
+    config.clientId = config.name;
+    this.client = mqtt.connect(`mqtt://${config.url}`, config);
 
     this.client.on('connect', () => {
         if (!this.client) return;
-        console.log((new Date()) + ' test client connected to localhost');
+        console.log(`${new Date()} test client connected to localhost`);
 
         /*that.client.publish('mqtt/0/test', 'Roger1');
         client.publish('test/out/testMessage1', 'Roger1');
@@ -33,7 +36,7 @@ function Client(cbConnected, cbChanged, config) {
         if (cbChanged) {
             cbChanged(topic, message, packet);
         } else {
-            console.log('Test MQTT Client received "' + topic + '": ' + message.toString());
+            console.log(`Test MQTT Client received "${topic}": ${message.toString()}`);
         }
     });
     this.client.on('close', () => {
@@ -46,7 +49,7 @@ function Client(cbConnected, cbChanged, config) {
     });
 
     this.client.on('error', error => {
-        console.error('Test MQTT Client error: ' + error);
+        console.error(`Test MQTT Client error: ${error}`);
     });
 
     this.publish = (topic, message, qos, retain, cb) => {
