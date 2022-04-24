@@ -137,6 +137,7 @@ The broker was tested with following clients:
 * (Apollon77) Allows to use some special characters like # in client passwords
 * (Apollon77) Correct handing of `QoS 2` messages
 * (Apollon77) Implement resend support of pubrec
+* (Apollon77) When resending a package set the dup flag as required by specs
 * (Apollon77) Add more debug for special debug mode
 
 ### 3.0.5 (2022-04-07)
