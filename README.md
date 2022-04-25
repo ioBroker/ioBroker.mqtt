@@ -132,8 +132,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 3.0.6 (2022-04-25)
 * (Apollon77) Allows to use some special characters like # in client passwords
 * (Apollon77) Correct handing of `QoS 2` messages
 * (Apollon77) Implement resend support of pubrec

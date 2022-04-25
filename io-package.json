@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "3.0.5",
+    "version": "3.0.6",
     "news": {
+      "3.0.6": {
+        "en": "Allows to use some special characters like # in client passwords\nCorrect handing of `QoS 2` messages\nImplement resend support of pubrec\nWhen resending a package set the dup flag as required by specs\nAdd more debug for special debug mode",
+        "de": "Ermöglicht die Verwendung einiger Sonderzeichen wie # in Client-Passwörtern\nKorrekte Weiterleitung von `QoS 2`-Meldungen\nImplementieren Sie die Unterstützung für das erneute Senden von pubrec\nWenn Sie ein Paket erneut senden, setzen Sie das Dup-Flag wie von den Spezifikationen gefordert\nFügen Sie mehr Debug für den speziellen Debug-Modus hinzu",
+        "ru": "Позволяет использовать некоторые специальные символы, такие как #, в паролях клиентов.\nПравильная обработка сообщений `QoS 2`\nРеализовать поддержку повторной отправки pubrec\nПри повторной отправке пакета установите флаг дублирования, как того требуют спецификации.\nДобавить больше отладки для специального режима отладки",
+        "pt": "Permite usar alguns caracteres especiais como # em senhas de clientes\nEntrega correta de mensagens `QoS 2`\nImplemente o suporte de reenvio do pubrec\nAo reenviar um pacote, defina o sinalizador dup conforme exigido pelas especificações\nAdicione mais depuração para o modo de depuração especial",
+        "nl": "Maakt het gebruik van speciale tekens zoals # in klantwachtwoorden mogelijk\nCorrecte afhandeling van `QoS 2`-berichten\nImplementeer opnieuw verzenden ondersteuning van pubrec\nStel bij het opnieuw verzenden van een pakket de dup-vlag in zoals vereist door de specificaties\nVoeg meer foutopsporing toe voor speciale foutopsporingsmodus",
+        "fr": "Permet d'utiliser des caractères spéciaux comme # dans les mots de passe des clients\nGestion correcte des messages `QoS 2`\nImplémenter le support de renvoi de pubrec\nLors du renvoi d'un paquet, définissez l'indicateur de dup comme requis par les spécifications\nAjouter plus de débogage pour le mode de débogage spécial",
+        "it": "Consente di utilizzare alcuni caratteri speciali come # nelle password dei client\nCorretta gestione dei messaggi `QoS 2`\nImplementare il supporto per l'invio di nuovo di pubrec\nQuando si invia nuovamente un pacchetto, impostare il flag dup come richiesto dalle specifiche\nAggiungi più debug per una modalità di debug speciale",
+        "es": "Permite usar algunos caracteres especiales como # en las contraseñas de los clientes\nManejo correcto de mensajes `QoS 2`\nImplementar soporte de reenvío de pubrec\nAl reenviar un paquete, configure el indicador dup según lo requieran las especificaciones\nAgregue más depuración para el modo de depuración especial",
+        "pl": "Pozwala na użycie niektórych znaków specjalnych, takich jak # w hasłach klientów\nPrawidłowa obsługa komunikatów `QoS 2`\nZaimplementuj obsługę ponownego wysyłania pubrec\nPodczas ponownego wysyłania pakietu ustaw flagę dup zgodnie z wymaganiami specyfikacji\nDodaj więcej debugowania dla specjalnego trybu debugowania",
+        "zh-cn": "允许在客户端密码中使用一些特殊字符，例如 #\n正确处理“QoS 2”消息\n实现对 pubrec 的重发支持\n重新发送包时，按照规范的要求设置 dup 标志\n为特殊调试模式添加更多调试"
+      },
       "3.0.5": {
         "en": "BREAKING CHANGE: password is now stored encrypted, and so must be set anew after update!",
         "de": "BREAKING CHANGE: Passwort wird jetzt verschlüsselt gespeichert und muss daher nach Update neu gesetzt werden!",
