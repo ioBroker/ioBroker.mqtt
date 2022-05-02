@@ -45,7 +45,7 @@ function startClients(_done) {
         // on receive
         lastReceivedTopic1   = topic;
         lastReceivedMessage1 = message ? message.toString() : null;
-    }, {name: 'Emitter', user: 'user', pass: 'pass#1'});
+    }, {name: 'Emitter', user: 'user', pass: 'pass!?#1'});
 
     // Start client to receive topics
     mqttClientDetector = new MqttClient(connected => {
@@ -64,7 +64,7 @@ function startClients(_done) {
         lastReceivedTopic2   = topic;
         lastReceivedMessage2 = message ? message.toString() : null;
         console.log(JSON.stringify(lastReceivedMessage2));
-    }, {name: 'Detector', user: 'user', pass: 'pass#1'});
+    }, {name: 'Detector', user: 'user', pass: 'pass!?#1'});
 }
 
 function checkMqtt2Adapter(id, _expectedId, _it, _done) {
@@ -187,7 +187,7 @@ describe('MQTT server: Test mqtt server', () => {
             config.native.publish  = 'mqtt.0.*';
             config.native.type     = 'server';
             config.native.user     = 'user';
-            config.native.pass     = encrypt(systemConfig.native.secret, 'pass#1');
+            config.native.pass     = encrypt(systemConfig.native.secret, 'pass!?#1');
             await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {
