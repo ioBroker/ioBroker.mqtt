@@ -27,7 +27,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
 - **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
 - **SSL** - If TCP and WebSockets should run as secure server.
-- **Authentication/User name** - If authentication required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
+- **Authentication/Username** - If authentication required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
 - **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter mqtt.0
 - **Publish only on change** - New messages will be sent to client only if the state value changes. Every message sent by the client will be accepted, even if the value does not change.
@@ -132,10 +132,14 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) BREAKING CHANGE: in client mode only "mqtt.X.*" states will be subscribed
+* (bluefox) BREAKING CHANGE: in server mode by empty "publish" setting no states will be subscribed. Early all states were subscribed
+
 ### 3.0.6 (2022-04-25)
 * (Apollon77) Allows to use some special characters like # in client passwords
 * (Apollon77) Correct handing of `QoS 2` messages
-* (Apollon77) Implement resend support of pubrec
+* (Apollon77) Implement resend support of `pubrec`
 * (Apollon77) When resending a package set the dup flag as required by specs
 * (Apollon77) Add more debug for special debug mode
 

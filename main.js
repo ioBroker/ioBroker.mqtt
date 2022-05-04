@@ -143,7 +143,11 @@ async function readStatesForPattern(pattern) {
             states = states || {};
 
             Object.keys(res).filter(id => !messageboxRegex.test(id))
-                .forEach(id => states[id] = res[id]);
+                .forEach(id => {
+                    if (!states[id]) {
+                        states[id] = res[id];
+                    }
+                });
         }
     } catch (error) {
         adapter.log.error(`Cannot read states "${pattern}": ${error}`);
@@ -169,9 +173,7 @@ async function main() {
                 await readStatesForPattern(parts[t]);
             }
         } else {
-            // subscribe for all variables
-            await adapter.subscribeForeignStatesAsync('*');
-            await readStatesForPattern('*');
+            adapter.log.warn(`No any states subscribed!`);
         }
     }
 
