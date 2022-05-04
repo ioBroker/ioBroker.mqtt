@@ -165,12 +165,15 @@ async function main() {
         if (adapter.config.publish) {
             const parts = adapter.config.publish.split(',');
             for (let t = 0; t < parts.length; t++) {
-                if (parts[t].includes('#')) {
-                    adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${parts[t]}": use "${parts[t].replace(/#/g, '*')} notation`);
-                    parts[t] = parts[t].replace(/#/g, '*');
+                let part = parts[t].trim();
+                if (part) {
+                    if (part.includes('#')) {
+                        adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${part}": use "${part.replace(/#/g, '*')} notation`);
+                        part = part.replace(/#/g, '*');
+                    }
+                    await adapter.subscribeForeignStatesAsync(part);
+                    await readStatesForPattern(part);
                 }
-                await adapter.subscribeForeignStatesAsync(parts[t].trim());
-                await readStatesForPattern(parts[t]);
             }
         } else {
             adapter.log.warn(`No any states subscribed!`);
