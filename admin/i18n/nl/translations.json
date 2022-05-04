@@ -59,5 +59,6 @@
   "2 - Exactly once": "2 - Precies één keer",
   "Send state object as mqtt message": "Statusobject verzenden als mqtt-bericht",
   "Remove prefix from topics": "Voorvoegsel uit onderwerpen verwijderen",
-  "Like \"javascript.0.\" to remove it from all topics": "Zoals \"javascript.0.\" om het uit alle onderwerpen te verwijderen"
+  "Like \"javascript.0.\" to remove it from all topics": "Zoals \"javascript.0.\" om het uit alle onderwerpen te verwijderen",
+  "Do not create new states": "Maak geen nieuwe staten"
 }

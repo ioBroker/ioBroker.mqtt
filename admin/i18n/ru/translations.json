@@ -59,5 +59,6 @@
   "2 - Exactly once": "2 - Ровно один раз",
   "Send state object as mqtt message": "Отправить объект состояния как сообщение mqtt",
   "Remove prefix from topics": "Удалить префикс из топиков",
-  "Like \"javascript.0.\" to remove it from all topics": "Например, «javascript.0». удалить из всех топиков"
+  "Like \"javascript.0.\" to remove it from all topics": "Например, «javascript.0». удалить из всех топиков",
+  "Do not create new states": "Не создавать новые состояния"
 }

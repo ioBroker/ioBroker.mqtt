@@ -163,6 +163,15 @@ async function main() {
         await readStatesForPattern(adapter.namespace + '.*');
     } else {
         if (adapter.config.publish) {
+            // change default publish setting to real instance
+            if (adapter.config.publish === 'mqtt.0.*' && adapter.instance !== 0) {
+                adapter.log.warn(`Default "publish" setting changed to "${adapter.namespace}.*". Restarting...`);
+                adapter.config.publish = adapter.namespace + '.*';
+                const obj = await adapter.getForeignObjectAsync('system.adapter.' + adapter.namespace);
+                obj.native.publish = adapter.namespace + '.*';
+                await adapter.setForeignObjectAsync(obj._id, obj);
+            }
+
             const parts = adapter.config.publish.split(',');
             for (let t = 0; t < parts.length; t++) {
                 let part = parts[t].trim();

@@ -59,5 +59,6 @@
   "2 - Exactly once": "2 - Exactly once",
   "Send state object as mqtt message": "Send state object as mqtt message",
   "Remove prefix from topics": "Remove prefix from topics",
-  "Like \"javascript.0.\" to remove it from all topics": "Like \"javascript.0.\" to remove it from all topics"
+  "Like \"javascript.0.\" to remove it from all topics": "Like \"javascript.0.\" to remove it from all topics",
+  "Do not create new states": "Do not create new states"
 }

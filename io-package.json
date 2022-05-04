@@ -267,7 +267,8 @@
     "retransmitInterval": 2000,
     "retransmitCount": 10,
     "storeClientsTime": 1440,
-    "removePrefix": ""
+    "removePrefix": "",
+    "ignoreNewObjects": false
   },
   "objects": [],
   "instanceObjects": [
