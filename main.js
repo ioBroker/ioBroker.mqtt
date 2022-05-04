@@ -19,14 +19,6 @@ let states = {};
 
 const messageboxRegex = new RegExp('\\.messagebox$');
 
-function decrypt(key, value) {
-    let result = '';
-    for (let i = 0; i < value.length; ++i) {
-        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-    }
-    return result;
-}
-
 function startAdapter(options) {
     options = options || {};
     Object.assign(options, {name: adapterName});
@@ -36,17 +28,17 @@ function startAdapter(options) {
     adapter.on('message', obj =>
         obj && processMessage(obj));
 
-    adapter.on('ready', () => {
+    adapter.on('ready', async () => {
         adapter.config.maxTopicLength = adapter.config.maxTopicLength || 100;
         if (adapter.config.ssl && adapter.config.type === 'server') {
             // Load certificates
-            adapter.getCertificates((err, certificates) => {
+            adapter.getCertificates(async (err, certificates) => {
                 adapter.config.certificates = certificates;
-                main();
+                await main();
             });
         } else {
             // Start
-            main();
+            await main();
         }
     });
 
@@ -81,11 +73,14 @@ function startAdapter(options) {
             }
         }
     });
+
     return adapter;
 }
 
 function processMessage(obj) {
-    if (!obj || !obj.command) return;
+    if (!obj || !obj.command) {
+        return;
+    }
     switch (obj.command) {
         case 'sendMessage2Client':
             if (server) {
@@ -141,31 +136,28 @@ function processMessage(obj) {
     }
 }
 
-let cnt = 0;
-function readStatesForPattern(pattern) {
-    adapter.getForeignStates(pattern, (err, res) => {
-        if (!err && res) {
+async function readStatesForPattern(pattern) {
+    try {
+        const res = await adapter.getForeignStatesAsync(pattern);
+        if (res) {
             states = states || {};
 
             Object.keys(res).filter(id => !messageboxRegex.test(id))
                 .forEach(id => states[id] = res[id]);
         }
-        // If all patters answered, start client or server
-        if (!--cnt) {
-            if (adapter.config.type === 'client') {
-                client = new require('./lib/client')(adapter, states);
-            } else {
-                server = new require('./lib/server')(adapter, states);
-            }
-        }
-    });
+    } catch (error) {
+        adapter.log.error(`Cannot read states "${pattern}": ${error}`);
+    }
 }
 
-function main() {
+async function main() {
     adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
 
     // Subscribe on own variables to publish it
-    if (adapter.config.type !== 'client') {
+    if (adapter.config.type === 'client') {
+        await adapter.subscribeForeignStatesAsync(adapter.namespace + '.*');
+        await readStatesForPattern(adapter.namespace + '.*');
+    } else {
         if (adapter.config.publish) {
             const parts = adapter.config.publish.split(',');
             for (let t = 0; t < parts.length; t++) {
@@ -173,14 +165,13 @@ function main() {
                     adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${parts[t]}": use "${parts[t].replace(/#/g, '*')} notation`);
                     parts[t] = parts[t].replace(/#/g, '*');
                 }
-                adapter.subscribeForeignStates(parts[t].trim());
-                cnt++;
-                readStatesForPattern(parts[t]);
+                await adapter.subscribeForeignStatesAsync(parts[t].trim());
+                await readStatesForPattern(parts[t]);
             }
         } else {
             // subscribe for all variables
-            adapter.subscribeForeignStates('*');
-            readStatesForPattern('*');
+            await adapter.subscribeForeignStatesAsync('*');
+            await readStatesForPattern('*');
         }
     }
 
@@ -198,12 +189,10 @@ function main() {
     };
 
     // If no subscription, start client or server
-    if (!cnt) {
-        if (adapter.config.type === 'client') {
-            client = new require(__dirname + '/lib/client')(adapter, states);
-        } else {
-            server = new require(__dirname + '/lib/server')(adapter, states);
-        }
+    if (adapter.config.type === 'client') {
+        client = new require('./lib/client')(adapter, states);
+    } else {
+        server = new require('./lib/server')(adapter, states);
     }
 }
 
