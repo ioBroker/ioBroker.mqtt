@@ -144,13 +144,13 @@
       "label": "MQTT Settings",
       "items": {
         "patterns": {
+          "newLine": true,
           "type": "text",
+          "delimiter": ",",
           "label": "Patterns:",
           "help": "Divided by comma",
           "hidden": "data.type !== 'client'",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
+          "sm": 12
         },
         "prefix": {
           "type": "text",
@@ -160,13 +160,13 @@
           "lg": 4
         },
         "publish": {
+          "newLine": true,
           "type": "text",
+          "delimiter": ",",
           "label": "Mask to publish own states:",
           "help": "Mask to publish",
           "hidden": "data.type === 'client'",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
+          "sm": 12
         },
         "onchange": {
           "newLine": true,
@@ -302,6 +302,10 @@
           "type": "text",
           "help": "Like \"javascript.0.\" to remove it from all topics" ,
           "sm": 12
+        },
+        "ignoreNewObjects": {
+          "type": "checkbox",
+          "label": "Do not create new states"
         }
       }
     }
