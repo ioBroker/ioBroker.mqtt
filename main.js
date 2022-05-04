@@ -165,21 +165,23 @@ function main() {
     adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
 
     // Subscribe on own variables to publish it
-    if (adapter.config.publish) {
-        const parts = adapter.config.publish.split(',');
-        for (let t = 0; t < parts.length; t++) {
-            if (parts[t].indexOf('#') !== -1) {
-                adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${parts[t]}": use "${parts[t].replace(/#/g, '*')} notation`);
-                parts[t] = parts[t].replace(/#/g, '*');
+    if (adapter.config.type !== 'client') {
+        if (adapter.config.publish) {
+            const parts = adapter.config.publish.split(',');
+            for (let t = 0; t < parts.length; t++) {
+                if (parts[t].includes('#')) {
+                    adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${parts[t]}": use "${parts[t].replace(/#/g, '*')} notation`);
+                    parts[t] = parts[t].replace(/#/g, '*');
+                }
+                adapter.subscribeForeignStates(parts[t].trim());
+                cnt++;
+                readStatesForPattern(parts[t]);
             }
-            adapter.subscribeForeignStates(parts[t].trim());
-            cnt++;
-            readStatesForPattern(parts[t]);
+        } else {
+            // subscribe for all variables
+            adapter.subscribeForeignStates('*');
+            readStatesForPattern('*');
         }
-    } else {
-        // subscribe for all variables
-        adapter.subscribeForeignStates('*');
-        readStatesForPattern('*');
     }
 
     adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;
