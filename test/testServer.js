@@ -27,7 +27,7 @@ const rules = {
 
 function startClients(_done) {
     // start mqtt client
-    const MqttClient = require(__dirname + '/lib/mqttClient.js');
+    const MqttClient = require('./lib/mqttClient.js');
 
     // Start client to emit topics
     mqttClientEmitter = new MqttClient(connected => {

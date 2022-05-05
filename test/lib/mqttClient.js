@@ -15,7 +15,9 @@ function Client(cbConnected, cbChanged, config) {
     this.client = mqtt.connect(`mqtt://${config.url}`, config);
 
     this.client.on('connect', () => {
-        if (!this.client) return;
+        if (!this.client) {
+            return;
+        }
         console.log(`${new Date()} test client connected to localhost`);
 
         /*that.client.publish('mqtt/0/test', 'Roger1');
@@ -32,7 +34,7 @@ function Client(cbConnected, cbChanged, config) {
          client.subscribe('arduino/kitchen/in/#');*/
         //client.subscribe('arduino/kitchen/in/updateInterval');
         this.client.subscribe('#');
-        if (cbConnected) cbConnected(true);
+        cbConnected && cbConnected(true);
     });
 
     this.client.on('message', (topic, message, packet) => {
@@ -72,6 +74,7 @@ function Client(cbConnected, cbChanged, config) {
         console.log(`Test MQTT Client publish "${topic}" -> "${message}" : ${JSON.stringify(opts)}`);
         this.client.publish(topic,  message, opts, cb);
     };
+
     this.subscribe = (topic, opts, cb) => {
         if (typeof opts === 'function') {
             cb = opts;
@@ -79,9 +82,11 @@ function Client(cbConnected, cbChanged, config) {
         }
         this.client.subscribe(topic, opts, cb);
     };
+
     this.unsubscribe = (topic, cb) => {
         this.client.unsubscribe(topic, cb);
     };
+
     this.destroy = () => {
         if (this.client) {
             this.client.end();
