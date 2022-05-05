@@ -107,10 +107,10 @@ describe.only('MQTT server', function () {
                 clean: false,
                 clientId: 'testClient3',
                 resubscribe: false
-            }
-            );
+            });
             sendPacket = client.client._sendPacket;
-            client.client._sendPacket = (packet, cb, cbStorePut) => {
+            // do not change "function (...)" to "=>"
+            client.client._sendPacket = function (packet, cb, cbStorePut) {
                 // ignore puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;
@@ -171,6 +171,8 @@ describe.only('MQTT server', function () {
                 }
             );
             sendPacket = receiverClient.client._sendPacket;
+
+            // do not change "function (...)" to "=>"
             receiverClient.client._sendPacket = function (packet, cb, cbStorePut) {
                 // ignore pubrec
                 if (packet.cmd === 'pubrec' && !allowPubrec) {
