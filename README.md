@@ -53,7 +53,7 @@ Because of that the messages are always published with retain flag.
 If your client has problems with retained messages you can force ioBroker MQTT-Broker to send messages without retain flag with `Publish messages without "retain" flag` option.
 In this case the messages will be stored in States-DB anyway. 
 
-If the option `Send states (ack=true) too` not activated, so you can clear the value of the topic (state) with `ack=true` and the update will not bes sent to subscribed clients.
+If the option `Send states (ack=true) too` is not activated, so you can clear the value of the topic (state) with `ack=true` and the update will not bes sent to subscribed clients.
 And when the client connects next time it will not get the last command again.
 
 The JS-Code should look like this: 
