@@ -54,9 +54,9 @@ function startAdapter(options) {
         if (!state) {
             delete states[id];
             // If SERVER
-            if (server) server.onStateChange(id);
+            server && server.onStateChange(id);
             // if CLIENT
-            if (client) client.onStateChange(id);
+            client && client.onStateChange(id);
         } else
         // you can use the ack flag to detect if state is desired or acknowledged
         if ((adapter.config.sendAckToo || !state.ack) && !messageboxRegex.test(id)) {

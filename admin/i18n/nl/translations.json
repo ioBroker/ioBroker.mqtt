@@ -60,5 +60,6 @@
   "Send state object as mqtt message": "Statusobject verzenden als mqtt-bericht",
   "Remove prefix from topics": "Voorvoegsel uit onderwerpen verwijderen",
   "Like \"javascript.0.\" to remove it from all topics": "Zoals \"javascript.0.\" om het uit alle onderwerpen te verwijderen",
-  "Do not create new states": "Maak geen nieuwe staten"
+  "Do not create new states": "Maak geen nieuwe staten",
+  "Publish messages without \"retain\" flag": "Berichten publiceren zonder \"retain\"-vlag"
 }

@@ -60,5 +60,6 @@
   "Send state object as mqtt message": "Zustandsobjekt als mqtt-Nachricht senden",
   "Remove prefix from topics": "Präfix von Topics entfernen",
   "Like \"javascript.0.\" to remove it from all topics": "Wie \"javascript.0.\" um es aus allen Topics zu entfernen",
-  "Do not create new states": "Keine neuen Zustände erstellen"
+  "Do not create new states": "Keine neuen Zustände erstellen",
+  "Publish messages without \"retain\" flag": "Nachrichten ohne \"retain\"-Flag senden"
 }

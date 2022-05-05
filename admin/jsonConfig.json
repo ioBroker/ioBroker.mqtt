@@ -306,6 +306,11 @@
         "ignoreNewObjects": {
           "type": "checkbox",
           "label": "Do not create new states"
+        },
+        "noRetain": {
+          "type": "checkbox",
+          "label": "Publish messages without \"retain\" flag",
+          "hidden": "data.type === 'client'"
         }
       }
     }

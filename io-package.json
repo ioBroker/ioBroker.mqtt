@@ -268,7 +268,8 @@
     "retransmitCount": 10,
     "storeClientsTime": 1440,
     "removePrefix": "",
-    "ignoreNewObjects": false
+    "ignoreNewObjects": false,
+    "noRetain": false
   },
   "objects": [],
   "instanceObjects": [
