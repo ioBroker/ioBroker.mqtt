@@ -6,7 +6,7 @@ const Client = require('./lib/mqttClient');
 
 let port = 1883;
 
-describe.only('MQTT server', function () {
+describe('MQTT server', function () {
     let adapter;
     let server;
     const states   = {};
@@ -89,7 +89,6 @@ describe.only('MQTT server', function () {
     it('MQTT server: Check if QoS1 retransmitted', done => {
         let client;
         const data = 1;
-        let sendPacket;
         let count = 0;
         const id = 'aaa2';
         let allowPuback = false;
@@ -108,10 +107,10 @@ describe.only('MQTT server', function () {
                 clientId: 'testClient3',
                 resubscribe: false
             });
-            sendPacket = client.client._sendPacket;
+            const sendPacket = client.client._sendPacket;
             // do not change "function (...)" to "=>"
             client.client._sendPacket = function (packet, cb, cbStorePut) {
-                // ignore puback
+                // ignore one puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;
                     cb && cb();
@@ -120,10 +119,12 @@ describe.only('MQTT server', function () {
                 sendPacket.call(this, packet, cb, cbStorePut);
             };
         })
-            .then(() => {
-                return new Promise(resolve => {
-                    adapter.setForeignState('mqtt.0.' + id, data);
-                    server.onStateChange('mqtt.0.' + id, {val: data, ack: false});
+            .then(async () => {
+                await adapter.setForeignObjectAsync('mqtt.0.' + id, {_id: 'mqtt.0.' + id, common: {type: 'number'}, native: {}, type: 'state'});
+                await adapter.setForeignStateAsync('mqtt.0.' + id, data);
+                server.onStateChange('mqtt.0.' + id, {val: data, ack: false});
+
+                return new Promise( resolve => {
                     setTimeout(() => resolve(), 1000);
                 });
             })
@@ -143,7 +144,6 @@ describe.only('MQTT server', function () {
         let emitterClient;
         const data = 1;
         const id = 'aaa3';
-        let sendPacket;
         let count = 0;
         let allowPubrec = false;
         let receiveFunc;
@@ -170,7 +170,7 @@ describe.only('MQTT server', function () {
                     resubscribe: false
                 }
             );
-            sendPacket = receiverClient.client._sendPacket;
+            const sendPacket = receiverClient.client._sendPacket;
 
             // do not change "function (...)" to "=>"
             receiverClient.client._sendPacket = function (packet, cb, cbStorePut) {
@@ -262,7 +262,7 @@ describe.only('MQTT server', function () {
                 }
             },
             (id, topic, packet) => {
-                if (id.indexOf('aaa6') !== -1) {
+                if (id.includes('aaa6')) {
                     console.log('Received ' + topic.toString());
                     count++;
                     expect(count).to.be.equal(1);
@@ -274,8 +274,7 @@ describe.only('MQTT server', function () {
                 clean: true,
                 clientId: 'testClient6',
                 resubscribe: false
-            }
-            );
+            });
         })
             .then(() => {
                 return new Promise(resolve => {

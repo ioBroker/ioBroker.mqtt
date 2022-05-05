@@ -74,9 +74,21 @@ module.exports = function (config) {
         cb(null, objects[id]);
     };
 
+    this.getForeignObjectAsync = id => {
+        return new Promise(resolve => this.getForeignObject(id, (err, obj) => resolve(obj)));
+    };
+
     this.setForeignObject = (id, obj, cb) => {
         objects[id] = obj;
         cb && cb();
+    };
+
+    this.setForeignObjectAsync = (id, obj) => {
+        return new Promise(resolve => this.setForeignObject(id, obj, () => resolve()));
+    };
+
+    this.setForeignStateAsync = (id, state) => {
+        return new Promise(resolve => this.setForeignState(id, state, () => resolve()));
     };
 
     this.clearAll = () => {
