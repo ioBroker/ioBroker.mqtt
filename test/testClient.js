@@ -120,7 +120,7 @@ function encrypt(key, value) {
     return result;
 }
 
-describe.only('Test MQTT client', function () {
+describe('Test MQTT client', function () {
     before('MQTT client: Start js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(600000); // because of first install from npm
         let clientConnected  = false;
