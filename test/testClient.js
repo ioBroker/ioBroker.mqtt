@@ -1,6 +1,6 @@
 'use strict';
 const expect  = require('chai').expect;
-const setup   = require(__dirname + '/lib/setup');
+const setup   = require('./lib/setup');
 
 let objects = null;
 let states  = null;
@@ -30,7 +30,9 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     } else {
         id = _expectedId;
     }
-    if (id.indexOf('.') === -1) id = 'mqtt.0.' + id;
+    if (!id.includes('.')) {
+        id = 'mqtt.0.' + id;
+    }
 
     mqttClient.publish(mqttid, value);
 
@@ -40,7 +42,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
             expect(obj._id).to.be.equal(id);
             expect(obj.type).to.be.equal('state');
 
-            if (mqttid.indexOf('mqtt') !== -1) {
+            if (mqttid.includes('mqtt')) {
                 expect(obj.native.topic).to.be.equal(mqttid);
             }
 
@@ -63,8 +65,8 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
     states.setState(id, {
         val: value,
         ack: false
-    }, function (err, id) {
-        setTimeout(function () {
+    }, () => {
+        setTimeout(() => {
             expect(lastReceivedTopic).to.be.equal(mqttid);
             expect(lastReceivedMessage).to.be.equal(value);
             _done();
@@ -85,9 +87,7 @@ function checkConnectionOfAdapter(cb, counter) {
             connected = state.val;
             cb && cb();
         } else {
-            setTimeout(function () {
-                checkConnectionOfAdapter(cb, counter + 1);
-            }, 500);
+            setTimeout(() => checkConnectionOfAdapter(cb, counter + 1), 500);
         }
     });
 }
@@ -114,13 +114,13 @@ function checkConnectionToServer(value, cb, counter) {
 
 function encrypt(key, value) {
     let result = '';
-    for(let i = 0; i < value.length; ++i) {
+    for (let i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
     }
     return result;
 }
 
-describe('Test MQTT client', function() {
+describe.only('Test MQTT client', function () {
     before('MQTT client: Start js-controller', function (_done) { // let FUNCTION and not => here
         this.timeout(600000); // because of first install from npm
         let clientConnected  = false;
@@ -151,8 +151,8 @@ describe('Test MQTT client', function() {
         });
 
         // start mqtt server
-        MqttServer = require(__dirname + '/lib/mqttServer.js');
-        const MqttClient = require(__dirname + '/lib/mqttClient.js');
+        MqttServer = require('./lib/mqttServer.js');
+        const MqttClient = require('./lib/mqttClient.js');
 
         mqttServer = new MqttServer({user: 'user', pass: 'pass!?#1'});
 
@@ -166,7 +166,7 @@ describe('Test MQTT client', function() {
                 _done = null;
             }
         }, (topic, message) => {
-            console.log((new Date()).getTime() + ' emitter received ' + topic + ': ' + message.toString());
+            console.log(`${(new Date()).getTime()} emitter received ${topic}: ${message.toString()}`);
             //console.log('Test MQTT Client received "' + topic + '": ' + message);
             // on receive
             lastReceivedTopic   = topic;
@@ -183,9 +183,7 @@ describe('Test MQTT client', function() {
     }).timeout(3000);
 
     it('MQTT client: wait', done => {
-        setTimeout(function () {
-            done();
-        }, 1000);
+        setTimeout(() => done(), 1000);
     }).timeout(4000);
 
     it('MQTT client: check folder objects', done => {
@@ -206,7 +204,7 @@ describe('Test MQTT client', function() {
                         expect(state).to.be.ok;
                         expect(state.val).equal(true);
                         done();
-                    })
+                    });
                 });
             });
         });

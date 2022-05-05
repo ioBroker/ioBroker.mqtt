@@ -22,67 +22,73 @@ function Server(config) {
                 client = mqtt(stream);
             }
 
-            client.on('connect', function (packet) {
+            client.on('connect', packet => {
                 client.id = packet.clientId;
                 clients[client.id] = client;
                 if (config.user) {
                     if (config.user !== packet.username ||
                         config.pass !== packet.password.toString()) {
-                        console.error('Client [' + packet.clientId + '] has invalid password(' + packet.password + ') or username(' + packet.username + ')');
+                        console.error(`Client [${packet.clientId}] has invalid password(${packet.password}) or username(${packet.username})`);
                         client.connack({returnCode: 4});
-                        if (clients[client.id]) delete clients[client.id];
+                        if (clients[client.id]) {
+                            delete clients[client.id];
+                        }
                         client.stream.end();
                         return;
                     }
                 }
-                console.log('Client [' + packet.clientId + '] connected: user - ' + packet.username + ', pass - ' + packet.password);
+                console.log(`Client [${packet.clientId}] connected: user - ${packet.username}, pass - ${packet.password}`);
                 client.connack({returnCode: 0});
 
                 client.publish({topic: 'testServer/connected', payload: 'true'});
                 client.publish({topic: 'testServer/long/test/path/into/ioBroker/connected', payload: 'true'});
             });
 
-            client.on('publish', function (packet) {
-                console.log('Client [' + client.id + '] publishes "' + packet.topic + '": ' + packet.payload);
+            client.on('publish', packet => {
+                console.log(`Client [${client.id}] publishes "${packet.topic}": ${packet.payload}`);
                 for (const k in clients) {
                     clients[k].publish({topic: packet.topic, payload: packet.payload});
                 }
             });
 
-            client.on('subscribe', function (packet) {
+            client.on('subscribe', packet => {
                 const granted = [];
-                console.log('Client [' + client.id + '] subscribes on "' + JSON.stringify(packet.subscriptions) + '"');
+                console.log(`Client [${client.id}] subscribes on "${JSON.stringify(packet.subscriptions)}"`);
                 for (let i = 0; i < packet.subscriptions.length; i++) {
                     granted.push(packet.subscriptions[i].qos);
                 }
-                client.suback({granted: granted, messageId: packet.messageId});
+                client.suback({granted, messageId: packet.messageId});
             });
 
-            client.on('pingreq', function (packet) {
-                console.log('Client [' + client.id + '] pingreq');
+            client.on('pingreq', packet => {
+                console.log(`Client [${client.id}] pingreq`);
                 client.pingresp();
             });
 
-            client.on('disconnect', function (packet) {
+            client.on('disconnect', packet => {
                 if (clients[client.id]) delete clients[client.id];
                 console.log('Client [' + client.id + '] disconnected');
                 client.stream.end();
             });
 
-            client.on('close', function (err) {
-                if (clients[client.id]) delete clients[client.id];
-                console.log('Client [' + client.id + '] closed');
+            client.on('close', err => {
+                if (clients[client.id]) {
+                    delete clients[client.id];
+                }
+                console.log(`Client [${client.id}] closed`);
             });
 
-            client.on('error', function (err) {
-                if (clients[client.id]) delete clients[client.id];
-                console.log('[' + client.id + '] ' + err);
+            client.on('error', err => {
+                if (clients[client.id]) {
+                    delete clients[client.id];
+                }
+                console.log(`[${client.id}] ${err}`);
                 client.stream.end();
             });
         });
-        (server || socket).listen(port, bind, () => {
-            console.log(`Starting MQTT ${ws ? '-WebSocket' : ''}${ssl ? ' (Secure)' : ''}' server on port ${port}`);
-        });
+
+        (server || socket).listen(port, bind, () =>
+            console.log(`Starting MQTT ${(!ws ? '' : '-WebSocket')}${ssl ? ' (Secure)' : ''}' server on port ${port}`));
     }
 
     const port = 1883;
@@ -92,7 +98,6 @@ function Server(config) {
     };
 
     this.start = function () {
-
         if (process.argv[2] === 'ssl') {
             net = net || require('tls');
             if (config.webSocket) {

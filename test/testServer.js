@@ -168,7 +168,7 @@ function checkConnection(value, done, counter) {
 
 function encrypt(key, value) {
     let result = '';
-    for(let i = 0; i < value.length; ++i) {
+    for (let i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
     }
     return result;
@@ -231,7 +231,7 @@ describe('MQTT server: Test mqtt server', () => {
 
     for (const r in rules) {
         (function(id, topic) {
-            if (topic.indexOf('mqtt') !== -1) {
+            if (topic.includes('mqtt')) {
                 it('MQTT server: Check send ' + topic, function (done) { // let FUNCTION here
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
