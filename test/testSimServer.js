@@ -6,7 +6,7 @@ const Client = require('./lib/mqttClient');
 
 let port = 1883;
 
-describe('MQTT server', function () {
+describe.only('MQTT server', function () {
     let adapter;
     let server;
     const states   = {};
@@ -35,8 +35,7 @@ describe('MQTT server', function () {
         {
             url: 'localhost:' + port,
             clientId: 'testClient1',
-        }
-        );
+        });
     });
 
     it('MQTT server: Check if subscribes stored', () => {
@@ -111,7 +110,7 @@ describe('MQTT server', function () {
             }
             );
             sendPacket = client.client._sendPacket;
-            client.client._sendPacket = function (packet, cb, cbStorePut) {
+            client.client._sendPacket = (packet, cb, cbStorePut) => {
                 // ignore puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;

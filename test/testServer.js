@@ -1,6 +1,6 @@
 'use strict';
 const expect = require('chai').expect;
-const setup  = require(__dirname + '/lib/setup');
+const setup  = require('./lib/setup');
 
 let objects = null;
 let states  = null;
@@ -27,7 +27,7 @@ const rules = {
 
 function startClients(_done) {
     // start mqtt client
-    const MqttClient = require('./lib/mqttClient.js');
+    const MqttClient = require('./lib/mqttClient');
 
     // Start client to emit topics
     mqttClientEmitter = new MqttClient(connected => {
@@ -41,7 +41,7 @@ function startClients(_done) {
             }
         }
     }, (topic, message) => {
-        console.log(`${(new Date()).getTime()} emitter received ${topic}: ${message.toString()}`);
+        console.log(`${Date.now()} emitter received ${topic}: ${message.toString()}`);
         // on receive
         lastReceivedTopic1   = topic;
         lastReceivedMessage1 = message ? message.toString() : null;
@@ -59,7 +59,7 @@ function startClients(_done) {
             }
         }
     }, (topic, message) => {
-        console.log(`${(new Date()).getTime()} detector received ${topic}: ${message.toString()}`);
+        console.log(`${Date.now()} detector received ${topic}: ${message.toString()}`);
         // on receive
         lastReceivedTopic2   = topic;
         lastReceivedMessage2 = message ? message.toString() : null;
@@ -79,6 +79,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     } else {
         id = _expectedId;
     }
+
     if (!id.includes('.')) {
         id = 'mqtt.0.' + id;
     }
@@ -88,14 +89,14 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     lastReceivedTopic2   = null;
     lastReceivedMessage2 = null;
 
-    mqttClientEmitter.publish(mqttid, value, function (err) {
+    mqttClientEmitter.publish(mqttid, value, err => {
         expect(err).to.be.undefined;
 
         setTimeout(() => {
             /*expect(lastReceivedTopic2).to.be.equal(mqttid);
              expect(lastReceivedMessage2).to.be.equal(value);*/
 
-            objects.getObject(id, function (err, obj) {
+            objects.getObject(id, (err, obj) => {
                 expect(obj).to.be.not.null.and.not.undefined;
                 expect(obj._id).to.be.equal(id);
                 expect(obj.type).to.be.equal('state');
@@ -129,7 +130,7 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
     states.setState(id, {
         val: value,
         ack: false
-    }, (err, id) => {
+    }, () => {
         setTimeout(() => {
             if (!lastReceivedTopic1) {
                 setTimeout(() => {
@@ -155,13 +156,12 @@ function checkConnection(value, done, counter) {
 
     states.getState('mqtt.0.info.connection', (err, state) => {
         if (err) console.error(err);
-        if (state && typeof state.val === 'string' && ((value && state.val.indexOf(',') !== -1) || (!value && state.val.indexOf(',') === -1))) {
+        if (state && typeof state.val === 'string' && ((value && state.val.includes(',')) || (!value && !state.val.includes(',')))) {
             connected = value;
             done();
         } else {
-            setTimeout(() => {
-                checkConnection(value, done, counter + 1);
-            }, 1000);
+            setTimeout(() =>
+                checkConnection(value, done, counter + 1), 1000);
         }
     });
 }
@@ -224,9 +224,7 @@ describe('MQTT server: Test mqtt server', () => {
 
     // give time to client to receive all messages
     it('wait', done => {
-        setTimeout(() => {
-            done();
-        }, 2000);
+        setTimeout(() => done(), 2000);
     }).timeout(3000);
 
     for (const r in rules) {
@@ -270,8 +268,7 @@ describe('MQTT server: Test mqtt server', () => {
         this.timeout(10000);
         mqttClientEmitter.stop();
         mqttClientDetector.stop();
-        setup.stopController(() => {
-            setTimeout(done, 4000);
-        });
+        setup.stopController(() =>
+            setTimeout(done, 4000));
     });
 });
