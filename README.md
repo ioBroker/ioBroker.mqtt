@@ -39,6 +39,28 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Force clean session** - Overwrite the client settings and clear or keep session.
+- **Publish messages without "retain" flag** - Send messages to other clients without retain flag (read more in next paragraph)
+
+The ioBroker MQTT-Broker in server mode only simulates the behaviour of real MQTT-Broker (like Mosquitto), but it is not the same.
+Real MQTT-Broker normally does not save the values of the topics and just forwards the message to other subscribed clients.
+
+To force real MQTT-Broker to behave like ioBroker MQTT-Broker all messages must be sent with "retain" flag. 
+In this case the values will be stored too.
+
+ioBroker MQTT-Broker saves always the values into the States-DB, so it can be processed by other adapters. 
+Because of that the messages are always published with retain flag.
+
+If your client has problems with retained messages you can force ioBroker MQTT-Broker to send messages without retain flag with `Publish messages without "retain" flag` option.
+In this case the messages will be stored in States-DB anyway. 
+
+If the option `Send states (ack=true) too` not activated, so you can clear the value of the topic (state) with `ack=true` and the update will not bes sent to subscribed clients.
+And when the client connects next time it will not get the last command again.
+
+The JS-Code should look like this: 
+```
+await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set', 'cleanStart'); // ack=false
+await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set', '', true); // ack=true to clear the command
+```
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like `localhost`.
@@ -58,10 +80,6 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: ```{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}```); if not the values ```states.val``` is sent as a single value (example state.val as single value: ```true```)
 - **Persistent Session** - When checked the broker saves the session information of the adapter. This means it tracks which messages have been sent/received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
 
-## Install
-
-```node iobroker.js add mqtt```
-
 ## Usage
 
 ### How to test mqtt client:
@@ -75,7 +93,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 ### Sending messages
 You may send / publish messages on topics using ```sendTo``` method from your adapter via MQTT adapter, e.g.:
 
-```javascript
+```
 /*
  * @param {string}  MQTT instance     Specify MQTT instance to send message through (may be either server or client)
  * @param {string}  action            Action to use (always 'sendMessage2Client' for sending plain messages)
