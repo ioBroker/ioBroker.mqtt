@@ -65,7 +65,7 @@ function startAdapter(options) {
             states[id] = state;
 
             // If value really changed
-            if (!adapter.config.onchange || oldVal !== state.val || oldAck !== state.ack) {
+            if (!adapter.config.onchange || oldVal !== state.val || oldAck !== state.ack || state.binary) {
                 // If SERVER
                 server && server.onStateChange(id, state);
                 // if CLIENT

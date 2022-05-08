@@ -88,10 +88,10 @@ function Server(config) {
         });
 
         (server || socket).listen(port, bind, () =>
-            console.log(`Starting MQTT ${(!ws ? '' : '-WebSocket')}${ssl ? ' (Secure)' : ''}' server on port ${port}`));
+            console.log(`Starting MQTT${(!ws ? '' : '-WebSocket')}${ssl ? ' (Secure)' : ''} server on port ${port}`));
     }
 
-    const port = 1883;
+    const port = config.port || 1883;
     const sslOptions = {
         key:  '-----BEGIN RSA PRIVATE KEY-----\r\nMIICXQIBAAKBgQDQ6dVCuqpl0hdECy35tQP7n/FKAK6Yz8z04F3g8NtkLrJ3IR1+\r\nNo0ijLE2Ka5ONZV2WlRzybWomAvOGnfbSH7NG/wkQ9saBb15bAU03RLeyFmDc5Rz\r\newgjoQzJwXNWIIbqdiUWUqhy3IOzfoRrNprpDm5mv2pwEUxOuF8mB62vgQIDAQAB\r\nAoGBAKmS5DQB6IY1fgURPgROVilMrkJvQ0luguLRq+IGH062SM5B5vqntO+yW7Wn\r\nJ4D8JZGnyJ0jwXxTzmFBQsCPm7vQ3VkH1ir4JhlIWJ11Z3p3XMNWNJ5mrDAyEupn\r\nShCFQxW9EDL7efVFztqgyiWw5/uxV4AJQyBgtsF4PijmgT8xAkEA+SlmVXcuzIPy\r\nZTfNXRCWHvzZM9EaRVQXNSYqMHXLRx412gw42ihk/+GIYaw7y5ObjlMosfzzCyot\r\naMMA/KT1TwJBANalpnrDE0BhYuv/ccnxJv/pZ6aJZ4P/gyRV02UUc0WTAGnxU4el\r\nJPtREWCyCjaVq26S7fh4DGotcDhDEkpzei8CQA5aGyHrJo/zPcAk0bh9nxgT2nMI\r\npWm+6UNPenimIFptXA6+S3wNfZvbot51bFBSpVAybBKsjldjS5BQQztKSTMCQQCe\r\nMhYBkjZlE6Fhh7GogOgaYj53GfvF6BISPIMBk1HlrBL5AdhrN4aLBtOE7ZLjaemg\r\nI//pSSj1NCnp/VzErFkXAkA/6q2Th8M4Z2LzL46GeRavLXFd1IQmFULWZAkx5afk\r\n8/anbz31nnA9CFu+oR/jTp7urYsIUQ3y6ksJwGGKHVlQ\r\n-----END RSA PRIVATE KEY-----\r\n',
         cert: '-----BEGIN CERTIFICATE-----\r\nMIICfzCCAegCCQC1y0d8DNip4TANBgkqhkiG9w0BAQUFADCBgzELMAkGA1UEBhMC\r\nREUxGTAXBgNVBAgMEEJhZGVuV3VlcnRlbWJlcmcxEjAQBgNVBAcMCUthcmxzcnVo\r\nZTERMA8GA1UECgwIaW9Ccm9rZXIxEDAOBgNVBAMMB0JsdWVmb3gxIDAeBgkqhkiG\r\n9w0BCQEWEWRvZ2Fmb3hAZ21haWwuY29tMB4XDTE1MDQyMjIwMjgwM1oXDTE2MDQy\r\nMTIwMjgwM1owgYMxCzAJBgNVBAYTAkRFMRkwFwYDVQQIDBBCYWRlbld1ZXJ0ZW1i\r\nZXJnMRIwEAYDVQQHDAlLYXJsc3J1aGUxETAPBgNVBAoMCGlvQnJva2VyMRAwDgYD\r\nVQQDDAdCbHVlZm94MSAwHgYJKoZIhvcNAQkBFhFkb2dhZm94QGdtYWlsLmNvbTCB\r\nnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA0OnVQrqqZdIXRAst+bUD+5/xSgCu\r\nmM/M9OBd4PDbZC6ydyEdfjaNIoyxNimuTjWVdlpUc8m1qJgLzhp320h+zRv8JEPb\r\nGgW9eWwFNN0S3shZg3OUc3sII6EMycFzViCG6nYlFlKoctyDs36Eazaa6Q5uZr9q\r\ncBFMTrhfJgetr4ECAwEAATANBgkqhkiG9w0BAQUFAAOBgQBgp4dhA9HulN7/rh4H\r\n+e+hAYqjWvFpdNqwcWAyopBig9B9WL3OIkzpgTuBmH76JxzJCuZJkjO4HLGzQ3KF\r\nsFU0lvqqoz9osgYmXe1K0fBjIcm/RFazGTHVxv+UgVqQ3KldrlkvR3T2VIRlT5hI\r\n0Y1m6J3YZDMF7D6uc1jrsYHkMQ==\r\n-----END CERTIFICATE-----\r\n'
@@ -120,7 +120,7 @@ function Server(config) {
         startServer(serverWs, serverForWs, port + 1, '127.0.0.1', process.argv[2] === 'ssl', true);
     };
 
-    this.stop = function () {
+    this.stop = function (cb) {
         // destroy all clients (this will emit the 'close' event above)
         for (const i in clients) {
             clients[i].destroy();
@@ -131,6 +131,7 @@ function Server(config) {
                 console.log('Server closed.');
                 server.unref();
                 server = null;
+                cb && cb();
             });
         }
 
