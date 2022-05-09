@@ -10,6 +10,7 @@
 'use strict';
 
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
+const tools = require(utils.controllerDir + '/lib/tools');
 const adapterName = require('./package.json').name.split('.').pop();
 let adapter;
 
@@ -206,6 +207,7 @@ async function main() {
 
     // If no subscription, start client or server
     if (adapter.config.type === 'client') {
+        adapter.config.clientId = adapter.config.clientId || `${tools.getHostname ? tools.getHostname() : utils.appName}.${adapter.namespace}`;
         client = new require('./lib/client')(adapter, states);
     } else {
         server = new require('./lib/server')(adapter, states);

@@ -641,7 +641,7 @@ async function getSecret() {
             objs = {'system.config': {}};
         }
 
-        return objs['system.config'].native.secre;
+        return objs['system.config'].native.secret;
     } else if (fs.existsSync(dataDir + 'objects.jsonl')) {
         loadJSONLDB();
         const db = new JSONLDB(dataDir + 'objects.jsonl');
