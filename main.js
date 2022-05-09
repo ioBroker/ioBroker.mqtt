@@ -166,10 +166,12 @@ async function main() {
             // change default publish setting to real instance
             if (adapter.config.publish === 'mqtt.0.*' && adapter.instance !== 0) {
                 adapter.log.warn(`Default "publish" setting changed to "${adapter.namespace}.*". Restarting...`);
-                adapter.config.publish = adapter.namespace + '.*';
-                const obj = await adapter.getForeignObjectAsync('system.adapter.' + adapter.namespace);
-                obj.native.publish = adapter.namespace + '.*';
-                await adapter.setForeignObjectAsync(obj._id, obj);
+                await adapter.extendForeignObjectAsync(obj._id, {
+                    native: {
+                        publish: adapter.namespace + '.*',
+                    }
+                });
+                return; // Adapter will be restarted soon, no need to initialize now
             }
 
             const parts = adapter.config.publish.split(',');
@@ -185,7 +187,7 @@ async function main() {
                 }
             }
         } else {
-            adapter.log.warn(`No any states subscribed!`);
+            adapter.log.warn(`No ioBroker changes will be published to the clients. Set the "publish" option in the adapter settings to subscribe for relevant changes.`);
         }
     }
 
