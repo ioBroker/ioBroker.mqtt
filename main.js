@@ -18,6 +18,8 @@ let server = null;
 let client = null;
 let states = {};
 
+
+
 const messageboxRegex = new RegExp('\\.messagebox$');
 
 function startAdapter(options) {
@@ -207,7 +209,7 @@ async function main() {
 
     // If no subscription, start client or server
     if (adapter.config.type === 'client') {
-        adapter.config.clientId = adapter.config.clientId || `${tools.getHostname ? tools.getHostname() : utils.appName}.${adapter.namespace}`;
+        adapter.config.clientId = adapter.config.clientId || `${tools.getHostname ? tools.getHostname() : adapterName}.${adapter.namespace}`;
         client = new require('./lib/client')(adapter, states);
     } else {
         server = new require('./lib/server')(adapter, states);
