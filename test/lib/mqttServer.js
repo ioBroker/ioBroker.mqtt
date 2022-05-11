@@ -40,8 +40,10 @@ function Server(config) {
                 console.log(`Client [${packet.clientId}] connected: user - ${packet.username}, pass - ${packet.password}`);
                 client.connack({returnCode: 0});
 
-                client.publish({topic: 'testServer/connected', payload: 'true'});
-                client.publish({topic: 'testServer/long/test/path/into/ioBroker/connected', payload: 'true'});
+                if (!config.dontSend) {
+                    client.publish({topic: 'testServer/connected', payload: 'true'});
+                    client.publish({topic: 'testServer/long/test/path/into/ioBroker/connected', payload: 'true'});
+                }
             });
 
             client.on('publish', packet => {

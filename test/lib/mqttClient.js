@@ -18,7 +18,7 @@ function Client(cbConnected, cbChanged, config) {
         if (!this.client) {
             return;
         }
-        console.log(`${new Date()} test client connected to localhost`);
+        console.log(`${new Date()} Test MQTT Client ${config.clientId} connected to ${config.url}`);
 
         /*that.client.publish('mqtt/0/test', 'Roger1');
         client.publish('test/out/testMessage1', 'Roger1');
@@ -33,7 +33,12 @@ function Client(cbConnected, cbChanged, config) {
 
          client.subscribe('arduino/kitchen/in/#');*/
         //client.subscribe('arduino/kitchen/in/updateInterval');
-        this.client.subscribe('#');
+
+        if (config.subscribe !== false) {
+            debugger;
+            this.client.subscribe(config.subscribe || '#');
+        }
+
         cbConnected && cbConnected(true);
     });
 
@@ -42,7 +47,7 @@ function Client(cbConnected, cbChanged, config) {
         if (cbChanged) {
             cbChanged(topic, message, packet);
         } else {
-            console.log(`Test MQTT Client received "${topic}": ${message.toString()}`);
+            console.log(`Test MQTT Client ${config.clientId} received "${topic}": ${message.toString()}`);
         }
     });
     this.client.on('close', () => {
@@ -50,12 +55,12 @@ function Client(cbConnected, cbChanged, config) {
         if (cbConnected) {
             cbConnected(false);
         } else {
-            console.log('Test MQTT Client closed');
+            console.log(`Test MQTT Client ${config.clientId} closed`);
         }
     });
 
     this.client.on('error', error => {
-        console.error(`Test MQTT Client error: ${error}`);
+        console.error(`Test MQTT Client ${config.clientId} error: ${error}`);
     });
 
     this.publish = (topic, message, qos, retain, cb) => {
@@ -71,7 +76,7 @@ function Client(cbConnected, cbChanged, config) {
             retain: retain || false,
             qos: qos || 0
         };
-        console.log(`Test MQTT Client publish "${topic}" -> "${message}" : ${JSON.stringify(opts)}`);
+        console.log(`Test MQTT Client ${config.clientId} publish "${topic}" -> "${message}" : ${JSON.stringify(opts)}`);
         this.client.publish(topic, message, opts, cb);
     };
 

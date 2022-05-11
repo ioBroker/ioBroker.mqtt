@@ -1,7 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const Adapter = require('./lib/adapterSim');
-const Server = require('./lib/mqttServer');
+const SimulatedServer = require('./lib/mqttServer');
 const ClientEmitter = require('./lib/mqttClient');
 const Client = require('../lib/client');
 
@@ -9,19 +9,19 @@ let port = 1883;
 
 describe('MQTT client', function () {
     let adapter;
-    let server;
+    let simulatedServer;
     let client;
     const states   = {};
     this.timeout(3000);
 
-    before('MQTT client: Start MQTT server', done => {
+    before('MQTT client: Start MQTT simulatedServer', done => {
         adapter = new Adapter({
             port: ++port,
             url: 'localhost',
             onchange: true,
-            clientId: 'testClient'
+            clientId: 'testAdapter'
         });
-        server = new Server({port});
+        simulatedServer = new SimulatedServer({port, dontSend: true});
         client = new Client(adapter, states);
         done();
     });
@@ -37,13 +37,12 @@ describe('MQTT client', function () {
     it('MQTT client: receive binary data', () => {
         let emitterClient;
         const _id = 'aaa9';
-        const data = Buffer.from([0,1,2,3,4,5]);
+        const data = Buffer.from([0, 1, 2, 3, 4, 5]);
 
         return new Promise(resolve => {
             emitterClient = new ClientEmitter(async isConnected => {
                 if (isConnected) {
                     await adapter.setForeignObjectAsync('mqtt.0.' + _id, {common: {type: 'file'}, type: 'state', native: {}});
-
                     emitterClient.publish('mqtt/0/' + _id, data);
                     setTimeout(async () => resolve(), 500);
                 }
@@ -53,7 +52,8 @@ describe('MQTT client', function () {
                 url: 'localhost:' + port,
                 clean: true,
                 clientId: 'testClient10',
-                resubscribe: false
+                resubscribe: false,
+                subscribe: false,
             });
         })
             .then(async () => {
@@ -98,8 +98,8 @@ describe('MQTT client', function () {
             });
     }).timeout(3000);
 
-    after('MQTT server: Stop MQTT server', done => {
-        server.stop(done);
+    after('MQTT simulatedServer: Stop MQTT simulatedServer', done => {
+        simulatedServer.stop(done);
         client.destroy();
     });
 });
