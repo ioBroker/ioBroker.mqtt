@@ -79,6 +79,11 @@ module.exports = function (config) {
             this.getForeignState(id, (err, state) => err ? reject(err) : resolve(state)));
     };
 
+    this.setForeignStateAsync = (id, state, ack) => {
+        return new Promise((resolve, reject) =>
+            this.setForeignState(id, state, ack, err => err ? reject(err) : resolve()));
+    };
+
     this.getObject = (id, cb) => {
         if (!id.startsWith(this.namespace + '.')) {
             id = this.namespace + '.' + id;

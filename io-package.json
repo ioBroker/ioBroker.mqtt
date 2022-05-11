@@ -205,16 +205,16 @@
           "zh-cn": "订阅行为已更改"
         },
         "text": {
-          "en": "In client mode only \"mqtt.X.*\" states will be subscribed. In server mode by empty \"publish\" setting no states will be subscribed.",
-          "de": "Im Client-Modus werden nur \"mqtt.X.*\"-Zustände abonniert. Im Servermodus werden bei leerer \"publish\"-Einstellung keine Zustände abonniert.",
-          "ru": "В режиме клиента будут подписаны только состояния \"mqtt.X.*\". В режиме сервера при пустой настройке «публикация» никакие состояния не будут подписаны.",
-          "pt": "No modo cliente, apenas os estados \"mqtt.X.*\" serão inscritos. No modo de servidor, com a configuração \"publicar\" vazia, nenhum estado será inscrito.",
-          "nl": "In client-modus worden alleen \"mqtt.X.*\"-statussen geabonneerd. In servermodus worden bij lege \"publish\"-instelling geen toestanden geabonneerd.",
-          "fr": "En mode client, seuls les états \"mqtt.X.*\" seront souscrits. En mode serveur, si le paramètre \"publier\" est vide, aucun état ne sera souscrit.",
-          "it": "In modalità client verranno sottoscritti solo gli stati \"mqtt.X.*\". In modalità server con l'impostazione \"pubblica\" vuota, nessuno stato verrà sottoscritto.",
-          "es": "En modo cliente solo se suscribirán estados \"mqtt.X.*\". En el modo de servidor, con la configuración de \"publicación\" vacía, no se suscribirán estados.",
-          "pl": "W trybie klienta subskrybowane będą tylko stany „mqtt.X.*”. W trybie serwera przy pustym ustawieniu „publikuj” żadne stany nie będą subskrybowane.",
-          "zh-cn": "在客户端模式下，只会订阅“mqtt.X.*”状态。在服务器模式下，通过空的“发布”设置将不会订阅任何状态。"
+          "en": "In client mode only the own \"mqtt.X.*\" states will be subscribed. In server mode with an empty \"publish\" setting, no states will be subscribed.",
+          "de": "Im Client-Modus werden nur die eigenen \"mqtt.X.*\"-Zustände abonniert. Im Server-Modus mit einer leeren „Veröffentlichen“-Einstellung werden keine Zustände abonniert.",
+          "ru": "В режиме клиента будут подписаны только собственные состояния \"mqtt.X.*\". В режиме сервера с пустой настройкой «публикация» никакие состояния не будут подписаны.",
+          "pt": "No modo cliente, apenas os próprios estados \"mqtt.X.*\" serão inscritos. No modo de servidor com uma configuração \"publicar\" vazia, nenhum estado será inscrito.",
+          "nl": "In client-modus worden alleen de eigen \"mqtt.X.*\"-statussen geabonneerd. In servermodus met een lege \"publish\"-instelling, worden geen staten geabonneerd.",
+          "fr": "En mode client, seuls les propres états \"mqtt.X.*\" seront souscrits. En mode serveur avec un paramètre \"publier\" vide, aucun état ne sera souscrit.",
+          "it": "In modalità client verranno sottoscritti solo i propri stati \"mqtt.X.*\". In modalità server con un'impostazione \"pubblica\" vuota, nessuno stato verrà sottoscritto.",
+          "es": "En modo cliente sólo se suscribirán los propios estados \"mqtt.X.*\". En el modo de servidor con una configuración de \"publicación\" vacía, no se suscribirá ningún estado.",
+          "pl": "W trybie klienta subskrybowane będą tylko własne stany \"mqtt.X.*\". W trybie serwera z pustym ustawieniem „publikuj”, żadne stany nie będą subskrybowane.",
+          "zh-cn": "在客户端模式下，只会订阅自己的“mqtt.X.*”状态。在“发布”设置为空的服务器模式下，不会订阅任何状态。"
         },
         "level": "warn",
         "buttons": [

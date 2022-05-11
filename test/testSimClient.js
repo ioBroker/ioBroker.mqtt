@@ -18,7 +18,8 @@ describe('MQTT client', function () {
         adapter = new Adapter({
             port: ++port,
             url: 'localhost',
-            onchange: true
+            onchange: true,
+            clientId: 'testClient'
         });
         server = new Server({port});
         client = new Client(adapter, states);

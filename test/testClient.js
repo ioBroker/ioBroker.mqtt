@@ -135,6 +135,7 @@ describe('Test MQTT client', function () {
             config.native.publish  = 'mqtt.0.*';
             config.native.user     = 'user';
             config.native.pass     = encrypt(systemConfig.native.secret, 'pass!?#1');
+            config.native.debug    = true;
             await setup.setAdapterConfig(config.common, config.native);
 
             setup.startController((_objects, _states) => {
