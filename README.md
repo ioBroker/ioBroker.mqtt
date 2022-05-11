@@ -161,6 +161,7 @@ The broker was tested with following clients:
 ### **WORK IN PROGRESS**
 * (bluefox) BREAKING CHANGE: in client mode only "mqtt.X.*" states will be subscribed
 * (bluefox) BREAKING CHANGE: in server mode by empty "publish" setting no states will be subscribed. Early all states were subscribed
+* (bluefox) Added new option: All new topics will be processed as binary
 
 ### 3.0.6 (2022-04-25)
 * (Apollon77) Allows to use some special characters like # in client passwords
