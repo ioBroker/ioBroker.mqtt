@@ -130,6 +130,14 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 
 `Sport/+/Finals`
 
+### Binary messages
+With version 4.x there is a possibility to send and receive binary messages.
+**Send works only with js-controller@4.2 or newer.**
+
+You can change manually the `common.type` of existing objects to `file` and they will be processed as binary states.
+
+Or you can set the options *All new topics will be processed as binary** in the instance settings to force all new topics will have automatically `common.type="file"`.
+
 ### Tests
 The broker was tested with following clients:
 

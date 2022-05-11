@@ -51,7 +51,6 @@
   "ms": "ms",
   "IP": "IK P",
   "rejectUnauthorized": "Ongeautoriseerde servers weigeren",
-  " Send state object as mqtt message": " Statusobject verzenden als mqtt-bericht",
   "Set retain flag": "Vasthouden vlag instellen",
   "Default QoS:": "Standaard QoS:",
   "0 - At most once": "0 - Maximaal één keer",
@@ -61,5 +60,6 @@
   "Remove prefix from topics": "Voorvoegsel uit onderwerpen verwijderen",
   "Like \"javascript.0.\" to remove it from all topics": "Zoals \"javascript.0.\" om het uit alle onderwerpen te verwijderen",
   "Do not create new states": "Maak geen nieuwe staten",
-  "Publish messages without \"retain\" flag": "Berichten publiceren zonder \"retain\"-vlag"
+  "Publish messages without \"retain\" flag": "Berichten publiceren zonder \"retain\"-vlag",
+  "All new topics will be processed as binary": "Alle nieuwe onderwerpen worden als binair verwerkt"
 }

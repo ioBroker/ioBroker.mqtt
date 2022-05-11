@@ -51,7 +51,6 @@
   "ms": "毫秒",
   "IP": "知识产权",
   "rejectUnauthorized": "拒绝未经授权的服务器",
-  " Send state object as mqtt message": " 将状态对象作为 mqtt 消息发送",
   "Set retain flag": "设置保留标志",
   "Default QoS:": "默认服务质量：",
   "0 - At most once": "0 - 最多一次",
@@ -61,5 +60,6 @@
   "Remove prefix from topics": "从主题中删除前缀",
   "Like \"javascript.0.\" to remove it from all topics": "像“javascript.0”。从所有主题中删除它",
   "Do not create new states": "不要创建新状态",
-  "Publish messages without \"retain\" flag": "发布没有“retain”标志的消息"
+  "Publish messages without \"retain\" flag": "发布没有“retain”标志的消息",
+  "All new topics will be processed as binary": "所有新主题将作为二进制处理"
 }

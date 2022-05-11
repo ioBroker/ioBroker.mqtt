@@ -51,7 +51,6 @@
   "ms": "ms",
   "IP": "IP",
   "rejectUnauthorized": "Rifiuta server non autorizzati",
-  " Send state object as mqtt message": " Invia oggetto stato come messaggio mqtt",
   "Set retain flag": "Imposta flag di conservazione",
   "Default QoS:": "QoS predefinito:",
   "0 - At most once": "0 - Al massimo una volta",
@@ -61,5 +60,6 @@
   "Remove prefix from topics": "Rimuovi il prefisso dagli argomenti",
   "Like \"javascript.0.\" to remove it from all topics": "Come \"javascript.0.\" per rimuoverlo da tutti gli argomenti",
   "Do not create new states": "Non creare nuovi stati",
-  "Publish messages without \"retain\" flag": "Pubblica messaggi senza flag \"retain\"."
+  "Publish messages without \"retain\" flag": "Pubblica messaggi senza flag \"retain\".",
+  "All new topics will be processed as binary": "Tutti i nuovi argomenti verranno elaborati come binari"
 }

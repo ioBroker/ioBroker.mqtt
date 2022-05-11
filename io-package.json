@@ -269,7 +269,8 @@
     "storeClientsTime": 1440,
     "removePrefix": "",
     "ignoreNewObjects": false,
-    "noRetain": false
+    "noRetain": false,
+    "allBinaries": false
   },
   "objects": [],
   "instanceObjects": [
