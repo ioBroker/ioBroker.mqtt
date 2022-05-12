@@ -158,7 +158,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.0 (2022-05-12)
 * (bluefox) BREAKING CHANGE: in client mode only "mqtt.X.*" states will be subscribed
 * (bluefox) BREAKING CHANGE: in server mode by empty "publish" setting no states will be subscribed. Early all states were subscribed
 * (bluefox) Added new option: All new topics will be processed as binary

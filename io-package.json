@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "3.0.6",
+    "version": "4.0.0",
     "news": {
+      "4.0.0": {
+        "en": "BREAKING CHANGE: in client mode only \"mqtt.X.*\" states will be subscribed\nBREAKING CHANGE: in server mode by empty \"publish\" setting no states will be subscribed. Early all states were subscribed\nAdded new option: All new topics will be processed as binary",
+        "de": "BREAKING CHANGE: Im Client-Modus werden nur \"mqtt.X.*\"-Zustände abonniert\nBREAKING CHANGE: im Servermodus werden bei leerer \"publish\"-Einstellung keine Zustände abonniert. Früh wurden alle Staaten abonniert\nNeue Option hinzugefügt: Alle neuen Themen werden als Binär verarbeitet",
+        "ru": "ГЛАВНОЕ ИЗМЕНЕНИЕ: в клиентском режиме будут подписываться только состояния \"mqtt.X.*\"\nВАЖНОЕ ИЗМЕНЕНИЕ: в режиме сервера при пустой настройке «публикация» никакие состояния не будут подписаны. Раньше все штаты были подписаны\nДобавлена новая опция: все новые темы будут обрабатываться как бинарные.",
+        "pt": "BREAKING CHANGE: no modo cliente, apenas os estados \"mqtt.X.*\" serão inscritos\nBREAKING CHANGE: no modo de servidor pela configuração \"publish\" vazia, nenhum estado será inscrito. No início todos os estados foram inscritos\nAdicionada nova opção: Todos os novos tópicos serão processados como binários",
+        "nl": "BREAKING CHANGE: in client-modus worden alleen \"mqtt.X.*\"-statussen geabonneerd\nBREAKING CHANGE: in servermodus door lege \"publish\"-instelling worden geen staten geabonneerd. Vroeg waren alle staten ingeschreven\nNieuwe optie toegevoegd: alle nieuwe onderwerpen worden als binair verwerkt",
+        "fr": "BREAKING CHANGE : en mode client, seuls les états \"mqtt.X.*\" seront souscrits\nBREAKING CHANGE : en mode serveur par un paramètre \"publier\" vide, aucun état ne sera souscrit. Au début, tous les États ont souscrit\nAjout d'une nouvelle option : tous les nouveaux sujets seront traités en binaire",
+        "it": "BREAKING CHANGE: in modalità client verranno sottoscritti solo gli stati \"mqtt.X.*\".\nMODALITÀ DI ROTTURA: in modalità server con impostazione \"pubblica\" vuota non verrà sottoscritto alcuno stato. All'inizio tutti gli stati furono iscritti\nAggiunta nuova opzione: tutti i nuovi argomenti verranno elaborati come binari",
+        "es": "CAMBIO IMPORTANTE: en modo cliente solo se suscribirán estados \"mqtt.X.*\"\nCAMBIO IMPORTANTE: en el modo de servidor mediante la configuración de \"publicar\" vacía, no se suscribirán estados. Temprano todos los estados fueron suscritos\nNueva opción agregada: todos los temas nuevos se procesarán como binarios",
+        "pl": "KŁOPOTNA ZMIANA: w trybie klienta subskrybowane będą tylko stany \"mqtt.X.*\"\nPORAŻAJĄCA ZMIANA: w trybie serwera przy pustym ustawieniu „publikuj” żadne stany nie będą subskrybowane. Wcześnie wszystkie stany zostały zasubskrybowane\nDodano nową opcję: Wszystkie nowe tematy będą przetwarzane jako binarne",
+        "zh-cn": "重大变化：在客户端模式下，只会订阅“mqtt.X.*”状态\nBREAKING CHANGE：在服务器模式下，通过空的“发布”设置将不会订阅任何状态。早期所有州都订阅了\n添加了新选项：所有新主题都将作为二进制处理"
+      },
       "3.0.6": {
         "en": "Allows to use some special characters like # in client passwords\nCorrect handing of `QoS 2` messages\nImplement resend support of pubrec\nWhen resending a package set the dup flag as required by specs\nAdd more debug for special debug mode",
         "de": "Ermöglicht die Verwendung einiger Sonderzeichen wie # in Client-Passwörtern\nKorrekte Weiterleitung von `QoS 2`-Meldungen\nImplementieren Sie die Unterstützung für das erneute Senden von pubrec\nWenn Sie ein Paket erneut senden, setzen Sie das Dup-Flag wie von den Spezifikationen gefordert\nFügen Sie mehr Debug für den speziellen Debug-Modus hinzu",
