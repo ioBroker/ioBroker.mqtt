@@ -109,6 +109,11 @@ module.exports = function (config) {
             this.getForeignObject(id, (err, obj) => resolve(obj)));
     };
 
+    this.getObjectAsync = id => {
+        return new Promise(resolve =>
+            this.getObject(id, (err, obj) => resolve(obj)));
+    };
+
     this.setForeignObject = (id, obj, cb) => {
         obj = JSON.parse(JSON.stringify(obj));
         obj._id = id;
