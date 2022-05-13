@@ -88,10 +88,10 @@ function processMessage(obj) {
         case 'sendMessage2Client':
             if (server) {
                 adapter.log.debug(`Sending message from server to clients via topic ${obj.message.topic}: ${obj.message.message} ...`);
-                server.onMessage(obj.message.topic, obj.message.message);
+                server.onMessage(obj.message.topic, obj.message.message, obj.message.binary);
             } else if (client) {
                 adapter.log.debug(`Sending message from client to server via topic ${obj.message.topic}: ${obj.message.message} ...`);
-                client.onMessage(obj.message.topic, obj.message.message);
+                client.onMessage(obj.message.topic, obj.message.message, obj.message.binary);
             } else {
                 adapter.log.debug(`Neither MQTT server nor client not started, thus not sending message via topic ${obj.message.topic} (${obj.message.message}).`);
             }
