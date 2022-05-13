@@ -169,7 +169,7 @@ async function main() {
             // change default publish setting to real instance
             if (adapter.config.publish === 'mqtt.0.*' && adapter.instance !== 0) {
                 adapter.log.warn(`Default "publish" setting changed to "${adapter.namespace}.*". Restarting...`);
-                await adapter.extendForeignObjectAsync(obj._id, {
+                await adapter.extendForeignObjectAsync('system.adapter.' + adapter.namespace, {
                     native: {
                         publish: adapter.namespace + '.*',
                     }
