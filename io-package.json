@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "news": {
+      "4.0.1": {
+        "en": "Fix Number detection for values",
+        "de": "Nummernerkennung für Werte behoben",
+        "ru": "Fix Определение числа для значений",
+        "pt": "Corrigir detecção de número para valores",
+        "nl": "Fix Nummerdetectie voor waarden",
+        "fr": "Réparer Détection de nombre pour les valeurs",
+        "it": "Correzione del rilevamento del numero per i valori",
+        "es": "Arreglar la detección de números para valores.",
+        "pl": "Wykrywanie numerów napraw dla wartości",
+        "zh-cn": "修复值的数字检测"
+      },
       "4.0.0": {
         "en": "BREAKING CHANGE: in client mode only \"mqtt.X.*\" states will be subscribed\nBREAKING CHANGE: in server mode by empty \"publish\" setting no states will be subscribed. Early all states were subscribed\nAdded new option: All new topics will be processed as binary",
         "de": "BREAKING CHANGE: Im Client-Modus werden nur \"mqtt.X.*\"-Zustände abonniert\nBREAKING CHANGE: im Servermodus werden bei leerer \"publish\"-Einstellung keine Zustände abonniert. Früh wurden alle Staaten abonniert\nNeue Option hinzugefügt: Alle neuen Themen werden als Binär verarbeitet",
@@ -74,18 +86,6 @@
         "es": "Optimice la creación automática de carpetas y permita sobrescribir automáticamente estos objetos cuando sea necesario",
         "pl": "Zoptymalizuj automatyczne tworzenie folderów i pozwól na automatyczne nadpisywanie tych obiektów w razie potrzeby",
         "zh-cn": "优化自动创建文件夹并允许在需要时自动覆盖这些对象"
-      },
-      "2.7.0": {
-        "en": "Prevent Client or server to overwrite the own info.connection state\nreplace # and + characters by _ when publishing a value because these characters are forbidden when publishing for most brokers",
-        "de": "Client oder Server daran hindern, den eigenen info.connection-Status zu überschreiben\nErsetzen Sie die Zeichen # und + durch _, wenn Sie einen Wert veröffentlichen, da diese Zeichen bei der Veröffentlichung für die meisten Broker verboten sind",
-        "ru": "Запретить клиенту или серверу перезаписывать собственное состояние info.connection\nзамените символы # и + на _ при публикации значения, потому что эти символы запрещены при публикации для большинства брокеров",
-        "pt": "Impedir que o cliente ou servidor sobrescreva o próprio estado info.connection\nsubstitua os caracteres # e + por _ ao publicar um valor porque esses caracteres são proibidos ao publicar para a maioria dos corretores",
-        "nl": "Voorkom dat Client of server de eigen info.connection-status overschrijft\nvervang # en + tekens door _ bij het publiceren van een waarde, omdat deze tekens bij het publiceren voor de meeste brokers verboden zijn",
-        "fr": "Empêcher le client ou le serveur d'écraser son propre état d'info.connexion\nremplacer les caractères # et + par _ lors de la publication d'une valeur car ces caractères sont interdits lors de la publication pour la plupart des brokers",
-        "it": "Impedisci al client o al server di sovrascrivere il proprio stato info.connection\nsostituire i caratteri # e + con _ quando si pubblica un valore perché questi caratteri sono vietati durante la pubblicazione per la maggior parte dei broker",
-        "es": "Impedir que el cliente o el servidor sobrescriban el propio estado de info.connection\nreemplace los caracteres # y + por _ al publicar un valor porque estos caracteres están prohibidos al publicar para la mayoría de los corredores",
-        "pl": "Uniemożliwić klientowi lub serwerowi nadpisanie własnego stanu połączenia informacji\nzamień znaki # i + na _ podczas publikowania wartości, ponieważ te znaki są zabronione podczas publikowania dla większości brokerów",
-        "zh-cn": "防止客户端或服务器覆盖自己的 info.connection 状态\n发布值时用 _ 替换 # 和 + 字符，因为大多数经纪人发布时禁止使用这些字符"
       }
     },
     "title": "MQTT Broker/Client",

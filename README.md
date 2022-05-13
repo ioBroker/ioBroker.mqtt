@@ -158,7 +158,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 4.0.1 (2022-05-13)
 * (Apollon77) Fix Number detection for values
 
 ### 4.0.0 (2022-05-12)
