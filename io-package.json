@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "news": {
+      "4.0.2": {
+        "en": "Added possibility to publish own states as client, additionally to `mqtt.x`",
+        "de": "Möglichkeit hinzugefügt, eigene Zustände als Client zusätzlich zu `mqtt.x` zu veröffentlichen",
+        "ru": "Добавлена возможность публиковать собственные состояния в качестве клиента, дополнительно к `mqtt.x`",
+        "pt": "Adicionada a possibilidade de publicar estados próprios como cliente, além de `mqtt.x`",
+        "nl": "Mogelijkheid toegevoegd om eigen staten als client te publiceren, aanvullend op `mqtt.x`",
+        "fr": "Ajout de la possibilité de publier ses propres états en tant que client, en plus de `mqtt.x`",
+        "it": "Aggiunta la possibilità di pubblicare i propri stati come client, in aggiunta a `mqtt.x`",
+        "es": "Se agregó la posibilidad de publicar estados propios como cliente, además de `mqtt.x`",
+        "pl": "Dodano możliwość publikowania własnych stanów jako klient, dodatkowo do `mqtt.x`",
+        "zh-cn": "添加了将自己的状态作为客户端发布的可能性，除了 `mqtt.x`"
+      },
       "4.0.1": {
         "en": "Fix Number detection for values",
         "de": "Nummernerkennung für Werte behoben",
@@ -74,18 +86,6 @@
         "es": "Optimización adicional de la creación automática de carpetas",
         "pl": "Dalsza optymalizacja automatycznego tworzenia folderów",
         "zh-cn": "进一步优化自动创建文件夹"
-      },
-      "2.7.2": {
-        "en": "Optimize the automatic folder creation and allow to automatically overwrite these objects when needed",
-        "de": "Optimieren Sie die automatische Ordnererstellung und lassen Sie diese Objekte bei Bedarf automatisch überschreiben",
-        "ru": "Оптимизируйте автоматическое создание папок и разрешите автоматически перезаписывать эти объекты при необходимости.",
-        "pt": "Otimize a criação automática de pastas e permita a substituição automática desses objetos quando necessário",
-        "nl": "Optimaliseer het automatisch aanmaken van mappen en laat deze objecten automatisch overschrijven wanneer dat nodig is",
-        "fr": "Optimisez la création automatique de dossiers et permettez d'écraser automatiquement ces objets en cas de besoin",
-        "it": "Ottimizza la creazione automatica delle cartelle e consenti di sovrascrivere automaticamente questi oggetti quando necessario",
-        "es": "Optimice la creación automática de carpetas y permita sobrescribir automáticamente estos objetos cuando sea necesario",
-        "pl": "Zoptymalizuj automatyczne tworzenie folderów i pozwól na automatyczne nadpisywanie tych obiektów w razie potrzeby",
-        "zh-cn": "优化自动创建文件夹并允许在需要时自动覆盖这些对象"
       }
     },
     "title": "MQTT Broker/Client",
