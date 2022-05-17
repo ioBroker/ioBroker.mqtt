@@ -19,8 +19,7 @@
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
     "ws": "^8.6.0",
-    "@iobroker/adapter-core": "^2.6.0",
-    "semver": "^7.3.7"
+    "@iobroker/adapter-core": "^2.6.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.5.9",

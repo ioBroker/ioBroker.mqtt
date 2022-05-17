@@ -161,21 +161,6 @@ async function readStatesForPattern(pattern) {
 async function main() {
     adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
 
-    // It is better to have "chips" in configuration, but they are supported first from admin@5.4.3
-    try {
-        const adminObj = await adapter.getForeignObjectAsync('system.adapter.admin');
-        let file = await adapter.readFileAsync('mqtt.admin', 'jsonConfig.json');
-        file = JSON.parse(file.file);
-        if (adminObj && file && semver.gt(adminObj.common.version, '5.4.2')) {
-            // chips are supported
-            file.items.mqttTab.items.patterns.type = 'chips';
-            file.items.mqttTab.items.publish.type = 'chips';
-            await adapter.writeFileAsync('mqtt.admin', 'jsonConfig.json', JSON.stringify(file, null, 2));
-        }
-    } catch (error) {
-        adapter.log.warn('Cannot check version');
-    }
-
     // Subscribe on own variables to publish it
     if (adapter.config.type === 'client') {
         await adapter.subscribeForeignStatesAsync(adapter.namespace + '.*');
