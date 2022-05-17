@@ -145,7 +145,7 @@
       "items": {
         "patterns": {
           "newLine": true,
-          "type": "text",
+          "type": "chips",
           "delimiter": ",",
           "label": "Patterns:",
           "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')",
@@ -161,7 +161,7 @@
         },
         "publish": {
           "newLine": true,
-          "type": "text",
+          "type": "chips",
           "delimiter": ",",
           "label": "Mask to publish own state",
           "help": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')",
