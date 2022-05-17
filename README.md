@@ -158,6 +158,9 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Corrected publish states on start by client
+
 ### 4.0.2 (2022-05-17)
 * (bluefox) Added possibility to publish own states as client, additionally to `mqtt.x`
 
