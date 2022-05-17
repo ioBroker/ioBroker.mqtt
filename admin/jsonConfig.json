@@ -148,7 +148,7 @@
           "type": "text",
           "delimiter": ",",
           "label": "Patterns:",
-          "help": "Divided by comma",
+          "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')",
           "hidden": "data.type !== 'client'",
           "sm": 12
         },
@@ -163,9 +163,8 @@
           "newLine": true,
           "type": "text",
           "delimiter": ",",
-          "label": "Mask to publish own states:",
-          "help": "Mask to publish",
-          "hidden": "data.type === 'client'",
+          "label": "Mask to publish own state",
+          "help": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')",
           "sm": 12
         },
         "onchange": {

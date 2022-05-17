@@ -8,7 +8,6 @@
   "Client ID:": "Client ID",
   "Connection": "Connection",
   "Connection settings": "Connection settings",
-  "Divided by comma": "Divided by comma, e.g. 'mqtt/0/#,javascript/#'",
   "Enable first the adapter to test client.": "Abilitare prima l'adattatore per testare il client.",
   "First save the adapter": "Per prima cosa salva l'adattatore",
   "Force clean session": "Forza sessione pulita",
@@ -17,8 +16,7 @@
   "MQTT Settings": "MQTT Settings",
   "MQTT adapter settings": "MQTT adapter settings",
   "Main settings": "Main settings",
-  "Mask to publish": "e.g. 'mqtt.0.*,javascript.*'",
-  "Mask to publish own states:": "Mask to publish own states",
+  "Mask to publish own state": "Mask to publish own states",
   "Max topic length:": "Max topic name length",
   "Password confirmation:": "Password confirmation",
   "Password:": "Password",
@@ -61,5 +59,7 @@
   "Like \"javascript.0.\" to remove it from all topics": "Come \"javascript.0.\" per rimuoverlo da tutti gli argomenti",
   "Do not create new states": "Non creare nuovi stati",
   "Publish messages without \"retain\" flag": "Pubblica messaggi senza flag \"retain\".",
-  "All new topics will be processed as binary": "Tutti i nuovi argomenti verranno elaborati come binari"
+  "All new topics will be processed as binary": "Tutti i nuovi argomenti verranno elaborati come binari",
+  "These states will be published. (Divided by comma)": "Questi stati saranno pubblicati. (Diviso per virgola, ad es. 'mqtt.0.*,javascript.*')",
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Iscriviti per argomenti. (Diviso per virgola, ad es. 'mqtt/0/#,javascript/#')"
 }

@@ -8,7 +8,6 @@
   "Client ID:": "客户端ID",
   "Connection": "连接",
   "Connection settings": "连接设置",
-  "Divided by comma": "用逗号分隔，例如'mqtt/0/#,javascript/#'",
   "Enable first the adapter to test client.": "首先启用适配器来测试客户端。",
   "First save the adapter": "首先保存适配器",
   "Force clean session": "强制清理会话",
@@ -17,8 +16,7 @@
   "MQTT Settings": "MQTT设置",
   "MQTT adapter settings": "MQTT适配器设置",
   "Main settings": "主要设置",
-  "Mask to publish": "例如'mqtt.0.*,javascript.*'",
-  "Mask to publish own states:": "隐藏发布自己的状态",
+  "Mask to publish own state": "隐藏发布自己的状态",
   "Max topic length:": "主题名称最大长度",
   "Password confirmation:": "确认密码",
   "Password:": "密码",
@@ -61,5 +59,7 @@
   "Like \"javascript.0.\" to remove it from all topics": "像“javascript.0”。从所有主题中删除它",
   "Do not create new states": "不要创建新状态",
   "Publish messages without \"retain\" flag": "发布没有“retain”标志的消息",
-  "All new topics will be processed as binary": "所有新主题将作为二进制处理"
+  "All new topics will be processed as binary": "所有新主题将作为二进制处理",
+  "These states will be published. (Divided by comma)": "这些状态将被发布。 （以逗号分隔，例如'mqtt.0.*,javascript.*'）",
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "订阅主题。 （以逗号分隔，例如'mqtt/0/#,javascript/#'）"
 }

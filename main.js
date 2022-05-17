@@ -10,6 +10,7 @@
 'use strict';
 
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
+const semver = require('semver');
 const tools = require(utils.controllerDir + '/lib/tools');
 const adapterName = require('./package.json').name.split('.').pop();
 let adapter;
@@ -160,38 +161,55 @@ async function readStatesForPattern(pattern) {
 async function main() {
     adapter.config.forceCleanSession = adapter.config.forceCleanSession || 'no'; // default
 
+    // It is better to have "chips" in configuration, but they are supported first from admin@5.4.3
+    try {
+        const adminObj = await adapter.getForeignObjectAsync('system.adapter.admin');
+        let file = await adapter.readFileAsync('mqtt.admin', 'jsonConfig.json');
+        file = JSON.parse(file.file);
+        if (adminObj && file && semver.gt(adminObj.common.version, '5.4.2')) {
+            // chips are supported
+            file.items.mqttTab.items.patterns.type = 'chips';
+            file.items.mqttTab.items.publish.type = 'chips';
+            await adapter.writeFileAsync('mqtt.admin', 'jsonConfig.json', JSON.stringify(file, null, 2));
+        }
+    } catch (error) {
+        adapter.log.warn('Cannot check version');
+    }
+
     // Subscribe on own variables to publish it
     if (adapter.config.type === 'client') {
         await adapter.subscribeForeignStatesAsync(adapter.namespace + '.*');
         await readStatesForPattern(adapter.namespace + '.*');
-    } else {
-        if (adapter.config.publish) {
-            // change default publish setting to real instance
-            if (adapter.config.publish === 'mqtt.0.*' && adapter.instance !== 0) {
-                adapter.log.warn(`Default "publish" setting changed to "${adapter.namespace}.*". Restarting...`);
-                await adapter.extendForeignObjectAsync('system.adapter.' + adapter.namespace, {
-                    native: {
-                        publish: adapter.namespace + '.*',
-                    }
-                });
-                return; // Adapter will be restarted soon, no need to initialize now
-            }
+    }
 
-            const parts = adapter.config.publish.split(',');
-            for (let t = 0; t < parts.length; t++) {
-                let part = parts[t].trim();
-                if (part) {
-                    if (part.includes('#')) {
-                        adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${part}": use "${part.replace(/#/g, '*')} notation`);
-                        part = part.replace(/#/g, '*');
-                    }
-                    await adapter.subscribeForeignStatesAsync(part);
-                    await readStatesForPattern(part);
+    if (adapter.config.publish) {
+        // change default publish setting to real instance
+        if (adapter.config.publish === 'mqtt.0.*' && adapter.instance !== 0) {
+            adapter.log.warn(`Default "publish" setting changed to "${adapter.namespace}.*". Restarting...`);
+            await adapter.extendForeignObjectAsync('system.adapter.' + adapter.namespace, {
+                native: {
+                    publish: adapter.namespace + '.*',
                 }
-            }
-        } else {
-            adapter.log.warn(`No ioBroker changes will be published to the clients. Set the "publish" option in the adapter settings to subscribe for relevant changes.`);
+            });
+            return; // Adapter will be restarted soon, no need to initialize now
         }
+
+        const parts = adapter.config.publish.split(',').map(p => p.trim()).filter(p => p);
+        for (let t = 0; t < parts.length; t++) {
+            let part = parts[t];
+            if (adapter.config.type === 'client' && part === adapter.namespace + '.*') {
+                // it was subscribed earlier
+                continue;
+            }
+            if (part.includes('#')) {
+                adapter.config.type !== 'client' && adapter.log.warn(`Used MQTT notation for ioBroker in pattern "${part}": use "${part.replace(/#/g, '*')} notation`);
+                part = part.replace(/#/g, '*');
+            }
+            await adapter.subscribeForeignStatesAsync(part);
+            await readStatesForPattern(part);
+        }
+    } else if (adapter.config.type !== 'client') {
+        adapter.log.warn(`No ioBroker changes will be published to the clients. Set the "publish" option in the adapter settings to subscribe for relevant changes.`);
     }
 
     adapter.config.defaultQoS = parseInt(adapter.config.defaultQoS, 10) || 0;

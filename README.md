@@ -158,6 +158,9 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Added possibility to publish own states as client, additionally to `mqtt.x`
+
 ### 4.0.1 (2022-05-13)
 * (Apollon77) Fix Number detection for values
 
