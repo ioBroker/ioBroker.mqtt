@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "4.0.3",
+    "version": "4.0.4",
     "news": {
+      "4.0.4": {
+        "en": "lower loglevel for log messages about messages with unknown message IDs to info",
+        "de": "niedrigeres Loglevel für Log-Meldungen über Meldungen mit unbekannten Message-IDs an info",
+        "ru": "более низкий уровень журнала для сообщений журнала о сообщениях с неизвестными идентификаторами сообщений для информации",
+        "pt": "nível de log mais baixo para mensagens de log sobre mensagens com IDs de mensagem desconhecidos para informações",
+        "nl": "lager logniveau voor logberichten over berichten met onbekende bericht-ID's naar info",
+        "fr": "niveau de journalisation inférieur pour les messages de journalisation concernant les messages avec des ID de message inconnus vers info",
+        "it": "livello di registro inferiore per i messaggi di registro relativi a messaggi con ID messaggio sconosciuti alle informazioni",
+        "es": "nivel de registro más bajo para registrar mensajes sobre mensajes con ID de mensajes desconocidos para información",
+        "pl": "niższy poziom logowania dla komunikatów dziennika o wiadomościach z nieznanymi identyfikatorami wiadomości do informacji",
+        "zh-cn": "较低的日志级别，用于将有关具有未知消息 ID 的消息的消息记录到 info"
+      },
       "4.0.3": {
         "en": "Corrected publish states on start by client",
         "de": "Veröffentlichungsstatus beim Start durch den Client korrigiert",
@@ -74,18 +86,6 @@
         "es": "CAMBIO IMPORTANTE: ¡la contraseña ahora se almacena cifrada, por lo que debe configurarse de nuevo después de la actualización!",
         "pl": "ZŁAMANIE ZMIANY: hasło jest teraz przechowywane w postaci zaszyfrowanej, więc po aktualizacji należy je ustawić od nowa!",
         "zh-cn": "重大更改：密码现在以加密方式存储，因此必须在更新后重新设置！"
-      },
-      "2.7.4": {
-        "en": "Update mqtt library dependency",
-        "de": "Aktualisieren Sie die mqtt-Bibliotheksabhängigkeit",
-        "ru": "Обновить зависимость библиотеки mqtt",
-        "pt": "Atualizar a dependência da biblioteca mqtt",
-        "nl": "Afhankelijkheid van mqtt-bibliotheek bijwerken",
-        "fr": "Mettre à jour la dépendance de la bibliothèque mqtt",
-        "it": "Aggiorna la dipendenza della libreria mqtt",
-        "es": "Actualizar la dependencia de la biblioteca mqtt",
-        "pl": "Zaktualizuj zależność biblioteki mqtt",
-        "zh-cn": "更新 mqtt 库依赖"
       }
     },
     "title": "MQTT Broker/Client",
