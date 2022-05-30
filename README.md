@@ -158,6 +158,10 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) lower loglevel for log messages about messages with unknown message IDs to info
+
 ### 4.0.3 (2022-05-17)
 * (bluefox) Corrected publish states on start by client
 
