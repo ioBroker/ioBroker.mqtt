@@ -1,8 +1,20 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "4.0.4",
+    "version": "4.0.5",
     "news": {
+      "4.0.5": {
+        "en": "Corrected sentry issue",
+        "de": "Korrigierte Versandausgabe",
+        "ru": "Исправлена проблема отправки",
+        "pt": "Problema de envio corrigido",
+        "nl": "Vertaling:",
+        "fr": "Correction de la question de la sentinelle",
+        "it": "Questione corretta della sentinella",
+        "es": "Cuestión del centinela corregida",
+        "pl": "Poprawka",
+        "zh-cn": "更正发出的问题"
+      },
       "4.0.4": {
         "en": "lower loglevel for log messages about messages with unknown message IDs to info",
         "de": "niedrigeres Loglevel für Log-Meldungen über Meldungen mit unbekannten Message-IDs an info",
@@ -74,18 +86,6 @@
         "es": "Permite usar algunos caracteres especiales como # en las contraseñas de los clientes\nManejo correcto de mensajes `QoS 2`\nImplementar soporte de reenvío de pubrec\nAl reenviar un paquete, configure el indicador dup según lo requieran las especificaciones\nAgregue más depuración para el modo de depuración especial",
         "pl": "Pozwala na użycie niektórych znaków specjalnych, takich jak # w hasłach klientów\nPrawidłowa obsługa komunikatów `QoS 2`\nZaimplementuj obsługę ponownego wysyłania pubrec\nPodczas ponownego wysyłania pakietu ustaw flagę dup zgodnie z wymaganiami specyfikacji\nDodaj więcej debugowania dla specjalnego trybu debugowania",
         "zh-cn": "允许在客户端密码中使用一些特殊字符，例如 #\n正确处理“QoS 2”消息\n实现对 pubrec 的重发支持\n重新发送包时，按照规范的要求设置 dup 标志\n为特殊调试模式添加更多调试"
-      },
-      "3.0.5": {
-        "en": "BREAKING CHANGE: password is now stored encrypted, and so must be set anew after update!",
-        "de": "BREAKING CHANGE: Passwort wird jetzt verschlüsselt gespeichert und muss daher nach Update neu gesetzt werden!",
-        "ru": "ВАЖНОЕ ИЗМЕНЕНИЕ: пароль теперь хранится в зашифрованном виде, поэтому после обновления его необходимо установить заново!",
-        "pt": "BREAKING CHANGE: a senha agora é armazenada criptografada e, portanto, deve ser definida novamente após a atualização!",
-        "nl": "BREKENDE VERANDERING: het wachtwoord wordt nu versleuteld opgeslagen en moet dus opnieuw worden ingesteld na de update!",
-        "fr": "BREAKING CHANGE : le mot de passe est maintenant stocké crypté et doit donc être défini à nouveau après la mise à jour !",
-        "it": "MODIFICA INTERNA: la password è ora memorizzata crittografata, quindi deve essere reimpostata dopo l'aggiornamento!",
-        "es": "CAMBIO IMPORTANTE: ¡la contraseña ahora se almacena cifrada, por lo que debe configurarse de nuevo después de la actualización!",
-        "pl": "ZŁAMANIE ZMIANY: hasło jest teraz przechowywane w postaci zaszyfrowanej, więc po aktualizacji należy je ustawić od nowa!",
-        "zh-cn": "重大更改：密码现在以加密方式存储，因此必须在更新后重新设置！"
       }
     },
     "title": "MQTT Broker/Client",

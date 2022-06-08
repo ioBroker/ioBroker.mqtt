@@ -158,7 +158,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 4.0.5 (2022-06-08)
 * (bluefox) Corrected sentry issue
 
 ### 4.0.4 (2022-05-30)
