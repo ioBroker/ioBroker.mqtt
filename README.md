@@ -158,6 +158,9 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Corrected sentry issue
+
 ### 4.0.4 (2022-05-30)
 * (Apollon77) lower loglevel for log messages about messages with unknown message IDs to info
 
