@@ -3,18 +3,6 @@
     "name": "mqtt",
     "version": "4.0.5",
     "news": {
-      "4.0.5": {
-        "en": "Corrected sentry issue",
-        "de": "Korrigierte Versandausgabe",
-        "ru": "Исправлена проблема отправки",
-        "pt": "Problema de envio corrigido",
-        "nl": "Vertaling:",
-        "fr": "Correction de la question de la sentinelle",
-        "it": "Questione corretta della sentinella",
-        "es": "Cuestión del centinela corregida",
-        "pl": "Poprawka",
-        "zh-cn": "更正发出的问题"
-      },
       "4.0.4": {
         "en": "lower loglevel for log messages about messages with unknown message IDs to info",
         "de": "niedrigeres Loglevel für Log-Meldungen über Meldungen mit unbekannten Message-IDs an info",
