@@ -158,6 +158,9 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+### __WORK IN PROGRESS__
+* (Apollon77/kleinOr) Remove unneeded dependency
+
 ### 4.0.6 (2022-06-19)
 * (bluefox) Corrected sentry issue
 

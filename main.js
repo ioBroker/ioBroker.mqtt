@@ -10,7 +10,6 @@
 'use strict';
 
 const utils = require('@iobroker/adapter-core'); // Get common adapter utils
-const semver = require('semver');
 const tools = require(utils.controllerDir + '/lib/tools');
 const adapterName = require('./package.json').name.split('.').pop();
 let adapter;
