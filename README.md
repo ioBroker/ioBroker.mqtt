@@ -158,7 +158,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 4.0.7 (2022-06-28)
 * (Apollon77/kleinOr) Remove unneeded dependency
 
 ### 4.0.6 (2022-06-19)
