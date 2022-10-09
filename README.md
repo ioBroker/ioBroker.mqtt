@@ -158,6 +158,11 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* (Apollon77) Fix regex on subscribes of server clients to only match wanted states
+* (Apollon77) Prepare for future js-controller versions
+
 ### 4.0.7 (2022-06-28)
 * (Apollon77/kleinOr) Remove unneeded dependency
 

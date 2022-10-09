@@ -66,7 +66,7 @@ describe('Test package.json and io-package.json', () => {
         }
 
         if (!ioPackage.common.controller && !ioPackage.common.onlyWWW && !ioPackage.common.noConfig) {
-            if (!ioPackage.common.materialize || !fs.existsSync(__dirname + '/../admin/index_m.html') || !fs.existsSync(__dirname + '/../gulpfile.js')) {
+            if (!ioPackage.common.materialize || !fs.existsSync(__dirname + '/../admin/index_m.html')) {
                 console.log('WARNING: Admin3 support is missing! Please add it');
                 console.log();
             }
