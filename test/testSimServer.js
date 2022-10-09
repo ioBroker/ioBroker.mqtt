@@ -33,7 +33,7 @@ describe('MQTT server', function () {
         },
         null,
         {
-            url: 'localhost:' + port,
+            url: '127.0.0.1:' + port,
             clientId: 'testClient1',
         });
     });
@@ -54,7 +54,7 @@ describe('MQTT server', function () {
             },
             null,
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: false,
                 clientId: 'testClient2',
                 resubscribe: false
@@ -76,7 +76,7 @@ describe('MQTT server', function () {
                             }
                         },
                         {
-                            url: 'localhost:' + port,
+                            url: '127.0.0.1:' + port,
                             clean: false,
                             clientId: 'testClient2',
                             resubscribe: false
@@ -102,7 +102,7 @@ describe('MQTT server', function () {
             },
             (topic, data) => receiveFunc && receiveFunc(topic, data),
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: false,
                 clientId: 'testClient3',
                 resubscribe: false
@@ -156,7 +156,7 @@ describe('MQTT server', function () {
             },
             (topic, data) => receiveFunc && receiveFunc(topic, data),
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: false,
                 clientId: 'receiverClient',
                 resubscribe: false
@@ -164,7 +164,7 @@ describe('MQTT server', function () {
             );
             emitterClient = new Client(null, null,
                 {
-                    url: 'localhost:' + port,
+                    url: '127.0.0.1:' + port,
                     clean: true,
                     clientId: 'emitterClient',
                     resubscribe: false
@@ -215,7 +215,7 @@ describe('MQTT server', function () {
             },
             (topic, data, packet) => receiveFunc && receiveFunc(topic, data, packet),
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: false,
                 clientId: 'receiverClient',
                 resubscribe: false
@@ -223,7 +223,7 @@ describe('MQTT server', function () {
             );
             emitterClient = new Client(null, null,
                 {
-                    url: 'localhost:' + port,
+                    url: '127.0.0.1:' + port,
                     clean: true,
                     clientId: 'emitterClient',
                     resubscribe: false
@@ -270,7 +270,7 @@ describe('MQTT server', function () {
                 }
             },
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: true,
                 clientId: 'testClient6',
                 resubscribe: false
@@ -310,7 +310,7 @@ describe('MQTT server', function () {
             },
             null,
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: true,
                 clientId: 'testClient7',
                 resubscribe: false
@@ -350,7 +350,7 @@ describe('MQTT server', function () {
                 }
             },
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: true,
                 clientId: 'testClient7',
                 resubscribe: false

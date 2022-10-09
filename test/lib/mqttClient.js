@@ -4,7 +4,7 @@ const mqtt    = require('mqtt');
 function Client(cbConnected, cbChanged, config) {
     if (typeof config === 'string') config = {name: config};
     config = config || {};
-    config.url = config.url || 'localhost';
+    config.url = config.url || '127.0.0.1';
     if (config.user) {
         config.username = config.user;
         config.password = config.pass;

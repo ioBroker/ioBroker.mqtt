@@ -17,7 +17,7 @@ describe('MQTT client', function () {
     before('MQTT client: Start MQTT simulatedServer', done => {
         adapter = new Adapter({
             port: ++port,
-            url: 'localhost',
+            url: '127.0.0.1',
             onchange: true,
             clientId: 'testAdapter'
         });
@@ -49,7 +49,7 @@ describe('MQTT client', function () {
             },
             null,
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: true,
                 clientId: 'testClient10',
                 resubscribe: false,
@@ -87,7 +87,7 @@ describe('MQTT client', function () {
                 }
             },
             {
-                url: 'localhost:' + port,
+                url: '127.0.0.1:' + port,
                 clean: true,
                 clientId: 'testClient11',
                 resubscribe: false
