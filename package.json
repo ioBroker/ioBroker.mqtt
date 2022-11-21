@@ -26,8 +26,7 @@
     "@alcalzone/release-script-plugin-iobroker": "^3.5.9",
     "@alcalzone/release-script-plugin-license": "^3.5.9",
     "@iobroker/adapter-dev": "^1.2.0",
-    "chai": "^4.3.6",
-    "mocha": "^10.1.0",
+    "@iobroker/legacy-testing": "^0.0.4",
     "eslint": "^8.26.0"
   },
   "bugs": {
