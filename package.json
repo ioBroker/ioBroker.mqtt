@@ -18,7 +18,7 @@
     "mqtt": "^4.3.7",
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
-    "ws": "^8.11.0",
+    "ws": "^8.12.1",
     "@iobroker/adapter-core": "^2.6.7"
   },
   "devDependencies": {
@@ -26,8 +26,8 @@
     "@alcalzone/release-script-plugin-iobroker": "^3.5.9",
     "@alcalzone/release-script-plugin-license": "^3.5.9",
     "@iobroker/adapter-dev": "^1.2.0",
-    "@iobroker/legacy-testing": "^0.0.4",
-    "eslint": "^8.28.0"
+    "@iobroker/legacy-testing": "^0.1.1",
+    "eslint": "^8.35.0"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
