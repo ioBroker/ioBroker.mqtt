@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "4.1.0",
+    "version": "4.1.1",
     "news": {
+      "4.1.1": {
+        "en": "Fix regex on subscribes of server clients to only match wanted states\nPrepare for future js-controller versions",
+        "de": "Reparieren Sie Regex auf Abmeldungen von Server-Clients, um nur gewünschten Zuständen gerecht zu werden\nBereiten Sie sich auf zukünftige js-Controller-Versionen",
+        "ru": "Fix regex на подписках серверных клиентов, чтобы только соответствовать желаемым состояниям\nПодготовьтесь к будущим версиям js-controller",
+        "pt": "Fix regex em assinaturas de clientes de servidor para apenas combinar estados procurados\nPrepare-se para futuras versões js-controller",
+        "nl": "Vertaling:\nBereid je voor op toekomstige Js-controller versie",
+        "fr": "Réparez regex sur les abonnés de clients de serveur pour seulement correspondre aux états recherchés\nPréparez-vous pour les versions futures de js-controller",
+        "it": "Fissare regex su abbonamenti di client server per corrispondere solo stati desiderati\nPrepararsi per le future versioni js-controller",
+        "es": "Arreglar regex en suscriptos de clientes del servidor para que coincida con estados buscados\nPrepararse para futuras versiones js-controller",
+        "pl": "Fix rejestruje klientom serwerów tylko w celu dopasowania się do stanów\nPrepare for future js-controller version",
+        "uk": "Виправлення regex на підписках клієнтів сервера до лише відповідних вимог\nПідготовка до майбутніх версій js-controller",
+        "zh-cn": "仅与通缉国相匹配的服务器客户的签名\n今后防污版本的编制"
+      },
       "4.0.7": {
         "en": "Remove unneeded dependency",
         "de": "Unbenötigte Abhängigkeit entfernen",
