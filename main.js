@@ -2,7 +2,7 @@
  *
  *      ioBroker mqtt Adapter
  *
- *      (c) 2014-2022 bluefox <dogafox@gmail.com>
+ *      (c) 2014-2023 bluefox <dogafox@gmail.com>
  *
  *      MIT License
  *
@@ -16,8 +16,6 @@ let adapter;
 let server = null;
 let client = null;
 let states = {};
-
-
 
 const messageboxRegex = new RegExp('\\.messagebox$');
 
@@ -161,17 +159,17 @@ async function main() {
 
     // Subscribe on own variables to publish it
     if (adapter.config.type === 'client') {
-        await adapter.subscribeForeignStatesAsync(adapter.namespace + '.*');
-        await readStatesForPattern(adapter.namespace + '.*');
+        await adapter.subscribeForeignStatesAsync(`${adapter.namespace}.*`);
+        await readStatesForPattern(`${adapter.namespace}.*`);
     }
 
     if (adapter.config.publish) {
         // change default publish setting to real instance
         if (adapter.config.publish === 'mqtt.0.*' && adapter.instance !== 0) {
             adapter.log.warn(`Default "publish" setting changed to "${adapter.namespace}.*". Restarting...`);
-            await adapter.extendForeignObjectAsync('system.adapter.' + adapter.namespace, {
+            await adapter.extendForeignObjectAsync(`system.adapter.${adapter.namespace}`, {
                 native: {
-                    publish: adapter.namespace + '.*',
+                    publish: `${adapter.namespace}.*`,
                 }
             });
             return; // Adapter will be restarted soon, no need to initialize now
@@ -180,7 +178,7 @@ async function main() {
         const parts = adapter.config.publish.split(',').map(p => p.trim()).filter(p => p);
         for (let t = 0; t < parts.length; t++) {
             let part = parts[t];
-            if (adapter.config.type === 'client' && part === adapter.namespace + '.*') {
+            if (adapter.config.type === 'client' && part === `${adapter.namespace}.*`) {
                 // it was subscribed earlier
                 continue;
             }
