@@ -158,7 +158,7 @@ The broker was tested with following clients:
 -->
 
 ## Changelog
-### 4.1.0 (2023-03-22)
+### **WORK IN PROGRESS**
 * (Apollon77) Fix regex on subscribes of server clients to only match wanted states
 * (Apollon77) Prepare for future js-controller versions
 

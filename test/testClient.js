@@ -1,6 +1,6 @@
 'use strict';
-const expect  = require('chai').expect;
-const setup   = require('./lib/setup');
+const expect = require('chai').expect;
+const setup  = require('@iobroker/legacy-testing');
 
 let objects = null;
 let states  = null;
