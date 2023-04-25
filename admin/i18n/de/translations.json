@@ -11,7 +11,7 @@
     "Enable first the adapter to test client.": "Die Instanz muss aktiviert sein um den Client zu testen.",
     "First save the adapter": "Die Instanz-Einstellungen müssen zuerst gespeichert werden.",
     "Force clean session": "Leere Session erzwingen",
-    "IP address": "IP Adresse",
+    "IP address": "IP-Adresse",
     "Interval before send topics by connection:": "Wartezeit vor dem Senden aller Topics bei neuen Verbindungen",
     "MQTT Settings": "MQTT Einstellungen",
     "MQTT adapter settings": "MQTT Instanz-Einstellungen",
