@@ -26,7 +26,7 @@
     "@alcalzone/release-script-plugin-iobroker": "^3.5.9",
     "@alcalzone/release-script-plugin-license": "^3.5.9",
     "@iobroker/adapter-dev": "^1.2.0",
-    "@iobroker/legacy-testing": "^0.1.1",
+    "@iobroker/legacy-testing": "^0.3.6",
     "eslint": "^8.41.0"
   },
   "bugs": {
