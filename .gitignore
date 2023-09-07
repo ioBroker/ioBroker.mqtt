@@ -6,3 +6,7 @@ admin/i18n/*/flat.txt
 iob_npm.done
 package-lock.json
 .vs/
+
+
+# ioBroker dev-server
+.dev-server/
