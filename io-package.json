@@ -291,7 +291,19 @@
       "_id": "info",
       "type": "channel",
       "common": {
-        "name": "Information"
+        "name": {
+          "en": "Information",
+          "de": "Information",
+          "ru": "Информация",
+          "pt": "Em formação",
+          "nl": "Informatie",
+          "fr": "Informations",
+          "it": "Informazione",
+          "es": "Información",
+          "pl": "Informacja",
+          "uk": "Інформація",
+          "zh-cn": "信息"
+        }
       },
       "native": {}
     },
@@ -299,9 +311,21 @@
       "_id": "info.connection",
       "type": "state",
       "common": {
-        "role": "indicator.connected",
-        "name": "connected client for MQTT",
+        "name": {
+          "en": "Connected to Awtrix",
+          "de": "Verbindung mit Awtrix",
+          "ru": "При подключении к Awtrix",
+          "pt": "Se conectado ao Awtrix",
+          "nl": "Indien verbonden met Awtrix",
+          "fr": "Si connecté à Awtrix",
+          "it": "Se connesso a Awtrix",
+          "es": "Si está conectado a Awtrix",
+          "pl": "W przypadku połączenia z Awtrix",
+          "uk": "Підключення до Awtrix",
+          "zh-cn": "如果连接到 Awtrix"
+        },
         "type": "boolean",
+        "role": "indicator.reachable",
         "read": true,
         "write": false,
         "def": false
