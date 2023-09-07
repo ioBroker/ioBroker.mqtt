@@ -125,6 +125,7 @@
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "compact": true,
+    "blockly": true,
     "messagebox": true,
     "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
     "loglevel": "info",
