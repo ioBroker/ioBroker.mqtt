@@ -160,6 +160,7 @@ The broker was tested with following clients:
 ## Changelog
 ### **WORK IN PROGRESS**
 * (klein0r) Added blockly block for custom messages (sendMessage2Client)
+* (klein0r) Removed support for Admin 4 UI (materialize)
 
 ### 4.1.1 (2023-03-22)
 * (Apollon77) Fix regex on subscribes of server clients to only match wanted states

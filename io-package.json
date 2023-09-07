@@ -130,7 +130,6 @@
     "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
     "loglevel": "info",
     "icon": "mqtt.png",
-    "materialize": true,
     "keywords": [
       "notification",
       "MQTT",
