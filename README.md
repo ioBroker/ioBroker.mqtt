@@ -102,7 +102,7 @@ You may send / publish messages on topics using ```sendTo``` method from your ad
  * @param {string}  payload.message   Message to be published on specified topic
  *
  */
-adapter.sendTo('mqtt.0', 'sendMessage2Client', { topic: 'your/topic/here', message: 'your message' });
+adapter.sendTo('mqtt.0', 'sendMessage2Client', { topic: 'your/topic/here', message: 'your message', retain: true });
 ```
 
 ### Examples of using wildcards
@@ -160,6 +160,7 @@ The broker was tested with following clients:
 ## Changelog
 ### **WORK IN PROGRESS**
 * (klein0r) Added blockly block for custom messages (sendMessage2Client)
+* (klein0r) Added retain flag for sendMessage2Client
 * (klein0r) Removed support for Admin 4 UI (materialize)
 
 ### 4.1.1 (2023-03-22)

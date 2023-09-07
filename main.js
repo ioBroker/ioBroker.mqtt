@@ -130,15 +130,15 @@ class MQTT extends utils.Adapter {
             case 'sendMessage2Client':
                 if (this.server) {
                     this.log.debug(`Sending message from server to clients via topic ${obj.message.topic}: ${obj.message.message} ...`);
-                    this.server.onMessage(obj.message.topic, obj.message.message, obj.message.binary);
+                    this.server.onMessage(obj.message.topic, obj.message.message, obj.message?.retain, obj.message?.binary);
                 } else if (this.client) {
                     this.log.debug(`Sending message from client to server via topic ${obj.message.topic}: ${obj.message.message} ...`);
-                    this.client.onMessage(obj.message.topic, obj.message.message, obj.message.binary);
+                    this.client.onMessage(obj.message.topic, obj.message.message, obj.message?.retain, obj.message?.binary);
                 } else {
                     this.log.debug(`Neither MQTT server nor client not started, thus not sending message via topic ${obj.message.topic} (${obj.message.message}).`);
                 }
                 break;
-    
+
             case 'sendState2Client':
                 if (this.server) {
                     this.log.debug(`Sending message from server to clients ${obj.message.id}: ${obj.message.state} ...`);

@@ -56,6 +56,19 @@ Blockly.Words['mqtt_message'] = {
     uk: 'Новини',
     'zh-cn': '导 言',
 };
+Blockly.Words['mqtt_retain'] = {
+    en: 'Retain',
+    de: 'Retain',
+    ru: 'Retain',
+    pt: 'Retain',
+    nl: 'Retain',
+    fr: 'Retain',
+    it: 'Retain',
+    es: 'Retain',
+    pl: 'Retain',
+    uk: 'Retain',
+    'zh-cn': 'Retain',
+};
 Blockly.Words['mqtt_anyInstance'] = {
     en: 'All instances',
     de: 'Alle Instanzen',
@@ -98,6 +111,8 @@ Blockly.Sendto.blocks['mqtt_sendmessage'] =
     '             <field name="TEXT">your message</field>' +
     '         </shadow>' +
     '     </value>' +
+    '     <value name="RETAIN">' +
+    '     </value>' +
     '</block>';
 
 Blockly.Blocks['mqtt_sendmessage'] = {
@@ -125,6 +140,7 @@ Blockly.Blocks['mqtt_sendmessage'] = {
         this.appendDummyInput('INSTANCE').appendField(Blockly.Translate('mqtt_sendmessage')).appendField(new Blockly.FieldDropdown(options), 'INSTANCE');
         this.appendValueInput('TOPIC').appendField(Blockly.Translate('mqtt_topic'));
         this.appendValueInput('MESSAGE').appendField(Blockly.Translate('mqtt_message'));
+        this.appendDummyInput('RETAIN').appendField(Blockly.Translate('mqtt_retain')).appendField(new Blockly.FieldCheckbox('FALSE'), 'RETAIN');
 
         this.setInputsInline(false);
         this.setPreviousStatement(true, null);
@@ -140,5 +156,8 @@ Blockly.JavaScript['mqtt_sendmessage'] = function (block) {
     const topic = Blockly.JavaScript.valueToCode(block, 'TOPIC', Blockly.JavaScript.ORDER_ATOMIC);
     const message = Blockly.JavaScript.valueToCode(block, 'MESSAGE', Blockly.JavaScript.ORDER_ATOMIC);
 
-    return `sendTo('mqtt${block.getFieldValue('INSTANCE')}', 'sendMessage2Client', { topic: ${topic}, message: ${message} }, (res) => { if (res && res.error) { console.error(res.error); } });`;
+    let retain = block.getFieldValue('RETAIN');
+    retain = retain === 'TRUE' || retain === 'true' || retain === true;
+
+    return `sendTo('mqtt${block.getFieldValue('INSTANCE')}', 'sendMessage2Client', { topic: ${topic}, message: ${message}, retain: ${retain} }, (res) => { if (res && res.error) { console.error(res.error); } });`;
 };
