@@ -312,17 +312,17 @@
       "type": "state",
       "common": {
         "name": {
-          "en": "Connected to Awtrix",
-          "de": "Verbindung mit Awtrix",
-          "ru": "При подключении к Awtrix",
-          "pt": "Se conectado ao Awtrix",
-          "nl": "Indien verbonden met Awtrix",
-          "fr": "Si connecté à Awtrix",
-          "it": "Se connesso a Awtrix",
-          "es": "Si está conectado a Awtrix",
-          "pl": "W przypadku połączenia z Awtrix",
-          "uk": "Підключення до Awtrix",
-          "zh-cn": "如果连接到 Awtrix"
+          "en": "Connected client for MQTT",
+          "de": "Verbundener Client für MQTT",
+          "ru": "Подключенный клиент для MQTT",
+          "pt": "Cliente conectado para MQTT",
+          "nl": "Geconnecteerd cliënt voor MQT",
+          "fr": "Client connecté pour MQTT",
+          "it": "Client collegato per MQTT",
+          "es": "Cliente conectado para MQTT",
+          "pl": "Kliencki klient dla MQTT",
+          "uk": "Підключений клієнт для MQTT",
+          "zh-cn": "MQTT的客户"
         },
         "type": "boolean",
         "role": "indicator.reachable",
