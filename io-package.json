@@ -125,11 +125,11 @@
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "compact": true,
+    "blockly": true,
     "messagebox": true,
     "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
     "loglevel": "info",
     "icon": "mqtt.png",
-    "materialize": true,
     "keywords": [
       "notification",
       "MQTT",
@@ -291,7 +291,19 @@
       "_id": "info",
       "type": "channel",
       "common": {
-        "name": "Information"
+        "name": {
+          "en": "Information",
+          "de": "Information",
+          "ru": "Информация",
+          "pt": "Em formação",
+          "nl": "Informatie",
+          "fr": "Informations",
+          "it": "Informazione",
+          "es": "Información",
+          "pl": "Informacja",
+          "uk": "Інформація",
+          "zh-cn": "信息"
+        }
       },
       "native": {}
     },
@@ -299,9 +311,21 @@
       "_id": "info.connection",
       "type": "state",
       "common": {
-        "role": "indicator.connected",
-        "name": "connected client for MQTT",
+        "name": {
+          "en": "Connected client for MQTT",
+          "de": "Verbundener Client für MQTT",
+          "ru": "Подключенный клиент для MQTT",
+          "pt": "Cliente conectado para MQTT",
+          "nl": "Geconnecteerd cliënt voor MQT",
+          "fr": "Client connecté pour MQTT",
+          "it": "Client collegato per MQTT",
+          "es": "Cliente conectado para MQTT",
+          "pl": "Kliencki klient dla MQTT",
+          "uk": "Підключений клієнт для MQTT",
+          "zh-cn": "MQTT的客户"
+        },
         "type": "boolean",
+        "role": "indicator.reachable",
         "read": true,
         "write": false,
         "def": false
