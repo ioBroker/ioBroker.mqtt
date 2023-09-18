@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "4.1.1",
+    "version": "5.0.0",
     "news": {
+      "5.0.0": {
+        "en": "Added blockly block for custom messages (sendMessage2Client)\nAdded retain flag for sendMessage2Client\nRemoved support for Admin 4 UI (materialize)\nMinimal supported node.js version is 16",
+        "de": "Blockiert für benutzerdefinierte Nachrichten hinzugefügt (sendMessage2Client)\nHinzugefügt Rückhol-Flag für senden Nachricht2Client\nEntfernte Unterstützung für Admin 4 UI (materialize)\nMinimal unterstützt node.js version is 16",
+        "ru": "Добавлен блокнот для пользовательских сообщений (sendMessage2Client)\nДобавлен флаг для отправки Сообщение2Клиент\nУдаленная поддержка Admin 4 UI (материализация)\nМинимальная поддерживаемая версия node.js 16",
+        "pt": "Adicionado bloco bloqueado para mensagens personalizadas (sendMessage2Client)\nAdicionado bandeira de retenção para enviar Mensagem2Client\nSuporte removido para Admin 4 UI (materialize)\nNode.js com suporte mínimo é 16",
+        "nl": "Voeg blokkeer toe voor gebruikelijke berichten\nVoeg de vlag toe. Vertaling:\nVerwijderde steun voor administratie 4 UI (materialize)\nMinimale ondersteunde node",
+        "fr": "Ajout d'un bloc pour les messages personnalisés (sendMessage2Client)\nAjout du drapeau de retenue pour envoyer Message2Client\nSoutien supprimé pour Admin 4 UI (matérialiser)\nVersion node.js supportée Minimal est 16",
+        "it": "Aggiunto blocco blocco per messaggi personalizzati (sendMessage2Client)\nAggiunto la bandiera di mantenimento per inviare Messaggio2\nSupporto rimosso per Admin 4 UI (materializzare)\nMinimal supportato node.js versione è 16",
+        "es": "Añadido bloque bloque bloque para mensajes personalizados (sendMessage2Client)\nBandera de retención adicional para enviar Mensaje2Client\nApoyo eliminado para Admin 4 UI (materializar)\nMinimal soportado node.js versión es 16",
+        "pl": "Zamknięty blok dla zwykłych wiadomości (sendMessage2Client)\nWtedy zachowana flaga za wysłanie flagi. Message2Client\nPrzewiduje wsparcie dla Admin 4 UI (materializację)\nMinimal supportowana wersja węzła wynosi 16",
+        "uk": "Додано блокнот для користувацьких повідомлень (sendMessage2Client)\nДодано прапор збереження для відправки Повідомлення2Клієнт\nВилучена підтримка Адміністратора 4 UI (матеріалізація)\nMinimal підтримуваний node.js версія 16",
+        "zh-cn": "习惯信息(附录Message2Client)的附加障碍\n增加派遣国 问题2\n取消对Admin 4 UI(物质化)的支持\n米切尔支持不dejs版本为16。"
+      },
       "4.1.1": {
         "en": "Fix regex on subscribes of server clients to only match wanted states\nPrepare for future js-controller versions",
         "de": "Reparieren Sie Regex auf Abmeldungen von Server-Clients, um nur gewünschten Zuständen gerecht zu werden\nBereiten Sie sich auf zukünftige js-Controller-Versionen",
@@ -75,18 +88,6 @@
         "es": "Se agregó la posibilidad de publicar estados propios como cliente, además de `mqtt.x`",
         "pl": "Dodano możliwość publikowania własnych stanów jako klient, dodatkowo do `mqtt.x`",
         "zh-cn": "添加了将自己的状态作为客户端发布的可能性，除了 `mqtt.x`"
-      },
-      "4.0.1": {
-        "en": "Fix Number detection for values",
-        "de": "Nummernerkennung für Werte behoben",
-        "ru": "Fix Определение числа для значений",
-        "pt": "Corrigir detecção de número para valores",
-        "nl": "Fix Nummerdetectie voor waarden",
-        "fr": "Réparer Détection de nombre pour les valeurs",
-        "it": "Correzione del rilevamento del numero per i valori",
-        "es": "Arreglar la detección de números para valores.",
-        "pl": "Wykrywanie numerów napraw dla wartości",
-        "zh-cn": "修复值的数字检测"
       }
     },
     "title": "MQTT Broker/Client",
