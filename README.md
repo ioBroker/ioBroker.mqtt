@@ -162,6 +162,7 @@ The broker was tested with following clients:
 * (klein0r) Added blockly block for custom messages (sendMessage2Client)
 * (klein0r) Added retain flag for sendMessage2Client
 * (klein0r) Removed support for Admin 4 UI (materialize)
+* (bluefox) Minimal supported node.js version is 16
 
 ### 4.1.1 (2023-03-22)
 * (Apollon77) Fix regex on subscribes of server clients to only match wanted states

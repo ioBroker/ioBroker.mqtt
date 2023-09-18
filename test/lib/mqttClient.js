@@ -35,7 +35,6 @@ function Client(cbConnected, cbChanged, config) {
         //client.subscribe('arduino/kitchen/in/updateInterval');
 
         if (config.subscribe !== false) {
-            debugger;
             this.client.subscribe(config.subscribe || '#');
         }
 
