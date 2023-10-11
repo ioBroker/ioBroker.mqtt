@@ -99,33 +99,33 @@ class MQTT extends utils.Adapter {
             this.server = new require('./lib/server')(this, this.states);
 
             if (!this.config.doNotCheckPublicIP && (!this.config.user || !this.config.pass)) {
-                // const { checkPublicIP } = require('./lib/securityChecker');
-                //
-                // this.checkTimeout = setTimeout(async () => {
-                //     this.checkTimeout = null;
-                //     try {
-                //         await checkPublicIP(this.config.port, this.config.ssl);
-                //     } catch (e) {
-                //         // this supported first from js-controller 5.0.
-                //         this.sendToHost(
-                //             `system.host.${this.host}`,
-                //             'addNotification',
-                //             {
-                //                 scope: 'system',
-                //                 category: 'securityIssues',
-                //                 message:
-                //                     'Your mqtt instance is accessible from the internet without any protection. ' +
-                //                     'Please enable authentication or disable the access from the internet.',
-                //                 instance: `system.adapter.${this.namespace}`,
-                //             },
-                //             (/* result */) => {
-                //                 /* ignore */
-                //             }
-                //         );
-                //
-                //         this.log.error(e.toString());
-                //     }
-                // }, 1000);
+                const { checkPublicIP } = require('./lib/securityChecker');
+
+                this.checkTimeout = setTimeout(async () => {
+                    this.checkTimeout = null;
+                    try {
+                        await checkPublicIP(this.config.port, this.config.ssl);
+                    } catch (e) {
+                        // this supported first from js-controller 5.0.
+                        this.sendToHost(
+                            `system.host.${this.host}`,
+                            'addNotification',
+                            {
+                                scope: 'system',
+                                category: 'securityIssues',
+                                message:
+                                    'Your mqtt instance is accessible from the internet without any protection. ' +
+                                    'Please enable authentication or disable the access from the internet.',
+                                instance: `system.adapter.${this.namespace}`,
+                            },
+                            (/* result */) => {
+                                /* ignore */
+                            }
+                        );
+
+                        this.log.error(e.toString());
+                    }
+                }, 1000);
             }
         }
     }
