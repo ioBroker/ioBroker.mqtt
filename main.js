@@ -41,13 +41,13 @@ class MQTT extends utils.Adapter {
 
     async main() {
         this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
-    
+
         // Subscribe on own variables to publish it
         if (this.config.type === 'client') {
             await this.subscribeForeignStatesAsync(`${this.namespace}.*`);
             await this.readStatesForPattern(`${this.namespace}.*`);
         }
-    
+
         if (this.config.publish) {
             // change default publish setting to real instance
             if (this.config.publish === 'mqtt.0.*' && this.instance !== 0) {
@@ -59,7 +59,7 @@ class MQTT extends utils.Adapter {
                 });
                 return; // Adapter will be restarted soon, no need to initialize now
             }
-    
+
             const parts = this.config.publish.split(',').map(p => p.trim()).filter(p => p);
             for (let t = 0; t < parts.length; t++) {
                 let part = parts[t];
@@ -77,26 +77,56 @@ class MQTT extends utils.Adapter {
         } else if (this.config.type !== 'client') {
             this.log.warn(`No ioBroker changes will be published to the clients. Set the "publish" option in the adapter settings to subscribe for relevant changes.`);
         }
-    
+
         this.config.defaultQoS = parseInt(this.config.defaultQoS, 10) || 0;
         this.config.retain = this.config.retain === 'true' || this.config.retain === true;
         this.config.persistent = this.config.persistent === 'true' || this.config.persistent === true;
         this.config.retransmitInterval = parseInt(this.config.retransmitInterval, 10) || 2000;
         this.config.retransmitCount = parseInt(this.config.retransmitCount, 10) || 10;
-    
+
         if (this.config.retransmitInterval < this.config.sendInterval) {
             this.config.retransmitInterval = this.config.sendInterval * 5;
         }
         this.EXIT_CODES = utils.EXIT_CODES || {
             ADAPTER_REQUESTED_TERMINATION: 11
         };
-    
+
         // If no subscription, start client or server
         if (this.config.type === 'client') {
             this.config.clientId = this.config.clientId || `${this.host || adapterName}.${this.namespace}`;
             this.client = new require('./lib/client')(this, this.states);
         } else {
             this.server = new require('./lib/server')(this, this.states);
+
+            if (!this.config.doNotCheckPublicIP && (!this.config.user || !this.config.pass)) {
+                // const { checkPublicIP } = require('./lib/securityChecker');
+                //
+                // this.checkTimeout = setTimeout(async () => {
+                //     this.checkTimeout = null;
+                //     try {
+                //         await checkPublicIP(this.config.port, this.config.ssl);
+                //     } catch (e) {
+                //         // this supported first from js-controller 5.0.
+                //         this.sendToHost(
+                //             `system.host.${this.host}`,
+                //             'addNotification',
+                //             {
+                //                 scope: 'system',
+                //                 category: 'securityIssues',
+                //                 message:
+                //                     'Your mqtt instance is accessible from the internet without any protection. ' +
+                //                     'Please enable authentication or disable the access from the internet.',
+                //                 instance: `system.adapter.${this.namespace}`,
+                //             },
+                //             (/* result */) => {
+                //                 /* ignore */
+                //             }
+                //         );
+                //
+                //         this.log.error(e.toString());
+                //     }
+                // }, 1000);
+            }
         }
     }
 
@@ -150,7 +180,7 @@ class MQTT extends utils.Adapter {
                     this.log.debug(`Neither MQTT server nor client not started, thus not sending message to client ${obj.message.id} (${obj.message.state}).`);
                 }
                 break;
-    
+
             case 'test': {
                 // Try to connect to mqtt broker
                 if (obj.callback && obj.message) {
@@ -162,7 +192,7 @@ class MQTT extends utils.Adapter {
                         _client.end();
                         this.sendTo(obj.from, obj.command, 'timeout', obj.callback);
                     }, 2000);
-    
+
                     // If connected, return success
                     _client.on('connect', () => {
                         _client.end();
@@ -215,6 +245,9 @@ class MQTT extends utils.Adapter {
      * @param {() => void} callback
      */
     async onUnload(callback) {
+        this.checkTimeout && clearTimeout(this.checkTimeout);
+        this.checkTimeout = null;
+
         try {
             this.client && this.client.destroy();
             this.server && this.server.destroy();

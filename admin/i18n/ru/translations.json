@@ -61,5 +61,6 @@
   "Publish messages without \"retain\" flag": "Публиковать сообщения без флага «retain»",
   "All new topics will be processed as binary": "Все новые темы будут обрабатываться как бинарные",
   "These states will be published. (Divided by comma)": "Эти состояния будут опубликованы. (разделенные запятой, например, 'mqtt.0.*,javascript.*')",
-  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Подпишитесь на темы. (разделенные запятой, например, 'mqtt/0/#,javascript/#')"
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Подпишитесь на темы. (разделенные запятой, например, 'mqtt/0/#,javascript/#')",
+  "Do not check if this instance is available from internet": "Не проверять, доступен ли этот экземпляр из Интернета"
 }

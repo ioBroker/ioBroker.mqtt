@@ -61,5 +61,6 @@
   "Publish messages without \"retain\" flag": "Publicar mensagens sem o sinalizador \"retain\"",
   "All new topics will be processed as binary": "Todos os novos tópicos serão processados como binários",
   "These states will be published. (Divided by comma)": "Esses estados serão publicados. (Divida por vírgula, por exemplo, 'mqtt.0.*,javascript.*')",
-  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Inscreva-se para tópicos. (dividido por vírgula, por exemplo, 'mqtt/0/#,javascript/#')"
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Inscreva-se para tópicos. (dividido por vírgula, por exemplo, 'mqtt/0/#,javascript/#')",
+  "Do not check if this instance is available from internet": "Não verifique se esta instância está disponível na Internet"
 }

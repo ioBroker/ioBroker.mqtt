@@ -61,5 +61,6 @@
   "Publish messages without \"retain\" flag": "Publikuj wiadomości bez flagi „retain”",
   "All new topics will be processed as binary": "Wszystkie nowe tematy będą przetwarzane jako binarne",
   "These states will be published. (Divided by comma)": "Te stany zostaną opublikowane. (Podzielone przecinkiem, np. 'mqtt.0.*,javascript.*')",
-  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Zapisz się na tematy. (Podzielone przecinkiem, np. 'mqtt/0/#,javascript/#')"
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Zapisz się na tematy. (Podzielone przecinkiem, np. 'mqtt/0/#,javascript/#')",
+  "Do not check if this instance is available from internet": "Nie sprawdzaj, czy ta instancja jest dostępna z Internetu"
 }

@@ -101,6 +101,7 @@
       "it": "Broker/Cliente MQTT",
       "es": "Agente MQTT/Cliente",
       "pl": "Broker/klient MQTT",
+      "uk": "Брокер MQTT/Клієнт",
       "zh-cn": "MQTT经纪人/客户"
     },
     "desc": {
@@ -113,6 +114,7 @@
       "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
       "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
       "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera",
+      "uk": "Цей адаптер дозволяє надсилати та отримувати повідомлення MQTT від ioBroker та бути брокером",
       "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
     },
     "authors": [
@@ -284,7 +286,8 @@
     "removePrefix": "",
     "ignoreNewObjects": false,
     "noRetain": false,
-    "allBinaries": false
+    "allBinaries": false,
+    "doNotCheckPublicIP": false
   },
   "objects": [],
   "instanceObjects": [

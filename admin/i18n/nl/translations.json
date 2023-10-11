@@ -61,5 +61,6 @@
   "Publish messages without \"retain\" flag": "Berichten publiceren zonder \"retain\"-vlag",
   "All new topics will be processed as binary": "Alle nieuwe onderwerpen worden als binair verwerkt",
   "These states will be published. (Divided by comma)": "Deze staten zullen worden gepubliceerd. (Gedeeld door komma, bijv. 'mqtt.0.*,javascript.*')",
-  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Schrijf je in voor onderwerpen. (Gedeeld door komma, bijv. 'mqtt/0/#,javascript/#')"
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Schrijf je in voor onderwerpen. (Gedeeld door komma, bijv. 'mqtt/0/#,javascript/#')",
+  "Do not check if this instance is available from internet": "Controleer niet of dit exemplaar beschikbaar is via internet"
 }

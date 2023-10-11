@@ -61,5 +61,6 @@
   "Publish messages without \"retain\" flag": "Publish messages without \"retain\" flag",
   "All new topics will be processed as binary": "All new topics will be processed as binary",
   "These states will be published. (Divided by comma)": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')",
-  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')"
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')",
+  "Do not check if this instance is available from internet": "Do not check if this instance is available from internet"
 }

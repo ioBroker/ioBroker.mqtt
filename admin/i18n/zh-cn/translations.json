@@ -61,5 +61,6 @@
   "Publish messages without \"retain\" flag": "发布没有“retain”标志的消息",
   "All new topics will be processed as binary": "所有新主题将作为二进制处理",
   "These states will be published. (Divided by comma)": "这些状态将被发布。 （以逗号分隔，例如'mqtt.0.*,javascript.*'）",
-  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "订阅主题。 （以逗号分隔，例如'mqtt/0/#,javascript/#'）"
+  "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "订阅主题。 （以逗号分隔，例如'mqtt/0/#,javascript/#'）",
+  "Do not check if this instance is available from internet": "不检查此实例是否可从 Internet 获取"
 }
