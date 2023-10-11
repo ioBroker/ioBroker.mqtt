@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "news": {
+      "5.1.0": {
+        "en": "Added security check if the server is available from the internet without protection",
+        "de": "Sicherheitsüberprüfung hinzugefügt, wenn der Server im Internet ohne Schutz verfügbar ist",
+        "ru": "Добавлена проверка безопасности, если сервер доступен из интернета без защиты",
+        "pt": "Verificação de segurança adicionada se o servidor estiver disponível na internet sem proteção",
+        "nl": "Controleer of de server beschikbaar is van het internet zonder bescherming",
+        "fr": "Vérification de sécurité supplémentaire si le serveur est disponible sur Internet sans protection",
+        "it": "Aggiunto controllo di sicurezza se il server è disponibile da internet senza protezione",
+        "es": "Control de seguridad adicional si el servidor está disponible en Internet sin protección",
+        "pl": "W przypadku, gdy serwer jest dostępny z Internetu bez ochrony",
+        "uk": "Додано контроль безпеки, якщо сервер доступний з Інтернету без захисту",
+        "zh-cn": "如果没有保护,如果服务器可以从互联网上查看安全检查。"
+      },
       "5.0.0": {
         "en": "Added blockly block for custom messages (sendMessage2Client)\nAdded retain flag for sendMessage2Client\nRemoved support for Admin 4 UI (materialize)\nMinimal supported node.js version is 16",
         "de": "Blockiert für benutzerdefinierte Nachrichten hinzugefügt (sendMessage2Client)\nHinzugefügt Rückhol-Flag für senden Nachricht2Client\nEntfernte Unterstützung für Admin 4 UI (materialize)\nMinimal unterstützt node.js version is 16",
@@ -76,18 +89,6 @@
         "es": "Estados de publicación corregidos al inicio por el cliente",
         "pl": "Poprawione stany publikowania przy starcie przez klienta",
         "zh-cn": "更正了客户端启动时的发布状态"
-      },
-      "4.0.2": {
-        "en": "Added possibility to publish own states as client, additionally to `mqtt.x`",
-        "de": "Möglichkeit hinzugefügt, eigene Zustände als Client zusätzlich zu `mqtt.x` zu veröffentlichen",
-        "ru": "Добавлена возможность публиковать собственные состояния в качестве клиента, дополнительно к `mqtt.x`",
-        "pt": "Adicionada a possibilidade de publicar estados próprios como cliente, além de `mqtt.x`",
-        "nl": "Mogelijkheid toegevoegd om eigen staten als client te publiceren, aanvullend op `mqtt.x`",
-        "fr": "Ajout de la possibilité de publier ses propres états en tant que client, en plus de `mqtt.x`",
-        "it": "Aggiunta la possibilità di pubblicare i propri stati come client, in aggiunta a `mqtt.x`",
-        "es": "Se agregó la posibilidad de publicar estados propios como cliente, además de `mqtt.x`",
-        "pl": "Dodano możliwość publikowania własnych stanów jako klient, dodatkowo do `mqtt.x`",
-        "zh-cn": "添加了将自己的状态作为客户端发布的可能性，除了 `mqtt.x`"
       }
     },
     "title": "MQTT Broker/Client",

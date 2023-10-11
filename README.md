@@ -158,7 +158,7 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 5.1.0 (2023-10-11)
 * (bluefox) Added security check if the server is available from the internet without protection
 
 ### 5.0.0 (2023-09-18)
