@@ -218,6 +218,16 @@
           "sm": 12,
           "md": 6,
           "lg": 3
+        },
+        "ignoredTopics": {
+          "newLine": true,
+          "type": "chips",
+          "label": "Ignored Topics:",
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "delimiter": ",",
+          "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
         }
       }
     },
