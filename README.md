@@ -40,6 +40,8 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Force clean session** - Overwrite the client settings and clear or keep session.
 - **Publish messages without "retain" flag** - Send messages to other clients without a retain flag (read more in next paragraph)
+- **Ignored Topics** - You can provide certain topics that will be ignored by the broker. This is useful if you want to reduce some chatty clients. You can use wildcards to specify multiple topics, e.g. `test.*`.
+
 
 The ioBroker MQTT-Broker in server mode only simulates the behavior of real MQTT-Broker (like Mosquitto), but it is not the same.
 Real MQTT-Broker normally does not save the values of the topics and just forwards the message to other subscribed clients.

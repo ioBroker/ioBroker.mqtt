@@ -288,7 +288,8 @@
     "ignoreNewObjects": false,
     "noRetain": false,
     "allBinaries": false,
-    "doNotCheckPublicIP": false
+    "doNotCheckPublicIP": false,
+    "ignoredTopics": ""
   },
   "objects": [],
   "instanceObjects": [
