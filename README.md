@@ -159,7 +159,7 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 5.1.1 (2023-10-24)
 * (theimo1221) Added an option to filter certain topics
 
 ### 5.1.0 (2023-10-11)

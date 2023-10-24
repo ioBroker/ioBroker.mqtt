@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "5.1.0",
+    "version": "5.1.1",
     "news": {
+      "5.1.1": {
+        "en": "Added an option to filter certain topics",
+        "de": "Hinzugefügt eine Option, bestimmte Themen zu filtern",
+        "ru": "Добавлена опция для фильтрации определенных тем",
+        "pt": "Adicionado uma opção para filtrar certos tópicos",
+        "nl": "Voeg een optie toe om bepaalde onderwerpen te filtreren",
+        "fr": "Ajout d'une option pour filtrer certains sujets",
+        "it": "Aggiunto un'opzione per filtrare alcuni argomenti",
+        "es": "Añadido una opción para filtrar ciertos temas",
+        "pl": "Dodał możliwość filtrowania pewnych tematów",
+        "uk": "Додана можливість фільтрувати певні теми",
+        "zh-cn": "增加某些专题过滤的选择"
+      },
       "5.1.0": {
         "en": "Added security check if the server is available from the internet without protection",
         "de": "Sicherheitsüberprüfung hinzugefügt, wenn der Server im Internet ohne Schutz verfügbar ist",
@@ -77,18 +90,6 @@
         "es": "nivel de registro más bajo para registrar mensajes sobre mensajes con ID de mensajes desconocidos para información",
         "pl": "niższy poziom logowania dla komunikatów dziennika o wiadomościach z nieznanymi identyfikatorami wiadomości do informacji",
         "zh-cn": "较低的日志级别，用于将有关具有未知消息 ID 的消息的消息记录到 info"
-      },
-      "4.0.3": {
-        "en": "Corrected publish states on start by client",
-        "de": "Veröffentlichungsstatus beim Start durch den Client korrigiert",
-        "ru": "Исправлены состояния публикации при запуске клиентом",
-        "pt": "Estados de publicação corrigidos na inicialização pelo cliente",
-        "nl": "Gecorrigeerde publicatiestatussen bij opstarten door klant",
-        "fr": "États de publication corrigés au démarrage par le client",
-        "it": "Corretti gli stati di pubblicazione all'avvio da parte del client",
-        "es": "Estados de publicación corregidos al inicio por el cliente",
-        "pl": "Poprawione stany publikowania przy starcie przez klienta",
-        "zh-cn": "更正了客户端启动时的发布状态"
       }
     },
     "title": "MQTT Broker/Client",
