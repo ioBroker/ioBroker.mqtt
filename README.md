@@ -42,7 +42,6 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Publish messages without "retain" flag** - Send messages to other clients without a retain flag (read more in next paragraph)
 - **Ignored Topics** - You can provide certain topics that will be ignored by the broker. This is useful if you want to reduce some chatty clients. You can use wildcards to specify multiple topics, e.g. `test.*`.
 
-
 The ioBroker MQTT-Broker in server mode only simulates the behavior of real MQTT-Broker (like Mosquitto), but it is not the same.
 Real MQTT-Broker normally does not save the values of the topics and just forwards the message to other subscribed clients.
 
@@ -160,6 +159,9 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (theimo1221) Added an option to filter certain topics
+
 ### 5.1.0 (2023-10-11)
 * (bluefox) Added security check if the server is available from the internet without protection
 
