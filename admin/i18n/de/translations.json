@@ -62,5 +62,6 @@
   "All new topics will be processed as binary": "Alle neuen Topics werden binär verarbeitet",
   "These states will be published. (Divided by comma)": "Diese Zustände werden veröffentlicht. (Durch Komma getrennt, z. B. 'mqtt.0.*,javascript.*')",
   "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')": "Topics abonnieren. (Durch Komma getrennt, z. B. 'mqtt/0/#,javascript/#')",
-  "Do not check if this instance is available from internet": "Nicht überprüfen, ob diese Instanz aus dem Internet erreichbar ist"
+  "Do not check if this instance is available from internet": "Nicht überprüfen, ob diese Instanz aus dem Internet erreichbar ist",
+  "Ignored Topics:": "Ignorierte Topics"
 }

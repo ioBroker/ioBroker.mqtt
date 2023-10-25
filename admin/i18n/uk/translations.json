@@ -62,5 +62,6 @@
   "chars": "символи",
   "connected": "підключений",
   "ms": "РС",
-  "rejectUnauthorized": "Відхиляти неавторизовані сервери"
+  "rejectUnauthorized": "Відхиляти неавторизовані сервери",
+  "Ignored Topics:": "Ігноровані Topics"
 }
