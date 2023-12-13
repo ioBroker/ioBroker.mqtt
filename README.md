@@ -159,6 +159,10 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+* (ticaki) fixed: confirm onMessage()
+
 ### 5.1.1 (2023-10-24)
 * (theimo1221) Added an option to filter certain topics
 
