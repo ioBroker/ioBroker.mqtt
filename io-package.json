@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "5.1.1",
+    "version": "5.1.2",
     "news": {
+      "5.1.2": {
+        "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing",
+        "de": "behoben: bestätigen aufMessage)(\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung",
+        "ru": "исправлено: подтвердить onMessage)(\nДобавлена проверка подлинности для обработки запроса",
+        "pt": "fixo: confirmar na mensagem)(\nAdicionado a validação de autenticação para solicitar o processamento",
+        "nl": "vertaling:\nVoeg de authenticatie toe aan verwerking",
+        "fr": "corrigé: confirmation onMessage)(\nAjout de la validation d'authentification à la demande de traitement",
+        "it": "fisso: conferma suMessage)(\nAggiunta la validazione dell'autenticazione per richiedere l'elaborazione",
+        "es": "fijo: confirm onMessage)(\nAñadido la validación de autenticación para solicitar procesamiento",
+        "pl": "potwierdzony: potwierdzony na „Message” (pol.)\nDostarczanie do potwierdzenia uwierzytelniania do żądania przetwarzania",
+        "uk": "фіксована: підтвердження наMessage)(\nДодано перевірку автентичності для обробки запитів",
+        "zh-cn": "固定:确认Message()\n增加请求处理的核证"
+      },
       "5.1.1": {
         "en": "Added an option to filter certain topics",
         "de": "Hinzugefügt eine Option, bestimmte Themen zu filtern",
@@ -78,18 +91,6 @@
         "es": "Cuestión del centinela corregida",
         "pl": "Poprawka",
         "zh-cn": "更正发出的问题"
-      },
-      "4.0.4": {
-        "en": "lower loglevel for log messages about messages with unknown message IDs to info",
-        "de": "niedrigeres Loglevel für Log-Meldungen über Meldungen mit unbekannten Message-IDs an info",
-        "ru": "более низкий уровень журнала для сообщений журнала о сообщениях с неизвестными идентификаторами сообщений для информации",
-        "pt": "nível de log mais baixo para mensagens de log sobre mensagens com IDs de mensagem desconhecidos para informações",
-        "nl": "lager logniveau voor logberichten over berichten met onbekende bericht-ID's naar info",
-        "fr": "niveau de journalisation inférieur pour les messages de journalisation concernant les messages avec des ID de message inconnus vers info",
-        "it": "livello di registro inferiore per i messaggi di registro relativi a messaggi con ID messaggio sconosciuti alle informazioni",
-        "es": "nivel de registro más bajo para registrar mensajes sobre mensajes con ID de mensajes desconocidos para información",
-        "pl": "niższy poziom logowania dla komunikatów dziennika o wiadomościach z nieznanymi identyfikatorami wiadomości do informacji",
-        "zh-cn": "较低的日志级别，用于将有关具有未知消息 ID 的消息的消息记录到 info"
       }
     },
     "title": "MQTT Broker/Client",
