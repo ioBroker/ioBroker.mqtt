@@ -160,6 +160,7 @@ The broker was tested with the following clients:
 
 ## Changelog
 ### **WORK IN PROGRESS**
+* (ticaki) fixed: confirm onMessage()
 * (orpheus55) Added the authentication validation to request processing
 
 ### 5.1.1 (2023-10-24)

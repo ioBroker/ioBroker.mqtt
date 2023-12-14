@@ -161,11 +161,14 @@ class MQTT extends utils.Adapter {
                 if (this.server) {
                     this.log.debug(`Sending message from server to clients via topic ${obj.message.topic}: ${obj.message.message} ...`);
                     this.server.onMessage(obj.message.topic, obj.message.message, obj.message?.retain, obj.message?.binary);
+                    obj.callback && this.sendTo(obj.from, obj.command, {error: null, result: 'Sending message from server to clients.'}, obj.callback)
                 } else if (this.client) {
                     this.log.debug(`Sending message from client to server via topic ${obj.message.topic}: ${obj.message.message} ...`);
                     this.client.onMessage(obj.message.topic, obj.message.message, obj.message?.retain, obj.message?.binary);
+                    obj.callback && this.sendTo(obj.from, obj.command, {error: null, result: 'Sending message from client to server.'}, obj.callback)
                 } else {
                     this.log.debug(`Neither MQTT server nor client not started, thus not sending message via topic ${obj.message.topic} (${obj.message.message}).`);
+                    obj.callback && this.sendTo(obj.from, obj.command, {error: 'Neither MQTT server nor client not started', result: null}, obj.callback)
                 }
                 break;
 
@@ -173,11 +176,14 @@ class MQTT extends utils.Adapter {
                 if (this.server) {
                     this.log.debug(`Sending message from server to clients ${obj.message.id}: ${obj.message.state} ...`);
                     this.server.onStateChange(obj.message.id, obj.message.state);
+                    obj.callback && this.sendTo(obj.from, obj.command, {error: null, result: 'Sending message from server to clients.'}, obj.callback)
                 } else if (this.client) {
                     this.log.debug(`Sending message from client to server ${obj.message.id}: ${obj.message.state} ...`);
                     this.client.onStateChange(obj.message.id, obj.message.state);
+                    obj.callback && this.sendTo(obj.from, obj.command, {error: null, result: 'Sending message from client to server.'}, obj.callback)
                 } else {
                     this.log.debug(`Neither MQTT server nor client not started, thus not sending message to client ${obj.message.id} (${obj.message.state}).`);
+                    obj.callback && this.sendTo(obj.from, obj.command, {error: 'Neither MQTT server nor client not started', result: null}, obj.callback)
                 }
                 break;
 
