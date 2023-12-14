@@ -159,6 +159,9 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (orpheus55) Added the authentication validation to request processing
+
 ### 5.1.1 (2023-10-24)
 * (theimo1221) Added an option to filter certain topics
 
