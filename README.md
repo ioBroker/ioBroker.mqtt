@@ -159,7 +159,7 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
-### __WORK IN PROGRESS__
+### 5.2.0 (2024-01-08)
 * (ticaki) fixed: confirm onMessage()
 * (orpheus55) Added the authentication validation to request processing
 * (theimo1221) Added an option to filter certain topics

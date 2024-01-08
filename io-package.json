@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "5.1.2",
+    "version": "5.2.0",
     "news": {
+      "5.2.0": {
+        "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing\nAdded an option to filter certain topics",
+        "de": "behoben: bestätigen aufMessage()\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung\nHinzugefügt eine Option, bestimmte Themen zu filtern",
+        "ru": "фиксированный: подтвердить наСообщение()\nДобавить проверку подлинности для обработки запроса\nДобавлена опция фильтровать определенные темы",
+        "pt": "corrigido: confirme noMessage()\nAdicionado a validação de autenticação para solicitar o processamento\nAdicionado uma opção para filtrar certos tópicos",
+        "nl": "vast: bevestig onMessage()\nDe authenticatievalidatie toegevoegd om verwerking te vragen\nEen optie toegevoegd om bepaalde onderwerpen te filteren",
+        "fr": "fixe: confirmer surMessage()\nAjout de la validation d'authentification pour demander le traitement\nAjout d'une option pour filtrer certains sujets",
+        "it": "fisso: conferma suMessage()\nAggiunta la validazione dell'autenticazione per richiedere l'elaborazione\nAggiunto un'opzione per filtrare alcuni argomenti",
+        "es": "fijo: confirm onMessage()\nAñadido la validación de autenticación para solicitar procesamiento\nAñadido una opción para filtrar ciertos temas",
+        "pl": "stałe: potwierdzenie wiadomości ()\nDodano potwierdzenie uwierzytelniania, aby zażądać przetwarzania\nDodano opcję filtrowania niektórych tematów",
+        "uk": "фіксована: підтвердження наMessage()\nДодано перевірку автентичності для обробки запитів\nДодана можливість фільтрувати певні теми",
+        "zh-cn": "固定: 在Message上确认( )\n添加认证验证到请求处理中\n添加了过滤某些话题的选项"
+      },
       "5.1.0": {
         "en": "Added security check if the server is available from the internet without protection",
         "de": "Sicherheitsüberprüfung hinzugefügt, wenn der Server im Internet ohne Schutz verfügbar ist",
