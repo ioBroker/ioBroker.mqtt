@@ -3,32 +3,6 @@
     "name": "mqtt",
     "version": "5.1.2",
     "news": {
-      "5.1.2": {
-        "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing",
-        "de": "behoben: bestätigen aufMessage)(\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung",
-        "ru": "исправлено: подтвердить onMessage)(\nДобавлена проверка подлинности для обработки запроса",
-        "pt": "fixo: confirmar na mensagem)(\nAdicionado a validação de autenticação para solicitar o processamento",
-        "nl": "vertaling:\nVoeg de authenticatie toe aan verwerking",
-        "fr": "corrigé: confirmation onMessage)(\nAjout de la validation d'authentification à la demande de traitement",
-        "it": "fisso: conferma suMessage)(\nAggiunta la validazione dell'autenticazione per richiedere l'elaborazione",
-        "es": "fijo: confirm onMessage)(\nAñadido la validación de autenticación para solicitar procesamiento",
-        "pl": "potwierdzony: potwierdzony na „Message” (pol.)\nDostarczanie do potwierdzenia uwierzytelniania do żądania przetwarzania",
-        "uk": "фіксована: підтвердження наMessage)(\nДодано перевірку автентичності для обробки запитів",
-        "zh-cn": "固定:确认Message()\n增加请求处理的核证"
-      },
-      "5.1.1": {
-        "en": "Added an option to filter certain topics",
-        "de": "Hinzugefügt eine Option, bestimmte Themen zu filtern",
-        "ru": "Добавлена опция для фильтрации определенных тем",
-        "pt": "Adicionado uma opção para filtrar certos tópicos",
-        "nl": "Voeg een optie toe om bepaalde onderwerpen te filtreren",
-        "fr": "Ajout d'une option pour filtrer certains sujets",
-        "it": "Aggiunto un'opzione per filtrare alcuni argomenti",
-        "es": "Añadido una opción para filtrar ciertos temas",
-        "pl": "Dodał możliwość filtrowania pewnych tematów",
-        "uk": "Додана можливість фільтрувати певні теми",
-        "zh-cn": "增加某些专题过滤的选择"
-      },
       "5.1.0": {
         "en": "Added security check if the server is available from the internet without protection",
         "de": "Sicherheitsüberprüfung hinzugefügt, wenn der Server im Internet ohne Schutz verfügbar ist",
