@@ -3,6 +3,20 @@
   "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
   "version": "5.2.0",
   "author": "bluefox <dogafox@gmail.com>",
+  "contributors": [
+    {
+      "name": "bluefox",
+      "email": "dogafox@gmail.com"
+    },
+    {
+      "name": "Apollon77",
+      "email": "ingo@fischer-ka.de"
+    },
+    {
+      "name": "Matthias Kleine",
+      "email": "info@haus-automatisierung.com"
+    }
+  ],
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository": {
     "type": "git",

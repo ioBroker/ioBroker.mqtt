@@ -107,7 +107,9 @@
       "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
     },
     "authors": [
-      "bluefox <dogafox@gmail.com>"
+      "bluefox <dogafox@gmail.com>",
+      "Apollon77 <iobroker@fischer-ka.de>",
+      "Matthias Kleine <info@haus-automatisierung.com>"
     ],
     "docs": {
       "en": "docs/en/mqtt.md",
