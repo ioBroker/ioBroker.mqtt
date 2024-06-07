@@ -47,6 +47,7 @@
     "release-patch": "release-script patch --yes",
     "release-minor": "release-script minor --yes",
     "release-major": "release-script major --yes",
+    "lint": "eslint --ext .js,.jsx",
     "translate": "translate-adapter",
     "update-packages": "ncu --upgrade"
   },

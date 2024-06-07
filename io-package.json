@@ -80,7 +80,6 @@
         "zh-cn": "更正发出的问题"
       }
     },
-    "title": "MQTT Broker/Client",
     "titleLang": {
       "en": "MQTT Broker/Client",
       "de": "MQTT Broker/Client",
@@ -140,12 +139,12 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=3.0.0"
+        "js-controller": ">=5.0.0"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=5.4.3"
+        "admin": ">=6.6.0"
       }
     ],
     "tier": 2,
