@@ -162,6 +162,8 @@ The broker was tested with the following clients:
 ### **WORK IN PROGRESS**
 NodeJS >= 18.x and js-controller >= 5 is required
 
+* (klein0r) Fixed blockly definitions
+
 ### 5.2.0 (2024-01-08)
 * (ticaki) fixed: confirm onMessage()
 * (orpheus55) Added the authentication validation to request processing
