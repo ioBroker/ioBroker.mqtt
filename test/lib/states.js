@@ -1,17 +1,17 @@
 'use strict';
-const path      = require('path');
-const rootDir   = path.normalize(__dirname + '/../../');
+const path = require('path');
+const rootDir = path.normalize(__dirname + '/../../');
 let adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
-adapterName     = adapterName[adapterName.length - 2];
+adapterName = adapterName[adapterName.length - 2];
 
 const logger = {
-    info:  function (msg) {
+    info: function (msg) {
         console.log(msg);
     },
     debug: function (msg) {
         console.log(msg);
     },
-    warn:  function (msg) {
+    warn: function (msg) {
         console.warn(msg);
     },
     error: function (msg) {
@@ -20,7 +20,7 @@ const logger = {
 };
 
 function States(cb, stateChange) {
-    const that    = this;
+    const that = this;
     const _States = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/states');
     let callbackId = 0;
 
@@ -32,12 +32,12 @@ function States(cb, stateChange) {
 
     that.states = new _States({
         connection: {
-            type : 'file',
-            host : '127.0.0.1',
-            port : 19000,
-            options : {
-                auth_pass : null,
-                retry_max_delay : 15000
+            type: 'file',
+            host: '127.0.0.1',
+            port: 19000,
+            options: {
+                auth_pass: null,
+                retry_max_delay: 15000
             }
         },
         logger: logger,
@@ -56,57 +56,55 @@ function States(cb, stateChange) {
             if (that.logList && id.match(/\.logging$/)) {
                 that.logRedirect(state ? state.val : false, id.substring(0, id.length - '.logging'.length));
             } else
-            if (id === 'log.system.adapter.' + that.namespace) {
-                that.processLog(state);
-            } else
-            // If this is messagebox
-            if (id === 'messagebox.system.adapter.' + that.namespace && state) {
-                // Read it from fifo list
-                that.states.delMessage('system.adapter.' + that.namespace, state._id);
-                const obj = state;
-                if (obj) {
-                    // If callback stored for this request
-                    if (obj.callback     &&
-                        obj.callback.ack &&
-                        obj.callback.id  &&
-                        that.callbacks   &&
-                        that.callbacks['_' + obj.callback.id]) {
-                        // Call callback function
-                        if (that.callbacks['_' + obj.callback.id].cb) {
-                            that.callbacks['_' + obj.callback.id].cb(obj.message);
-                            delete that.callbacks['_' + obj.callback.id];
+                if (id === 'log.system.adapter.' + that.namespace) {
+                    that.processLog(state);
+                } else if (id === 'messagebox.system.adapter.' + that.namespace && state) {
+                    // Read it from fifo list
+                    that.states.delMessage('system.adapter.' + that.namespace, state._id);
+                    const obj = state;
+                    if (obj) {
+                        // If callback stored for this request
+                        if (obj.callback &&
+                            obj.callback.ack &&
+                            obj.callback.id &&
+                            that.callbacks &&
+                            that.callbacks['_' + obj.callback.id]) {
+                            // Call callback function
+                            if (that.callbacks['_' + obj.callback.id].cb) {
+                                that.callbacks['_' + obj.callback.id].cb(obj.message);
+                                delete that.callbacks['_' + obj.callback.id];
+                            }
+                            // delete too old callbacks IDs, like garbage collector
+                            const now = Date.now();
+                            for (const _id in that.callbacks) {
+                                if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000) delete that.callbacks[_id];
+                            }
+
+                        } else {
+                            if (options.message) {
+                                // Else inform about new message the adapter
+                                options.message(obj);
+                            }
+                            that.emit('message', obj);
                         }
-                        // delete too old callbacks IDs, like garbage collector
-                        const now = Date.now();
-                        for (const _id in that.callbacks) {
-                            if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000) delete that.callbacks[_id];
-                        }
+                    }
+                } else {
+                    if (id.slice(that.namespace.length) === that.namespace) {
+                        if (typeof options.stateChange === 'function') options.stateChange(id.slice(that.namespace.length + 1), state);
+                        // emit 'stateChange' event instantly
+                        setImmediate(() => that.emit('stateChange', id.slice(that.namespace.length + 1), state));
 
                     } else {
-                        if (options.message) {
-                            // Else inform about new message the adapter
-                            options.message(obj);
+                        if (typeof options.stateChange === 'function') options.stateChange(id, state);
+                        if (id.substring(0, 4) === 'log.') {
+                            console.log('LOG');
                         }
-                        that.emit('message', obj);
+                        if (that.emit) {
+                            // emit 'stateChange' event instantly
+                            setImmediate(() => that.emit('stateChange', id, state));
+                        }
                     }
                 }
-            } else {
-                if (id.slice(that.namespace.length) === that.namespace) {
-                    if (typeof options.stateChange === 'function') options.stateChange(id.slice(that.namespace.length + 1), state);
-                    // emit 'stateChange' event instantly
-                    setImmediate(() => that.emit('stateChange', id.slice(that.namespace.length + 1), state));
-
-                } else {
-                    if (typeof options.stateChange === 'function') options.stateChange(id, state);
-                    if (id.substring(0, 4) === 'log.') {
-                        console.log('LOG');
-                    }
-                    if (that.emit) {
-                        // emit 'stateChange' event instantly
-                        setImmediate(() => that.emit('stateChange', id, state));
-                    }
-                }
-            }
         },
         connectTimeout: (error) => {
             if (logger) logger.error(that.namespace + ' no connection to states DB');
@@ -120,7 +118,7 @@ function States(cb, stateChange) {
             message = command;
             command = 'send';
         }
-        const obj = {command: command, message: message, from: 'system.adapter.' + that.namespace};
+        const obj = { command: command, message: message, from: 'system.adapter.' + that.namespace };
 
         if (!objName.match(/^system\.adapter\./)) objName = 'system.adapter.' + objName;
 
@@ -129,7 +127,7 @@ function States(cb, stateChange) {
         // If not specific instance
         if (!objName.match(/\.[0-9]+$/)) {
             // Send to all instances of adapter
-            that.objects.getObjectView('system', 'instance', {startkey: objName + '.', endkey: objName + '.\u9999'}, (err, _obj) => {
+            that.objects.getObjectView('system', 'instance', { startkey: objName + '.', endkey: objName + '.\u9999' }, (err, _obj) => {
                 if (_obj) {
                     for (let i = 0; i < _obj.rows.length; i++) {
                         that.states.pushMessage(_obj.rows[i].id, obj);
@@ -147,15 +145,15 @@ function States(cb, stateChange) {
 
                     obj.callback = {
                         message: message,
-                        id:      callbackId++,
-                        ack:     false,
-                        time:    Date.now()
+                        id: callbackId++,
+                        ack: false,
+                        time: Date.now()
                     };
                     if (callbackId >= 0xFFFFFFFF) {
                         callbackId = 1;
                     }
                     if (!that.callbacks) that.callbacks = {};
-                    that.callbacks['_' + obj.callback.id] = {cb: callback};
+                    that.callbacks['_' + obj.callback.id] = { cb: callback };
 
                     // delete too old callbacks IDs
                     const now = Date.now();
@@ -180,13 +178,13 @@ function States(cb, stateChange) {
             message = command;
             command = 'send';
         }
-        const obj = {command: command, message: message, from: 'system.adapter.' + that.namespace};
+        const obj = { command: command, message: message, from: 'system.adapter.' + that.namespace };
 
         if (objName && objName.substring(0, 'system.host.'.length) !== 'system.host.') objName = 'system.host.' + objName;
 
         if (!objName) {
             // Send to all hosts
-            that.objects.getObjectList({startkey: 'system.host.', endkey: 'system.host.' + '\u9999'}, null, (err, res) => {
+            that.objects.getObjectList({ startkey: 'system.host.', endkey: 'system.host.' + '\u9999' }, null, (err, res) => {
                 if (!err && res.rows.length) {
                     for (let i = 0; i < res.rows.length; i++) {
                         const parts = res.rows[i].id.split('.');
@@ -208,15 +206,15 @@ function States(cb, stateChange) {
 
                     obj.callback = {
                         message: message,
-                        id:      callbackId++,
-                        ack:     false,
-                        time:    Date.now()
+                        id: callbackId++,
+                        ack: false,
+                        time: Date.now()
                     };
                     if (callbackId >= 0xFFFFFFFF) callbackId = 1;
                     if (!that.callbacks) that.callbacks = {};
-                    that.callbacks['_' + obj.callback.id] = {cb: callback};
+                    that.callbacks['_' + obj.callback.id] = { cb: callback };
                 } else {
-                    obj.callback     = callback;
+                    obj.callback = callback;
                     obj.callback.ack = true;
                 }
             }
@@ -228,8 +226,8 @@ function States(cb, stateChange) {
     that.setState = function setState(id, state, ack, options, callback) {
         if (typeof state === 'object' && typeof ack !== 'boolean') {
             callback = options;
-            options  = ack;
-            ack      = undefined;
+            options = ack;
+            ack = undefined;
         }
         if (typeof options === 'function') {
             callback = options;
@@ -242,7 +240,7 @@ function States(cb, stateChange) {
             ack = undefined;
         }
 
-        if (typeof state !== 'object' || state === null || state === undefined) state = {val: state};
+        if (typeof state !== 'object' || state === null || state === undefined) state = { val: state };
 
         if (ack !== undefined) {
             state.ack = ack;
@@ -265,7 +263,7 @@ function States(cb, stateChange) {
     that.setForeignState = function setForeignState(id, state, ack, options, callback) {
         if (typeof state === 'object' && typeof ack !== 'boolean') {
             callback = options;
-            options  = ack;
+            options = ack;
             ack = undefined;
         }
 
@@ -279,7 +277,7 @@ function States(cb, stateChange) {
             ack = undefined;
         }
 
-        if (typeof state !== 'object' || state === null || state === undefined) state = {val: state};
+        if (typeof state !== 'object' || state === null || state === undefined) state = { val: state };
 
         if (ack !== undefined) {
             state.ack = ack;
@@ -344,10 +342,10 @@ function States(cb, stateChange) {
         }
 
         start = start || Math.round((new Date()).getTime() / 1000) - 31536000; // - 1 year
-        end   = end   || Math.round((new Date()).getTime() / 1000) + 5000;
+        end = end || Math.round((new Date()).getTime() / 1000) + 5000;
 
         const history = [];
-        const docs =    [];
+        const docs = [];
 
         // get data from states
         that.log.debug('get states history ' + id + ' ' + start + ' ' + end);
@@ -412,7 +410,7 @@ function States(cb, stateChange) {
             }
 
             // get list of available history documents
-            that.objects.getObjectList({startkey: 'history.' + id, endkey: 'history.' + id + '\u9999'}, options, (err, res) => {
+            that.objects.getObjectList({ startkey: 'history.' + id, endkey: 'history.' + id + '\u9999' }, options, (err, res) => {
                 if (!err && res.rows.length) {
                     for (let i = 0; i < res.rows.length; i++) {
                         docs.push(res.rows[i].id);
@@ -442,7 +440,7 @@ function States(cb, stateChange) {
             }
         }
 
-        that.sendTo(options.instance || 'history.0', 'getHistory', {id: id, options: options}, res => {
+        that.sendTo(options.instance || 'history.0', 'getHistory', { id: id, options: options }, res => {
             setImmediate(() => callback(res.error, res.result, res.step));
         });
     };
@@ -456,7 +454,7 @@ function States(cb, stateChange) {
             that.log.warn('Try to decode id not from this adapter');
             return null;
         }
-        return {device: parts[2], channel: parts[3], state: parts[4]};
+        return { device: parts[2], channel: parts[3], state: parts[4] };
     };
 
     that.getForeignState = function getForeignState(id, options, callback) {
@@ -560,7 +558,7 @@ function States(cb, stateChange) {
         if (pattern && pattern !== '*') {
             params = {
                 startkey: pattern.replace('*', ''),
-                endkey:   pattern.replace('*', '\u9999')
+                endkey: pattern.replace('*', '\u9999')
             };
         }
         that.objects.getObjectView('system', 'state', params, options, (err, res) => {
