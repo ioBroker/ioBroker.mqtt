@@ -114,7 +114,10 @@
       "en": "docs/en/mqtt.md",
       "ru": "docs/ru/mqtt.md"
     },
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "compact": true,
