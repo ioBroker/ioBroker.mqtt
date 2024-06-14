@@ -80,7 +80,6 @@
         "zh-cn": "更正发出的问题"
       }
     },
-    "title": "MQTT Broker/Client",
     "titleLang": {
       "en": "MQTT Broker/Client",
       "de": "MQTT Broker/Client",
@@ -108,13 +107,18 @@
       "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
     },
     "authors": [
-      "bluefox <dogafox@gmail.com>"
+      "bluefox <dogafox@gmail.com>",
+      "Apollon77 <iobroker@fischer-ka.de>",
+      "Matthias Kleine <info@haus-automatisierung.com>"
     ],
     "docs": {
       "en": "docs/en/mqtt.md",
       "ru": "docs/ru/mqtt.md"
     },
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
     "mode": "daemon",
     "compact": true,
@@ -137,12 +141,12 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=3.0.0"
+        "js-controller": ">=5.0.0"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=5.4.3"
+        "admin": ">=6.6.0"
       }
     ],
     "tier": 2,

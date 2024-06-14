@@ -32,16 +32,16 @@ Blockly.Words['mqtt_sendmessage'] = {
 };
 Blockly.Words['mqtt_topic'] = {
     en: 'Topic',
-    de: 'Thema',
-    ru: 'Тема',
-    pt: 'Assunto',
-    nl: 'Ondertiteling:',
-    fr: 'Thème',
-    it: 'Argomento',
-    es: 'Tema',
-    pl: 'Topi',
-    uk: 'Головна',
-    'zh-cn': '议题',
+    de: 'Thema (Topic)',
+    ru: 'Тема (Topic)',
+    pt: 'Assunto (Topic)',
+    nl: 'Ondertiteling (Topic)',
+    fr: 'Thème (Topic)',
+    it: 'Argomento (Topic)',
+    es: 'Tema (Topic)',
+    pl: 'Topi (Topic)',
+    uk: 'Головна (Topic)',
+    'zh-cn': '议题 (Topic)',
 };
 Blockly.Words['mqtt_message'] = {
     en: 'Message',
@@ -99,20 +99,18 @@ Blockly.Words['mqtt_help'] = { en: 'https://github.com/ioBroker/ioBroker.mqtt/bl
 
 Blockly.Sendto.blocks['mqtt_sendmessage'] =
     '<block type="mqtt_sendmessage">' +
-    '     <value name="INSTANCE">' +
-    '     </value>' +
-    '     <value name="TOPIC">' +
-    '         <shadow type="text">' +
-    '             <field name="TEXT">your/topic/here</field>' +
-    '         </shadow>' +
-    '     </value>' +
-    '     <value name="MESSAGE">' +
-    '         <shadow type="text">' +
-    '             <field name="TEXT">your message</field>' +
-    '         </shadow>' +
-    '     </value>' +
-    '     <value name="RETAIN">' +
-    '     </value>' +
+    '  <field name="INSTANCE"></field>' +
+    '  <field name="RETAIN">FALSE</field>' +
+    '  <value name="TOPIC">' +
+    '    <shadow type="text">' +
+    '      <field name="TEXT">your/topic/here</field>' +
+    '    </shadow>' +
+    '  </value>' +
+    '  <value name="MESSAGE">' +
+    '    <shadow type="text">' +
+    '      <field name="TEXT">your message</field>' +
+    '    </shadow>' +
+    '  </value>' +
     '</block>';
 
 Blockly.Blocks['mqtt_sendmessage'] = {
@@ -137,10 +135,19 @@ Blockly.Blocks['mqtt_sendmessage'] = {
 
         options.unshift([Blockly.Translate('mqtt_anyInstance'), '']);
 
-        this.appendDummyInput('INSTANCE').appendField(Blockly.Translate('mqtt_sendmessage')).appendField(new Blockly.FieldDropdown(options), 'INSTANCE');
-        this.appendValueInput('TOPIC').appendField(Blockly.Translate('mqtt_topic'));
-        this.appendValueInput('MESSAGE').appendField(Blockly.Translate('mqtt_message'));
-        this.appendDummyInput('RETAIN').appendField(Blockly.Translate('mqtt_retain')).appendField(new Blockly.FieldCheckbox('FALSE'), 'RETAIN');
+        this.appendDummyInput('INSTANCE')
+            .appendField(Blockly.Translate('mqtt_sendmessage'))
+            .appendField(new Blockly.FieldDropdown(options), 'INSTANCE');
+
+        this.appendValueInput('TOPIC')
+            .appendField(Blockly.Translate('mqtt_topic'));
+
+        this.appendValueInput('MESSAGE')
+            .appendField(Blockly.Translate('mqtt_message'));
+
+        this.appendDummyInput('RETAIN')
+            .appendField(Blockly.Translate('mqtt_retain'))
+            .appendField(new Blockly.FieldCheckbox('FALSE'), 'RETAIN');
 
         this.setInputsInline(false);
         this.setPreviousStatement(true, null);
@@ -159,5 +166,5 @@ Blockly.JavaScript['mqtt_sendmessage'] = function (block) {
     let retain = block.getFieldValue('RETAIN');
     retain = retain === 'TRUE' || retain === 'true' || retain === true;
 
-    return `sendTo('mqtt${block.getFieldValue('INSTANCE')}', 'sendMessage2Client', { topic: ${topic}, message: ${message}, retain: ${retain} }, (res) => { if (res && res.error) { console.error(res.error); } });`;
+    return `sendTo('mqtt${block.getFieldValue('INSTANCE')}', 'sendMessage2Client', { topic: ${topic}, message: ${message}, retain: ${retain} });`;
 };

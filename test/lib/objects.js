@@ -898,34 +898,34 @@ function Objects(cb) {
             parentChannel = '';
             parentDevice  = '';
         } else
-        if (parentChannel === undefined && stateName === undefined) {
-            stateName     = parentDevice;
-            parentDevice  = '';
-            parentChannel = '';
-        } else {
-            if (typeof options === 'function') {
-                callback = options;
-                options  = null;
-            }
-            if (typeof stateName === 'function') {
-                callback      = stateName;
-                stateName     = parentChannel;
-                parentChannel = parentDevice;
-                parentDevice  = '';
-            }
-            if (typeof parentChannel === 'function') {
-                callback      = parentChannel;
+            if (parentChannel === undefined && stateName === undefined) {
                 stateName     = parentDevice;
-                parentChannel = '';
                 parentDevice  = '';
-            }
-            if (typeof parentChannel === 'function') {
-                callback      = parentChannel;
-                stateName     = parentDevice;
                 parentChannel = '';
-                parentDevice  = '';
+            } else {
+                if (typeof options === 'function') {
+                    callback = options;
+                    options  = null;
+                }
+                if (typeof stateName === 'function') {
+                    callback      = stateName;
+                    stateName     = parentChannel;
+                    parentChannel = parentDevice;
+                    parentDevice  = '';
+                }
+                if (typeof parentChannel === 'function') {
+                    callback      = parentChannel;
+                    stateName     = parentDevice;
+                    parentChannel = '';
+                    parentDevice  = '';
+                }
+                if (typeof parentChannel === 'function') {
+                    callback      = parentChannel;
+                    stateName     = parentDevice;
+                    parentChannel = '';
+                    parentDevice  = '';
+                }
             }
-        }
 
         that.deleteStateFromEnum('', parentDevice, parentChannel, stateName, options);
 
