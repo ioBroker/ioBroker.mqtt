@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "5.2.0",
+    "version": "6.0.0",
     "news": {
+      "6.0.0": {
+        "en": "Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required\nFixed blockly definitions",
+        "de": "Bruchänderungen: NodeJS >= 18.x und js-Controller >= 5 sind erforderlich\nFeste blockweise Definitionen",
+        "ru": "Перерывные изменения: NodeJS >= 18.x и js-контроллер >= 5 требуется\nИсправленные блокированные определения",
+        "pt": "Alterações de ruptura: NodeJS >= 18.x e js-controller >= 5 são necessários\nDefinições bloqueadas fixas",
+        "nl": "Voor de toepassing van deze onderverdeling wordt verstaan onder: 5 zijn vereist\nVaste blokdefinities",
+        "fr": "Breaking Changes: NodeJS >= 18.x et js-controller >= 5 sont nécessaires\nDéfinition par blocs",
+        "it": "Cambiamenti di rottura: NodeJS >= 18.x e js-controller >= 5 sono necessari\nDefinizioni bloccate fissate",
+        "es": "Cambios de ruptura: NodeJS >= 18.x y js-controller √= 5 se requieren\nDefiniciones bloqueadas fijas",
+        "pl": "Breaking Changes: NodeJS > = 18.x i kontroler js- > = 5 są wymagane\nPoprawione definicje blokowane",
+        "uk": "Зміна несправностей: NodeJS >= 18.x і js-controller >= 5 обов'язкові\nФіксовані визначення блоків",
+        "zh-cn": "突破更改:节点JS QQ 18.x和js控制器 QQ 需要5个\n固定的区块定义"
+      },
       "5.2.0": {
         "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing\nAdded an option to filter certain topics",
         "de": "behoben: bestätigen aufMessage()\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung\nHinzugefügt eine Option, bestimmte Themen zu filtern",
