@@ -1,5 +1,5 @@
 'use strict';
-const path = require('path');
+const path = require('node:path');
 const rootDir = path.normalize(__dirname + '/../../');
 let adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName = adapterName[adapterName.length - 2];

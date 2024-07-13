@@ -47,7 +47,7 @@ function startClients(_done) {
         lastReceivedMessage1 = message ? message.toString() : null;
     }, {name: 'Emitter', user: 'user', pass: 'pass!?#1'});
 
-    // Start client to receive topics
+    // Start a client to receive topics
     mqttClientDetector = new MqttClient(connected => {
         // on connected
         if (connected) {
@@ -69,7 +69,7 @@ function startClients(_done) {
 
 function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     _it.timeout(1000);
-    const value = 'Roger' + Math.round(Math.random() * 100);
+    const value = `Roger${Math.round(Math.random() * 100)}`;
     const mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
@@ -150,7 +150,7 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
 function checkConnection(value, done, counter) {
     counter = counter || 0;
     if (counter > 60) {
-        done && done('Cannot check ' + value);
+        done && done(`Cannot check ${value}`);
         return;
     }
 
@@ -176,7 +176,7 @@ function encrypt(key, value) {
 
 describe('MQTT server: Test mqtt server', () => {
     before('MQTT server: Start js-controller', function (_done) {
-        this.timeout(600000); // because of first install from npm
+        this.timeout(600000); // because of the first installation from npm
         setup.adapterStarted = false;
 
         setup.setupController(async systemConfig => {
@@ -216,13 +216,13 @@ describe('MQTT server: Test mqtt server', () => {
 
     for (const r in rules) {
         (function(id, topic) {
-            it('MQTT server: Check receive ' + id, function (done) { // let FUNCTION here
+            it(`MQTT server: Check receive ${id}`, function (done) { // let FUNCTION here
                 checkMqtt2Adapter(id, topic, this, done);
             });
         })(r, rules[r]);
     }
 
-    // give time to client to receive all messages
+    // give time to a client to receive all messages
     it('wait', done => {
         setTimeout(() => done(), 2000);
     }).timeout(3000);

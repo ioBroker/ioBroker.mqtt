@@ -32,7 +32,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter mqtt.0
 - **Publish only on change** - New messages will be sent to a client only if the state value changes. Every message sent by the client will be accepted, even if the value does not change.
 - **Publish own states on connect** - by every client connection the all known states will be sent to a client (defined by the state mask), to tell him which states the ioBroker has.
-- **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g. if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
+- **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g., if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
 - **Trace output for every message** - Debug outputs.
 - **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). The client will receive sent messages back in this mode.
@@ -160,8 +160,7 @@ The broker was tested with the following clients:
 
 ## Changelog
 ### **WORK IN PROGRESS**
-NodeJS >= 18.x and js-controller >= 5 is required
-
+* Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required
 * (klein0r) Fixed blockly definitions
 
 ### 5.2.0 (2024-01-08)

@@ -54,7 +54,7 @@ describe('MQTT server', function () {
             },
             null,
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: false,
                 clientId: 'testClient2',
                 resubscribe: false
@@ -76,7 +76,7 @@ describe('MQTT server', function () {
                             }
                         },
                         {
-                            url: '127.0.0.1:' + port,
+                            url: `127.0.0.1:${port}`,
                             clean: false,
                             clientId: 'testClient2',
                             resubscribe: false
@@ -102,7 +102,7 @@ describe('MQTT server', function () {
             },
             (topic, data) => receiveFunc && receiveFunc(topic, data),
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: false,
                 clientId: 'testClient3',
                 resubscribe: false
@@ -120,9 +120,9 @@ describe('MQTT server', function () {
             };
         })
             .then(async () => {
-                await adapter.setForeignObjectAsync('mqtt.0.' + id, {_id: 'mqtt.0.' + id, common: {type: 'number'}, native: {}, type: 'state'});
-                await adapter.setForeignStateAsync('mqtt.0.' + id, data);
-                server.onStateChange('mqtt.0.' + id, {val: data, ack: false});
+                await adapter.setForeignObjectAsync(`mqtt.0.${id}`, {_id: `mqtt.0.${id}`, common: {type: 'number'}, native: {}, type: 'state'});
+                await adapter.setForeignStateAsync(`mqtt.0.${id}`, data);
+                server.onStateChange(`mqtt.0.${id}`, {val: data, ack: false});
 
                 return new Promise( resolve => {
                     setTimeout(() => resolve(), 1000);
@@ -156,7 +156,7 @@ describe('MQTT server', function () {
             },
             (topic, data) => receiveFunc && receiveFunc(topic, data),
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: false,
                 clientId: 'receiverClient',
                 resubscribe: false
@@ -164,7 +164,7 @@ describe('MQTT server', function () {
             );
             emitterClient = new Client(null, null,
                 {
-                    url: '127.0.0.1:' + port,
+                    url: `127.0.0.1:${port}`,
                     clean: true,
                     clientId: 'emitterClient',
                     resubscribe: false
@@ -215,7 +215,7 @@ describe('MQTT server', function () {
             },
             (topic, data, packet) => receiveFunc && receiveFunc(topic, data, packet),
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: false,
                 clientId: 'receiverClient',
                 resubscribe: false
@@ -223,7 +223,7 @@ describe('MQTT server', function () {
             );
             emitterClient = new Client(null, null,
                 {
-                    url: '127.0.0.1:' + port,
+                    url: `127.0.0.1:${port}`,
                     clean: true,
                     clientId: 'emitterClient',
                     resubscribe: false
@@ -263,14 +263,14 @@ describe('MQTT server', function () {
             },
             (id, topic) => {
                 if (id.includes('aaa6')) {
-                    console.log('Received ' + topic.toString());
+                    console.log(`Received ${topic.toString()}`);
                     count++;
                     expect(count).to.be.equal(1);
                     setTimeout(() => resolve(), 100);
                 }
             },
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: true,
                 clientId: 'testClient6',
                 resubscribe: false
@@ -303,7 +303,7 @@ describe('MQTT server', function () {
         return new Promise(resolve => {
             client = new Client(async isConnected => {
                 if (isConnected) {
-                    await adapter.setForeignObjectAsync('mqtt.0.' + _id, {common: {type: 'file'}, type: 'state', native: {}});
+                    await adapter.setForeignObjectAsync(`mqtt.0.${_id}`, {common: {type: 'file'}, type: 'state', native: {}});
                     client.publish('mqtt/0/' + _id, data);
                     setTimeout(() => resolve(), 500);
                 }
@@ -317,7 +317,7 @@ describe('MQTT server', function () {
             });
         })
             .then(async () => {
-                const buffer = await adapter.getForeignBinaryStateAsync('mqtt.0.' + _id);
+                const buffer = await adapter.getForeignBinaryStateAsync(`mqtt.0.${_id}`);
                 expect(Buffer.isBuffer(buffer)).to.be.true;
                 expect(buffer.byteLength).to.be.equal(data.byteLength);
             });
@@ -334,14 +334,14 @@ describe('MQTT server', function () {
                 if (isConnected) {
                     client.subscribe('mqtt/0/#');
                     setTimeout(async () => {
-                        await adapter.setForeignBinaryStateAsync('mqtt.0.' + _id, data);
+                        await adapter.setForeignBinaryStateAsync(`mqtt.0.${_id}`, data);
                         server.onStateChange('mqtt.0.' + _id, {val: null, binary: true, ack: true});
                     }, 500);
                 }
             },
             (id, topic, packet) => {
                 if (id.includes(_id)) {
-                    console.log('Received ' + topic.toString());
+                    console.log(`Received ${topic.toString()}`);
                     count++;
                     expect(count).to.be.equal(1);
                     expect(packet.payload.byteLength).to.be.equal(data.byteLength);
@@ -350,7 +350,7 @@ describe('MQTT server', function () {
                 }
             },
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: true,
                 clientId: 'testClient7',
                 resubscribe: false

@@ -42,8 +42,8 @@ describe('MQTT client', function () {
         return new Promise(resolve => {
             emitterClient = new ClientEmitter(async isConnected => {
                 if (isConnected) {
-                    await adapter.setForeignObjectAsync('mqtt.0.' + _id, {common: {type: 'file'}, type: 'state', native: {}});
-                    emitterClient.publish('mqtt/0/' + _id, data);
+                    await adapter.setForeignObjectAsync(`mqtt.0.${_id}`, {common: {type: 'file'}, type: 'state', native: {}});
+                    emitterClient.publish(`mqtt/0/${_id}`, data);
                     setTimeout(async () => resolve(), 500);
                 }
             },
@@ -57,7 +57,7 @@ describe('MQTT client', function () {
             });
         })
             .then(async () => {
-                const buffer = await adapter.getForeignBinaryStateAsync('mqtt.0.' + _id);
+                const buffer = await adapter.getForeignBinaryStateAsync(`mqtt.0.${_id}`);
                 expect(buffer.byteLength).to.be.equal(data.byteLength);
                 emitterClient.destroy();
             });
@@ -72,13 +72,13 @@ describe('MQTT client', function () {
         return new Promise(resolve => {
             emitterClient = new ClientEmitter(async isConnected => {
                 if (isConnected) {
-                    await adapter.setForeignBinaryStateAsync('mqtt.0.' + _id, data);
-                    client.onStateChange('mqtt.0.' + _id, {binary: true});
+                    await adapter.setForeignBinaryStateAsync(`mqtt.0.${_id}`, data);
+                    client.onStateChange(`mqtt.0.${_id}`, {binary: true});
                 }
             },
             (id, topic, packet) => {
                 if (id.includes(_id)) {
-                    console.log('Received ' + topic.toString());
+                    console.log(`Received ${topic.toString()}`);
                     expect(packet.payload.byteLength).to.be.equal(data.length);
                     expect(packet.payload[2]).to.be.equal(data[2]);
                     count++;
@@ -87,7 +87,7 @@ describe('MQTT client', function () {
                 }
             },
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clean: true,
                 clientId: 'testClient11',
                 resubscribe: false

@@ -22,7 +22,7 @@ const rules = {
 
 function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     _it.timeout(1000);
-    const value = 'Roger' + Math.round(Math.random() * 100);
+    const value = `Roger${Math.round(Math.random() * 100)}`;
     const mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
@@ -31,7 +31,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
         id = _expectedId;
     }
     if (!id.includes('.')) {
-        id = 'mqtt.0.' + id;
+        id = `mqtt.0.${id}`;
     }
 
     mqttClient.publish(mqttid, value);
@@ -57,7 +57,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 }
 
 function checkAdapter2Mqtt(id, mqttid, _it, _done) {
-    const value = 'NewRoger' + Math.round(Math.random() * 100);
+    const value = `NewRoger${Math.round(Math.random() * 100)}`;
     _it.timeout(5000);
 
     console.log('Send ' + id);
@@ -95,7 +95,7 @@ function checkConnectionOfAdapter(cb, counter) {
 function checkConnectionToServer(value, cb, counter) {
     counter = counter || 0;
     if (counter > 60) {
-        cb && cb('Cannot check connection to server for ' + value);
+        cb && cb(`Cannot check connection to server for ${value}`);
         return;
     }
 
@@ -122,7 +122,7 @@ function encrypt(key, value) {
 
 describe('Test MQTT client', function () {
     before('MQTT client: Start js-controller', function (_done) { // let FUNCTION and not => here
-        this.timeout(600000); // because of first install from npm
+        this.timeout(600000); // because of the first installation from npm
         let clientConnected  = false;
         let brokerStarted    = false;
         setup.adapterStarted = false;
@@ -157,7 +157,7 @@ describe('Test MQTT client', function () {
 
         mqttServer = new MqttServer({user: 'user', pass: 'pass!?#1'});
 
-        // Start client to emit topics
+        // Start a client to emit topics
         mqttClient = new MqttClient(() => {
             // on connected
             //console.log('Test MQTT Client is connected to MQTT broker');
@@ -213,7 +213,7 @@ describe('Test MQTT client', function () {
 
     for (const rr in rules) {
         (function(id, topic) {
-            it('MQTT client: Check receive ' + id, function (done) { // let FUNCTION here
+            it(`MQTT client: Check receive ${id}`, function (done) { // let FUNCTION here
                 checkMqtt2Adapter(id, topic, this, done);
             });
         })(rr, rules[rr]);
@@ -222,7 +222,7 @@ describe('Test MQTT client', function () {
     for (const r in rules) {
         (function(id, topic) {
             if (topic.indexOf('mqtt') !== -1) {
-                it('MQTT client: Check send ' + topic, function (done) { // let FUNCTION here
+                it(`MQTT client: Check send ${topic}`, function (done) { // let FUNCTION here
                     checkAdapter2Mqtt(topic, id, this, done);
                 });
             }
@@ -232,7 +232,7 @@ describe('Test MQTT client', function () {
     it('MQTT client: check reconnect if server is down', done => {
         mqttServer.stop();
         connected = false;
-        console.log('MQTT server stop ' + Date.now());
+        console.log(`MQTT server stop ${Date.now()}`);
 
         checkConnectionToServer(false, error => {
             expect(error).to.be.not.ok;
@@ -250,7 +250,7 @@ describe('Test MQTT client', function () {
         mqttClient.stop();
 
         setup.stopController(function (normalTerminated) {
-            console.log('Adapter normal terminated: ' + normalTerminated);
+            console.log(`Adapter normal terminated: ${normalTerminated}`);
             setTimeout(_done, 4000);
         });
     });
