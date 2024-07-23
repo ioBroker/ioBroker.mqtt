@@ -83,8 +83,8 @@ Blockly.Words['mqtt_anyInstance'] = {
     'zh-cn': '所有案件',
 };
 Blockly.Words['mqtt_tooltip'] = {
-    en: 'Send a message on a user defined topic',
-    de: 'Senden Sie eine Nachricht an ein benutzerdefiniertes Thema',
+    en: 'Sends a message on a user defined topic',
+    de: 'Sendet eine Nachricht an ein benutzerdefiniertes Thema',
     ru: 'Отправить сообщение на определенную тему пользователя',
     pt: 'Enviar uma mensagem sobre um tópico definido pelo usuário',
     nl: 'Stuur een bericht naar een gebruiker',
@@ -166,5 +166,5 @@ Blockly.JavaScript['mqtt_sendmessage'] = function (block) {
     let retain = block.getFieldValue('RETAIN');
     retain = retain === 'TRUE' || retain === 'true' || retain === true;
 
-    return `sendTo('mqtt${block.getFieldValue('INSTANCE')}', 'sendMessage2Client', { topic: ${topic}, message: ${message}, retain: ${retain} });`;
+    return `sendTo('mqtt${block.getFieldValue('INSTANCE')}', 'sendMessage2Client', { topic: ${topic}, message: ${message}, retain: ${retain} });\n`;
 };
