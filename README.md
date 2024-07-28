@@ -1,5 +1,4 @@
 ![Logo](admin/mqtt.png)
-
 # ioBroker MQTT
 
 ![Number of Installations](https://iobroker.live/badges/mqtt-installed.svg)
@@ -22,22 +21,20 @@ Historically, the 'MQ' in 'MQTT' came from IBM's MQ message queuing product line
 This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](https://github.com/adamvr/MQTT.js/)
 
 ## Configuration
-
 - **Type** - Select "Client" (If you want to receive and send messages to another broker) or "Server" if you want to create own MQTT broker.
 
 ### Server settings
-
 - **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
 - **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
 - **SSL** - If TCP and WebSockets should run as secure server.
-- **Authentication/Username** - If authentication required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.
+- **Authentication/Username** - If authentication required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
-- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "_.memRss, mqtt.0._` to get all memory states of all adapters and all states of adapter mqtt.0
+- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter mqtt.0
 - **Publish only on change** - New messages will be sent to a client only if the state value changes. Every message sent by the client will be accepted, even if the value does not change.
 - **Publish own states on connect** - by every client connection the all known states will be sent to a client (defined by the state mask), to tell him which states the ioBroker has.
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g., if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
 - **Trace output for every message** - Debug outputs.
-- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner.
+- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). The client will receive sent messages back in this mode.
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to a client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
@@ -48,27 +45,25 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 The ioBroker MQTT-Broker in server mode only simulates the behavior of real MQTT-Broker (like Mosquitto), but it is not the same.
 Real MQTT-Broker normally does not save the values of the topics and just forwards the message to other subscribed clients.
 
-To force real MQTT-Broker to behave like ioBroker MQTT-Broker, all messages must be sent with "retain" flag.
+To force real MQTT-Broker to behave like ioBroker MQTT-Broker, all messages must be sent with "retain" flag. 
 In this case, the values will be stored too.
 
-ioBroker MQTT-Broker always saves the values into the States-DB, so it can be processed by other adapters.
+ioBroker MQTT-Broker always saves the values into the States-DB, so it can be processed by other adapters. 
 Because of that, the messages are always published with a retain flag.
 
 If your client has problems with retained messages, you can force ioBroker MQTT-Broker to send messages without a retain flag with `Publish messages without "retain" flag` option.
-In this case, the messages will be stored in States-DB anyway.
+In this case, the messages will be stored in States-DB anyway. 
 
 If the option `Send states (ack=true) too` is not activated, so you can clear the value of the topic (state) with `ack=true` and the update will not be sent to subscribed clients.
 And when the client connects next time, it will not get the last command again.
 
-The JS-Code should look like this:
-
+The JS-Code should look like this: 
 ```
 await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set', 'cleanStart'); // ack=false
 await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set', '', true); // ack=true to clear the command
 ```
 
 ### Client settings
-
 - **URL** - name or ip address of the broker/server. Like `localhost`.
 - **Port** - Port of the MQTT broker. By default, 1883
 - **Secure** - If secure (SSL) connection must be used.
@@ -77,11 +72,11 @@ await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set',
 - **Password confirmation** - repeat here the password.
 - **Subscribe Patterns** - Subscribe by the pattern. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'mqtt/0/#,javascript/#' to subscribe for states of mqtt.0 and javascript
 - **Publish only on change** - Store incoming messages only if payload differs from actual stored.
-- **Mask to publish own states** - Mask for states, that must be published to broker. '_' - to publish all states. 'io.yr._,io.hm-rpc.0.\*' to publish states of `yr` and `hm-rpc` adapter.
+- **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter.  
 - **Publish all states at start** - Publish all states (defined by the state mask) every time by connection establishment to announce own available states and their values.
 - **Prefix for topics** - The prefix can be defined for own states. Like `/var/ioBroker/`. Name of topics will be for example published with the name `/var/ioBroker/ping/192-168-1-5`.
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
-- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner.
+- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true).
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: `{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}`); if not the values `states.val` is sent as a single value (example state.val as single value: `true`)
 - **Persistent Session** - When checked, the broker saves the session information of the adapter. This means it tracks which messages have been sent/received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
@@ -89,7 +84,6 @@ await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set',
 ## Usage
 
 ### How to test mqtt client:
-
 - Set type to `Client`.
 - Leave port on 1883.
 - Set URL as `broker.mqttdashboard.com`
@@ -98,27 +92,21 @@ await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set',
 - To receive all topics for `/MS` and `/floorish` set pattern to `/4MS/#, /floorish/#`
 
 ### Sending messages
-
 You may send / publish messages on topics using `sendTo` method from your adapter via MQTT adapter, e.g.:
 
 ```javascript
 /*
  * @param {string}  MQTT instance     Specify MQTT instance to send message through (may be either server or client)
  * @param {string}  action            Action to use (always 'sendMessage2Client' for sending plain messages)
- * @param {object}  payload
+ * @param {object}  payload         
  * @param {string}  payload.topic     Topic to publish message on
  * @param {string}  payload.message   Message to be published on specified topic
  *
  */
-adapter.sendTo("mqtt.0", "sendMessage2Client", {
-  topic: "your/topic/here",
-  message: "your message",
-  retain: true,
-});
+adapter.sendTo('mqtt.0', 'sendMessage2Client', { topic: 'your/topic/here', message: 'your message', retain: true });
 ```
 
 ### Examples of using wildcards
-
 The following examples on the use of wildcards, builds on the example provided in topic strings.
 
 - `Sport`
@@ -144,16 +132,14 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 `Sport/+/Finals`
 
 ### Binary messages
-
 With version 4.x, there is a possibility to send and receive binary messages.
 **Send works only with js-controller@4.2 or newer.**
 
 You can change manually the `common.type` of existing objects to `file` and they will be processed as binary states.
 
-Or you can set the options \*All new topics will be processed as binary\*\* in the instance settings to force all new topics will have automatically `common.type="file"`.
+Or you can set the options *All new topics will be processed as binary** in the instance settings to force all new topics will have automatically `common.type="file"`.
 
 ### Tests
-
 The broker was tested with the following clients:
 
 - http://mitsuruog.github.io/what-mqtt/
@@ -161,11 +147,10 @@ The broker was tested with the following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ## Todo
-
-- Implement resend of `QoS 2` messages after a while.
+* Implement resend of `QoS 2` messages after a while.
   Whenever a packet gets lost on the way, the sender is responsible for resending the last message after a reasonable amount of time. This is true when the sender is a MQTT client and also when a MQTT broker sends a message.
 
-- queue packets with `QoS 1/2` for the offline clients with the persistent session.
+* queue packets with `QoS 1/2` for the offline clients with the persistent session.
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
 <!--
