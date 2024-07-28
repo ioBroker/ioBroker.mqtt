@@ -177,7 +177,8 @@ The broker was tested with the following clients:
 
 ### **WORK IN PROGRESS**
 
-- (klein0r) Fixed blockly definitions
+- (@klein0r) Fixed blockly definitions
+- (@klein0r) Just handle messages as state object if properties are valid
 
 ### 6.0.0 (2024-07-13)
 
