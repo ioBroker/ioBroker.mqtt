@@ -159,6 +159,10 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+* (foxriver76) remove binary state handling as these are no longer existing
+
 ### 6.0.0 (2024-07-13)
 * Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required
 * (klein0r) Fixed blockly definitions
