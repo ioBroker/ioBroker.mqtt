@@ -161,36 +161,30 @@ The broker was tested with the following clients:
 ## Changelog
 
 ### **WORK IN PROGRESS**
-
-- (@klein0r) Fixed blockly definitions
-- (@klein0r) Just handle messages as state object if properties are valid
+* (@klein0r) Fixed blockly definitions
+* (@klein0r) Just handle messages as state object if properties are valid
 
 ### 6.0.0 (2024-07-13)
-
-- Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required
-- (klein0r) Fixed blockly definitions
+* Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required
+* (klein0r) Fixed blockly definitions
 
 ### 5.2.0 (2024-01-08)
-
-- (ticaki) fixed: confirm onMessage()
-- (orpheus55) Added the authentication validation to request processing
-- (theimo1221) Added an option to filter certain topics
+* (ticaki) fixed: confirm onMessage()
+* (orpheus55) Added the authentication validation to request processing
+* (theimo1221) Added an option to filter certain topics
 
 ### 5.1.0 (2023-10-11)
-
-- (bluefox) Added security check if the server is available from the internet without protection
+* (bluefox) Added security check if the server is available from the internet without protection
 
 ### 5.0.0 (2023-09-18)
-
-- (klein0r) Added blockly block for custom messages (sendMessage2Client)
-- (klein0r) Added retain flag for sendMessage2Client
-- (klein0r) Removed support for Admin 4 UI (materialize)
-- (bluefox) Minimal supported node.js version is 16
+* (klein0r) Added blockly block for custom messages (sendMessage2Client)
+* (klein0r) Added retain flag for sendMessage2Client
+* (klein0r) Removed support for Admin 4 UI (materialize)
+* (bluefox) Minimal supported node.js version is 16
 
 ### 4.1.1 (2023-03-22)
-
-- (Apollon77) Fixed the regex on subscribing of server clients to only match wanted states
-- (Apollon77) Prepare for future js-controller versions
+* (Apollon77) Fixed the regex on subscribing of server clients to only match wanted states
+* (Apollon77) Prepare for future js-controller versions
 
 ## License
 
