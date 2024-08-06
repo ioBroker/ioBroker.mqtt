@@ -259,7 +259,7 @@ class MQTT extends utils.Adapter {
             this.server && this.server.destroy();
 
             callback();
-        } catch (e) {
+        } catch {
             callback();
         }
     }
