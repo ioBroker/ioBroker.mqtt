@@ -1,4 +1,8 @@
 # Older changes
+## 4.1.1 (2023-03-22)
+* (Apollon77) Fixed the regex on subscribing of server clients to only match wanted states
+* (Apollon77) Prepare for future js-controller versions
+
 ## 4.0.7 (2022-06-28)
 * (Apollon77/kleinOr) Removed unneeded dependency
 

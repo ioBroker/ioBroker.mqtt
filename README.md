@@ -159,8 +159,7 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 6.0.1 (2024-08-06)
 * (foxriver76) remove binary state handling as these are no longer existing
 * (klein0r) handle the messages as a state object if properties are valid
 
@@ -181,10 +180,6 @@ The broker was tested with the following clients:
 * (klein0r) Added retain flag for sendMessage2Client
 * (klein0r) Removed support for Admin 4 UI (materialize)
 * (bluefox) Minimal supported node.js version is 16
-
-### 4.1.1 (2023-03-22)
-* (Apollon77) Fixed the regex on subscribing of server clients to only match wanted states
-* (Apollon77) Prepare for future js-controller versions
 
 ## License
 

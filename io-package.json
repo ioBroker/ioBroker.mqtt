@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "6.0.0",
+    "version": "6.0.1",
     "news": {
+      "6.0.1": {
+        "en": "remove binary state handling as these are no longer existing\nhandle the messages as a state object if properties are valid",
+        "de": "entfernen der binären zustandsbehandlung, da diese nicht mehr vorhanden sind\ndie nachrichten als zustandsobjekt verwalten, wenn eigenschaften gültig sind",
+        "ru": "удалить управление бинарным состоянием, поскольку они больше не существуют\nобрабатывать сообщения как объект состояния, если свойства действительны",
+        "pt": "remover o manuseio de estado binário como estes não são mais existentes\nlidar com as mensagens como um objeto de estado se as propriedades são válidas",
+        "nl": "binaire statusbehandeling verwijderen omdat deze niet meer bestaan\nde berichten als een statusobject behandelen als eigenschappen geldig zijn",
+        "fr": "supprimer la manipulation de l'état binaire car celles-ci ne sont plus existantes\ngérer les messages comme un objet d'état si les propriétés sont valides",
+        "it": "rimuovere la gestione dello stato binario come questi non sono più esistenti\ngestire i messaggi come oggetto di stato se le proprietà sono valide",
+        "es": "eliminar el manejo de estado binario ya que estos ya no existen\nmanejar los mensajes como objeto de estado si las propiedades son válidas",
+        "pl": "usuń obsługę stanu binarnego, ponieważ nie istnieją\nobsługi wiadomości jako obiektu stanu, jeśli właściwości są prawidłowe",
+        "uk": "видаліть бінарну державну обробку, оскільки це більше не існує\nобробляти повідомлення як державний об'єкт, якщо властивості дійсні",
+        "zh-cn": "删除已不存在的二进制状态处理\n如果属性有效, 将信件作为状态对象处理"
+      },
       "6.0.0": {
         "en": "Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required\nFixed blockly definitions",
         "de": "Bruchänderungen: NodeJS >= 18.x und js-Controller >= 5 sind erforderlich\nFeste blockweise Definitionen",
@@ -79,18 +92,6 @@
         "es": "Eliminar la dependencia sin necesidad",
         "pl": "Remove niepotrzebne zależności",
         "zh-cn": "消除不必要的依赖"
-      },
-      "4.0.6": {
-        "en": "Corrected sentry issue",
-        "de": "Korrigierte Versandausgabe",
-        "ru": "Исправлена проблема отправки",
-        "pt": "Problema de envio corrigido",
-        "nl": "Vertaling:",
-        "fr": "Correction de la question de la sentinelle",
-        "it": "Questione corretta della sentinella",
-        "es": "Cuestión del centinela corregida",
-        "pl": "Poprawka",
-        "zh-cn": "更正发出的问题"
       }
     },
     "titleLang": {
