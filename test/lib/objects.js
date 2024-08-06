@@ -1,6 +1,6 @@
 'use strict';
-const path        = require('path');
-const rootDir     = path.normalize(__dirname + '/../../');
+const path        = require('node:path');
+const rootDir     = path.normalize(`${__dirname}/../../`);
 let adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName = adapterName[adapterName.length - 2];
 
@@ -22,7 +22,7 @@ const logger = {
 function Objects(cb) {
     if (!(this instanceof Objects)) return new Objects(cb);
 
-    const _Objects = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/objects');
+    const _Objects = require(`${rootDir}tmp/node_modules/iobroker.js-controller/lib/objects`);
     this.connected = false;
     const that = this;
 
@@ -48,7 +48,7 @@ function Objects(cb) {
         },
         change: (id, obj) => {
             if (!id) {
-                logger.error(that.namespace + ' change ID is empty:  ' + JSON.stringify(obj));
+                logger.error(`${that.namespace} change ID is empty:  ${JSON.stringify(obj)}`);
                 return;
             }
 
@@ -58,29 +58,33 @@ function Objects(cb) {
                 // emit 'objectChange' event instantly
                 setImmediate(() => that.emit('objectChange', id.slice(that.namespace.length + 1), obj));
             } else {
-                if (typeof options.objectChange === 'function') options.objectChange(id, obj);
+                if (typeof options.objectChange === 'function') {
+                    options.objectChange(id, obj);
+                }
 
                 // emit 'objectChange' event instantly
                 setImmediate(() => that.emit('objectChange', id, obj));
             }
         },
         connectTimeout: error => {
-            if (logger) logger.error(that.namespace + ' no connection to objects DB');
-            if (typeof cb === 'function') cb('Connect timeout');
+            if (logger) logger.error(`${that.namespace} no connection to objects DB`);
+            if (typeof cb === 'function') {
+                cb('Connect timeout');
+            }
         }
     });
 
-    that._namespaceRegExp = new RegExp('^' + that.namespace);       // cache the regex object 'adapter.0'
+    that._namespaceRegExp = new RegExp(`^${that.namespace}`);       // cache the regex object 'adapter.0'
 
     that._fixId = function _fixId(id) {
         let result  = '';
         // If id is an object
         if (typeof id === 'object') {
             // Add namespace + device + channel
-            result = that.namespace + '.' + (id.device ? id.device + '.' : '') + (id.channel ? id.channel + '.' : '') + id.state;
+            result = `${that.namespace}.${id.device ? id.device + '.' : ''}${id.channel ? id.channel + '.' : ''}${id.state}`;
         } else {
             result = id;
-            if (!that._namespaceRegExp.test(id)) result = that.namespace + '.' + id;
+            if (!that._namespaceRegExp.test(id)) result = `${that.namespace}.${id}`;
         }
         return result;
     };
@@ -92,7 +96,7 @@ function Objects(cb) {
         }
 
         if (!id) {
-            logger.error(that.namespace + ' setObject id missing!!');
+            logger.error(`${that.namespace} setObject id missing!!`);
             return;
         }
 
@@ -103,12 +107,12 @@ function Objects(cb) {
 
         if (obj.hasOwnProperty('type')) {
             if (!obj.hasOwnProperty('native')) {
-                logger.warn(that.namespace + ' setObject ' + id + ' (type=' + obj.type + ') property native missing!');
+                logger.warn(`${that.namespace} setObject ${id} (type=${obj.type}) property native missing!`);
                 obj.native = {};
             }
             // Check property 'common'
             if (!obj.hasOwnProperty('common')) {
-                logger.warn(that.namespace + ' setObject ' + id + ' (type=' + obj.type + ') property common missing!');
+                logger.warn(`${that.namespace} setObject ${id} (type=${obj.type}) property common missing!`);
                 obj.common = {};
             } else if (obj.type === 'state') {
                 // Try to extend the model for type='state'
@@ -116,16 +120,16 @@ function Objects(cb) {
                 if (obj.common.hasOwnProperty('role') && defaultObjs[obj.common.role]) {
                     obj.common = extend(true, defaultObjs[obj.common.role], obj.common);
                 } else if (!obj.common.hasOwnProperty('role')) {
-                    logger.warn(that.namespace + ' setObject ' + id + ' (type=' + obj.type + ') property common.role missing!');
+                    logger.warn(`${that.namespace} setObject ${id} (type=${obj.type}) property common.role missing!`);
                 }
                 if (!obj.common.hasOwnProperty('type')) {
-                    logger.warn(that.namespace + ' setObject ' + id + ' (type=' + obj.type + ') property common.type missing!');
+                    logger.warn(`${that.namespace} setObject ${id} (type=${obj.type}) property common.type missing!`);
                 }
             }
 
             if (!obj.common.hasOwnProperty('name')) {
                 obj.common.name = id;
-                logger.debug(that.namespace + ' setObject ' + id + ' (type=' + obj.type + ') property common.name missing, using id as name');
+                logger.debug(`${that.namespace} setObject ${id} (type=${obj.type}) property common.name missing, using id as name`);
             }
 
             id = that._fixId(id, obj.type);
@@ -136,7 +140,7 @@ function Objects(cb) {
             that.objects.setObject(id, obj, options, callback);
 
         } else {
-            logger.error(that.namespace + ' setObject ' + id + ' mandatory property type missing!');
+            logger.error(`${that.namespace} setObject ${id} mandatory property type missing!`);
         }
     };
 
@@ -898,34 +902,34 @@ function Objects(cb) {
             parentChannel = '';
             parentDevice  = '';
         } else
-        if (parentChannel === undefined && stateName === undefined) {
-            stateName     = parentDevice;
-            parentDevice  = '';
-            parentChannel = '';
-        } else {
-            if (typeof options === 'function') {
-                callback = options;
-                options  = null;
-            }
-            if (typeof stateName === 'function') {
-                callback      = stateName;
-                stateName     = parentChannel;
-                parentChannel = parentDevice;
-                parentDevice  = '';
-            }
-            if (typeof parentChannel === 'function') {
-                callback      = parentChannel;
+            if (parentChannel === undefined && stateName === undefined) {
                 stateName     = parentDevice;
-                parentChannel = '';
                 parentDevice  = '';
-            }
-            if (typeof parentChannel === 'function') {
-                callback      = parentChannel;
-                stateName     = parentDevice;
                 parentChannel = '';
-                parentDevice  = '';
+            } else {
+                if (typeof options === 'function') {
+                    callback = options;
+                    options  = null;
+                }
+                if (typeof stateName === 'function') {
+                    callback      = stateName;
+                    stateName     = parentChannel;
+                    parentChannel = parentDevice;
+                    parentDevice  = '';
+                }
+                if (typeof parentChannel === 'function') {
+                    callback      = parentChannel;
+                    stateName     = parentDevice;
+                    parentChannel = '';
+                    parentDevice  = '';
+                }
+                if (typeof parentChannel === 'function') {
+                    callback      = parentChannel;
+                    stateName     = parentDevice;
+                    parentChannel = '';
+                    parentDevice  = '';
+                }
             }
-        }
 
         that.deleteStateFromEnum('', parentDevice, parentChannel, stateName, options);
 

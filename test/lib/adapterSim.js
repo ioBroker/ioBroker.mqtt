@@ -31,8 +31,8 @@ module.exports = function (config) {
     };
 
     this.setState = (id, state, ack, cb) => {
-        if (!id.startsWith(this.namespace + '.')) {
-            id = this.namespace + '.' + id;
+        if (!id.startsWith(`${this.namespace}.`)) {
+            id = `${this.namespace}.${id}`;
         }
 
         return this.setForeignState(id, state, ack, cb);
@@ -58,8 +58,8 @@ module.exports = function (config) {
     };
 
     this.getState = (id, cb) => {
-        if (!id.startsWith(this.namespace + '.')) {
-            id = this.namespace + '.' + id;
+        if (!id.startsWith(`${this.namespace}.`)) {
+            id = `${this.namespace}.${id}`;
         }
 
         return this.getForeignState(id, cb);
@@ -85,16 +85,16 @@ module.exports = function (config) {
     };
 
     this.getObject = (id, cb) => {
-        if (!id.startsWith(this.namespace + '.')) {
-            id = this.namespace + '.' + id;
+        if (!id.startsWith(`${this.namespace}.`)) {
+            id = `${this.namespace}.${id}`;
         }
 
         return this.getForeignObject(id, cb);
     };
 
     this.setObject = (id, obj, cb) => {
-        if (!id.startsWith(this.namespace + '.')) {
-            id = this.namespace + '.' + id;
+        if (!id.startsWith(`${this.namespace}.`)) {
+            id = `${this.namespace}.${id}`;
         }
 
         return this.setForeignObject(id, obj, cb);
