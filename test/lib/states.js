@@ -676,24 +676,6 @@ function States(cb, stateChange) {
         that.states.lenMessage('system.adapter.' + that.namespace, callback);
     };
 
-    // Write binary block into redis, e.g image
-    that.setBinaryState = function setBinaryState(id, binary, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = {};
-        }
-        that.states.setBinaryState(id, binary, callback);
-    };
-
-    // Read binary block fromredis, e.g. image
-    that.getBinaryState = function getBinaryState(id, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = {};
-        }
-        that.states.getBinaryState(id, callback);
-    };
-
     logger.debug(that.namespace + ' statesDB connected');
 
     if (typeof cb === 'function') {

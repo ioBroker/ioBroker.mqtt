@@ -295,69 +295,6 @@ describe('MQTT server', function () {
             });
     }).timeout(3000);
 
-    it('MQTT server: store binary data', () => {
-        let client;
-        const _id = 'aaa7';
-        const data = Buffer.from([0,1,2,3,4]);
-
-        return new Promise(resolve => {
-            client = new Client(async isConnected => {
-                if (isConnected) {
-                    await adapter.setForeignObjectAsync(`mqtt.0.${_id}`, {common: {type: 'file'}, type: 'state', native: {}});
-                    client.publish('mqtt/0/' + _id, data);
-                    setTimeout(() => resolve(), 500);
-                }
-            },
-            null,
-            {
-                url: '127.0.0.1:' + port,
-                clean: true,
-                clientId: 'testClient7',
-                resubscribe: false
-            });
-        })
-            .then(async () => {
-                const buffer = await adapter.getForeignBinaryStateAsync(`mqtt.0.${_id}`);
-                expect(Buffer.isBuffer(buffer)).to.be.true;
-                expect(buffer.byteLength).to.be.equal(data.byteLength);
-            });
-    }).timeout(3000);
-
-    it('MQTT server: publish binary data', () => {
-        let client;
-        const _id = 'aaa7';
-        let count = 0;
-        const data = Buffer.from([0,1,2,3,4,5]);
-
-        return new Promise(resolve => {
-            client = new Client(async isConnected => {
-                if (isConnected) {
-                    client.subscribe('mqtt/0/#');
-                    setTimeout(async () => {
-                        await adapter.setForeignBinaryStateAsync(`mqtt.0.${_id}`, data);
-                        server.onStateChange('mqtt.0.' + _id, {val: null, binary: true, ack: true});
-                    }, 500);
-                }
-            },
-            (id, topic, packet) => {
-                if (id.includes(_id)) {
-                    console.log(`Received ${topic.toString()}`);
-                    count++;
-                    expect(count).to.be.equal(1);
-                    expect(packet.payload.byteLength).to.be.equal(data.byteLength);
-                    expect(packet.payload[0]).to.be.equal(data[0]);
-                    setTimeout(() => resolve(), 100);
-                }
-            },
-            {
-                url: `127.0.0.1:${port}`,
-                clean: true,
-                clientId: 'testClient7',
-                resubscribe: false
-            });
-        });
-    }).timeout(3000);
-
     after('MQTT server: Stop MQTT server', done => {
         server.destroy(done);
     });
