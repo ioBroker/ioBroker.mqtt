@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "6.0.1",
+    "version": "6.0.2",
     "news": {
+      "6.0.2": {
+        "en": "Added a space to the connection string for better readability",
+        "de": "Hinzufügen eines Platzes zum Verbindungsstring für eine bessere Lesbarkeit",
+        "ru": "Добавлено пространство к строке подключения для лучшей читаемости",
+        "pt": "Adicionado um espaço para a cadeia de conexão para melhor legibilidade",
+        "nl": "Een ruimte aan de verbindingsstring toegevoegd voor betere leesbaarheid",
+        "fr": "Ajout d'un espace à la chaîne de connexion pour une meilleure lisibilité",
+        "it": "Aggiunto uno spazio alla stringa di connessione per una migliore leggibilità",
+        "es": "Añadido un espacio a la cadena de conexión para una mejor legibilidad",
+        "pl": "Dodano przestrzeń do łańcucha połączeń dla lepszej czytelności",
+        "uk": "Додано простір на рядок з'єднання для кращого зчитування",
+        "zh-cn": "添加到连接字符串中的空格以更好地读取"
+      },
       "6.0.1": {
         "en": "remove binary state handling as these are no longer existing\nhandle the messages as a state object if properties are valid",
         "de": "entfernen der binären zustandsbehandlung, da diese nicht mehr vorhanden sind\ndie nachrichten als zustandsobjekt verwalten, wenn eigenschaften gültig sind",
@@ -80,18 +93,6 @@
         "pl": "Fix rejestruje klientom serwerów tylko w celu dopasowania się do stanów\nPrepare for future js-controller version",
         "uk": "Виправлення regex на підписках клієнтів сервера до лише відповідних вимог\nПідготовка до майбутніх версій js-controller",
         "zh-cn": "仅与通缉国相匹配的服务器客户的签名\n今后防污版本的编制"
-      },
-      "4.0.7": {
-        "en": "Remove unneeded dependency",
-        "de": "Unbenötigte Abhängigkeit entfernen",
-        "ru": "Удалить ненужные зависимости",
-        "pt": "Remover dependência não necessária",
-        "nl": "Verwijder onnodige afhankelijkheid",
-        "fr": "Supprimer la dépendance inutile",
-        "it": "Rimuovere la dipendenza non necessaria",
-        "es": "Eliminar la dependencia sin necesidad",
-        "pl": "Remove niepotrzebne zależności",
-        "zh-cn": "消除不必要的依赖"
       }
     },
     "titleLang": {

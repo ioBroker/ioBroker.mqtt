@@ -1,4 +1,10 @@
 # Older changes
+## 5.0.0 (2023-09-18)
+* (klein0r) Added blockly block for custom messages (sendMessage2Client)
+* (klein0r) Added retain flag for sendMessage2Client
+* (klein0r) Removed support for Admin 4 UI (materialize)
+* (bluefox) Minimal supported node.js version is 16
+
 ## 4.1.1 (2023-03-22)
 * (Apollon77) Fixed the regex on subscribing of server clients to only match wanted states
 * (Apollon77) Prepare for future js-controller versions
