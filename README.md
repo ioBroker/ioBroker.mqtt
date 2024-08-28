@@ -159,6 +159,9 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Show information about connected clients in the server mode
+
 ### 6.0.2 (2024-08-13)
 * (bluefox) Added a space to the connection string for better readability
 

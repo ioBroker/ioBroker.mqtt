@@ -60,7 +60,7 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
     const value = `NewRoger${Math.round(Math.random() * 100)}`;
     _it.timeout(5000);
 
-    console.log('Send ' + id);
+    console.log(`Send ${id}`);
 
     states.setState(id, {
         val: value,
