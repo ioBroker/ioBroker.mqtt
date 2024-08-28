@@ -1,4 +1,7 @@
 # Older changes
+## 5.1.0 (2023-10-11)
+* (bluefox) Added security check if the server is available from the internet without protection
+
 ## 5.0.0 (2023-09-18)
 * (klein0r) Added blockly block for custom messages (sendMessage2Client)
 * (klein0r) Added retain flag for sendMessage2Client

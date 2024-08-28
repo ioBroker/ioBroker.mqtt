@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "6.0.2",
+    "version": "6.1.0",
     "news": {
+      "6.1.0": {
+        "en": "Added information about connected clients in the server mode",
+        "de": "Weitere Informationen zu verbundenen Clients im Servermodus",
+        "ru": "Добавлена информация о подключенных клиентах в серверном режиме",
+        "pt": "InformaÃ§Ãμes adicionais sobre clientes conectados no modo servidor",
+        "nl": "Informatie over verbonden clients toegevoegd in de servermodus",
+        "fr": "Ajout d'informations sur les clients connectés en mode serveur",
+        "it": "Aggiunte informazioni sui client connessi nella modalità server",
+        "es": "Información adicional sobre clientes conectados en el modo servidor",
+        "pl": "Dodano informacje o podłączonych klientach w trybie serwera",
+        "uk": "Додано інформацію про підключені клієнти в режимі сервера",
+        "zh-cn": "在服务器模式中添加了连接客户端的信息"
+      },
       "6.0.2": {
         "en": "Added a space to the connection string for better readability",
         "de": "Hinzufügen eines Platzes zum Verbindungsstring für eine bessere Lesbarkeit",
@@ -80,19 +93,6 @@
         "pl": "Zamknięty blok dla zwykłych wiadomości (sendMessage2Client)\nWtedy zachowana flaga za wysłanie flagi. Message2Client\nPrzewiduje wsparcie dla Admin 4 UI (materializację)\nMinimal supportowana wersja węzła wynosi 16",
         "uk": "Додано блокнот для користувацьких повідомлень (sendMessage2Client)\nДодано прапор збереження для відправки Повідомлення2Клієнт\nВилучена підтримка Адміністратора 4 UI (матеріалізація)\nMinimal підтримуваний node.js версія 16",
         "zh-cn": "习惯信息(附录Message2Client)的附加障碍\n增加派遣国 问题2\n取消对Admin 4 UI(物质化)的支持\n米切尔支持不dejs版本为16。"
-      },
-      "4.1.1": {
-        "en": "Fix regex on subscribes of server clients to only match wanted states\nPrepare for future js-controller versions",
-        "de": "Reparieren Sie Regex auf Abmeldungen von Server-Clients, um nur gewünschten Zuständen gerecht zu werden\nBereiten Sie sich auf zukünftige js-Controller-Versionen",
-        "ru": "Fix regex на подписках серверных клиентов, чтобы только соответствовать желаемым состояниям\nПодготовьтесь к будущим версиям js-controller",
-        "pt": "Fix regex em assinaturas de clientes de servidor para apenas combinar estados procurados\nPrepare-se para futuras versões js-controller",
-        "nl": "Vertaling:\nBereid je voor op toekomstige Js-controller versie",
-        "fr": "Réparez regex sur les abonnés de clients de serveur pour seulement correspondre aux états recherchés\nPréparez-vous pour les versions futures de js-controller",
-        "it": "Fissare regex su abbonamenti di client server per corrispondere solo stati desiderati\nPrepararsi per le future versioni js-controller",
-        "es": "Arreglar regex en suscriptos de clientes del servidor para que coincida con estados buscados\nPrepararse para futuras versiones js-controller",
-        "pl": "Fix rejestruje klientom serwerów tylko w celu dopasowania się do stanów\nPrepare for future js-controller version",
-        "uk": "Виправлення regex на підписках клієнтів сервера до лише відповідних вимог\nПідготовка до майбутніх версій js-controller",
-        "zh-cn": "仅与通缉国相匹配的服务器客户的签名\n今后防污版本的编制"
       }
     },
     "titleLang": {
