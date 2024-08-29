@@ -29,7 +29,7 @@ function startClients(_done) {
     // start mqtt client
     const MqttClient = require('./lib/mqttClient');
 
-    // Start client to emit topics
+    // Start a client to emit topics
     mqttClientEmitter = new MqttClient(connected => {
         // on connected
         if (connected) {
