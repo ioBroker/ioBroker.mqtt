@@ -3,19 +3,6 @@
     "name": "mqtt",
     "version": "6.1.0",
     "news": {
-      "6.1.0": {
-        "en": "Added information about connected clients in the server mode",
-        "de": "Weitere Informationen zu verbundenen Clients im Servermodus",
-        "ru": "Добавлена информация о подключенных клиентах в серверном режиме",
-        "pt": "InformaÃ§Ãμes adicionais sobre clientes conectados no modo servidor",
-        "nl": "Informatie over verbonden clients toegevoegd in de servermodus",
-        "fr": "Ajout d'informations sur les clients connectés en mode serveur",
-        "it": "Aggiunte informazioni sui client connessi nella modalità server",
-        "es": "Información adicional sobre clientes conectados en el modo servidor",
-        "pl": "Dodano informacje o podłączonych klientach w trybie serwera",
-        "uk": "Додано інформацію про підключені клієнти в режимі сервера",
-        "zh-cn": "在服务器模式中添加了连接客户端的信息"
-      },
       "6.0.2": {
         "en": "Added a space to the connection string for better readability",
         "de": "Hinzufügen eines Platzes zum Verbindungsstring für eine bessere Lesbarkeit",

@@ -159,7 +159,7 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
-### 6.1.0 (2024-08-28)
+### **WORK IN PROGRESS**
 * (bluefox) Added information about connected clients in the server mode
 
 ### 6.0.2 (2024-08-13)
