@@ -28,7 +28,7 @@ function Server(config) {
                 if (config.user) {
                     if (config.user !== packet.username ||
                         config.pass !== packet.password.toString()) {
-                        console.error(`Client [${packet.clientId}] has invalid password(${packet.password}) or username(${packet.username})`);
+                        console.error(`Client [${packet.clientId}] has invalid password(${(packet.password || '').length} chars) or username(${packet.username})`);
                         client.connack({returnCode: 4});
                         if (clients[client.id]) {
                             delete clients[client.id];
@@ -37,7 +37,7 @@ function Server(config) {
                         return;
                     }
                 }
-                console.log(`Client [${packet.clientId}] connected: user - ${packet.username}, pass - ${packet.password}`);
+                console.log(`Client [${packet.clientId}] connected: user - ${packet.username}, pass - ${(packet.password || '').length} chars`);
                 client.connack({returnCode: 0});
 
                 if (!config.dontSend) {
