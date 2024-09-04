@@ -159,6 +159,9 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Corrected error if the client has no ID
+
 ### 6.1.1 (2024-08-29)
 * (bluefox) Added information about connected clients in the server mode
 
