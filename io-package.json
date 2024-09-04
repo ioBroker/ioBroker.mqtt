@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "6.1.1",
+    "version": "6.1.2",
     "news": {
+      "6.1.2": {
+        "en": "Corrected error if the client has no ID",
+        "de": "Fehler behoben, wenn der Client keine ID hat",
+        "ru": "Исправлена ошибка, если у клиента нет ID",
+        "pt": "Erro corrigido se o cliente não tiver identificação",
+        "nl": "Gecorrigeerde fout als de client geen ID heeft",
+        "fr": "Erreur corrigée si le client n'a pas d'identifiant",
+        "it": "Errore corretto se il client non ha ID",
+        "es": "Error corregido si el cliente no tiene identificación",
+        "pl": "Skorygowany błąd, jeśli klient nie ma ID",
+        "uk": "Виправлена помилка, якщо клієнт не має ідентифікатора",
+        "zh-cn": "如果客户端没有ID, 已更正错误"
+      },
       "6.1.1": {
         "en": "Added information about connected clients in the server mode",
         "de": "Weitere Informationen zu verbundenen Clients im Servermodus",
@@ -80,19 +93,6 @@
         "pl": "W przypadku, gdy serwer jest dostępny z Internetu bez ochrony",
         "uk": "Додано контроль безпеки, якщо сервер доступний з Інтернету без захисту",
         "zh-cn": "如果没有保护,如果服务器可以从互联网上查看安全检查。"
-      },
-      "5.0.0": {
-        "en": "Added blockly block for custom messages (sendMessage2Client)\nAdded retain flag for sendMessage2Client\nRemoved support for Admin 4 UI (materialize)\nMinimal supported node.js version is 16",
-        "de": "Blockiert für benutzerdefinierte Nachrichten hinzugefügt (sendMessage2Client)\nHinzugefügt Rückhol-Flag für senden Nachricht2Client\nEntfernte Unterstützung für Admin 4 UI (materialize)\nMinimal unterstützt node.js version is 16",
-        "ru": "Добавлен блокнот для пользовательских сообщений (sendMessage2Client)\nДобавлен флаг для отправки Сообщение2Клиент\nУдаленная поддержка Admin 4 UI (материализация)\nМинимальная поддерживаемая версия node.js 16",
-        "pt": "Adicionado bloco bloqueado para mensagens personalizadas (sendMessage2Client)\nAdicionado bandeira de retenção para enviar Mensagem2Client\nSuporte removido para Admin 4 UI (materialize)\nNode.js com suporte mínimo é 16",
-        "nl": "Voeg blokkeer toe voor gebruikelijke berichten\nVoeg de vlag toe. Vertaling:\nVerwijderde steun voor administratie 4 UI (materialize)\nMinimale ondersteunde node",
-        "fr": "Ajout d'un bloc pour les messages personnalisés (sendMessage2Client)\nAjout du drapeau de retenue pour envoyer Message2Client\nSoutien supprimé pour Admin 4 UI (matérialiser)\nVersion node.js supportée Minimal est 16",
-        "it": "Aggiunto blocco blocco per messaggi personalizzati (sendMessage2Client)\nAggiunto la bandiera di mantenimento per inviare Messaggio2\nSupporto rimosso per Admin 4 UI (materializzare)\nMinimal supportato node.js versione è 16",
-        "es": "Añadido bloque bloque bloque para mensajes personalizados (sendMessage2Client)\nBandera de retención adicional para enviar Mensaje2Client\nApoyo eliminado para Admin 4 UI (materializar)\nMinimal soportado node.js versión es 16",
-        "pl": "Zamknięty blok dla zwykłych wiadomości (sendMessage2Client)\nWtedy zachowana flaga za wysłanie flagi. Message2Client\nPrzewiduje wsparcie dla Admin 4 UI (materializację)\nMinimal supportowana wersja węzła wynosi 16",
-        "uk": "Додано блокнот для користувацьких повідомлень (sendMessage2Client)\nДодано прапор збереження для відправки Повідомлення2Клієнт\nВилучена підтримка Адміністратора 4 UI (матеріалізація)\nMinimal підтримуваний node.js версія 16",
-        "zh-cn": "习惯信息(附录Message2Client)的附加障碍\n增加派遣国 问题2\n取消对Admin 4 UI(物质化)的支持\n米切尔支持不dejs版本为16。"
       }
     },
     "titleLang": {
