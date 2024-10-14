@@ -28,7 +28,7 @@
     "Public certificate:": "Öffentliches Zertifikat",
     "Publish all states at start:": "Eigene States beim Verbinden publizieren",
     "Publish states on subscribe:": "States bei subscribe publizieren",
-    "Result: ": "Ergebnis: ",
+    "Result: ": "Ergebnis:",
     "Secure:": "SSL",
     "Send interval:": "Sendeverzögerung",
     "Send states (ack=true) too:": "Sende auch Zustände (ack=true)",

@@ -28,7 +28,7 @@
     "Public certificate:": "Public certificate",
     "Publish all states at start:": "Publish own states on connect",
     "Publish states on subscribe:": "Publish states on subscribe",
-    "Result: ": "Result: ",
+    "Result: ": "Result:",
     "Secure:": "SSL",
     "Send interval:": "Send delay",
     "Send states (ack=true) too:": "Send states (ack=true) too",
