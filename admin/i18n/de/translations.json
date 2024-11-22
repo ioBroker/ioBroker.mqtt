@@ -47,7 +47,7 @@
     "chars": "Zeichen",
     "connected": "verbunden",
     "ms": "ms",
-    "IP": "IP-Adresse",
+    "IP": "IP",
     "rejectUnauthorized": "Nicht autorisierte Server ablehnen",
     "Set retain flag": "Retain-Flag setzen",
     "Default QoS:": "Standard-QoS:",
