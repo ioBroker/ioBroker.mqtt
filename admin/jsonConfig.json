@@ -62,7 +62,7 @@
           "md": 6,
           "lg": 4
         },
-        "_info": {
+        "info": {
           "newLine": true,
           "type": "info",
           "hidden": "data.type !== 'server' || !data.webSocket",
