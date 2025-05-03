@@ -62,13 +62,13 @@
           "md": 6,
           "lg": 4
         },
-        "info": {
+        "infoMessageWebSocket": {
           "newLine": true,
-          "type": "info",
+          "type": "staticText",
           "hidden": "data.type !== 'server' || !data.webSocket",
           "text": "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.",
           "sm": 12,
-          "md": 12, 
+          "md": 12,
           "lg": 12
         },
         "ssl": {
