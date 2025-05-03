@@ -1,35 +1,35 @@
 # Beschreibung
 
-[MQTT](http://mqtt.org/) (Message Queue Telemetry Transport) ist ein schlankes Protokoll für die Kommunikation zwischen verschiedenen Geräten (M2M - machine-to-machine). Es benutzt das publisher-subscriber Modell um Nachrichten über das TCP / IP Protokoll zu senden. Die zentrale Stelle des Protokolls ist der MQTT-Server oder Broker Der Zugriff auf den publisher und den subscriber besitzt. Dieses Protokoll ist sehr simpel: ein kurzer Header ohne Integrität (deshalb setzt die Übermittlung auf TCP auf), legt der Struktur keinerlei Beschränkungen beim Code oder einem Datenbankschema auf. Die einzige Bedingung ist dass jedes Datenpaket eine Information zur Identifikation beinhalten muss. Diese Identifikationsinformation heißt Topic Name.
+[MQTT](http://mqtt.org/) (Message Queue Telemetry Transport) ist ein schlankes Protokoll für die Kommunikation zwischen verschiedenen Geräten (M2M - machine-to-machine). Es benutzt das publisher-subscriber Modell um Nachrichten über das TCP / IP Protokoll zu senden. Die zentrale Stelle des Protokolls ist der MQTT-Server oder Broker Der Zugriff auf den publisher und den subscriber besitzt. Dieses Protokoll ist sehr simpel: ein kurzer Header ohne Integrität (deshalb setzt die Übermittlung auf TCP auf), legt der Struktur keinerlei Beschränkungen beim Code oder einem Datenbankschema auf. Die einzige Bedingung ist dass jedes Datenpaket eine Information zur Identifikation beinhalten muss. Diese Identifikationsinformation heißt Topic Name.
 
-Das MQTT Protokoll benötigt einen Datenbroker. Dieses ist die zentrale Idee dieser Technologie. Alle Geräte senden ihre Daten nur zu diesem Broker und erhalten ihre Informationen auch nur von ihm. Nach dem Empfang des Paketes sendet der Broker es zu allen Geräten in dem Netzwerk, die es abonniert haben. Wenn ein Gerät etwas von dem Broker möchte, muss er das entsprechende Topic abonnieren. Topics entstehen dynamisch bei Abonnement oder beim Empfang eines Paketes mit diesem Topic. Nach dem Abonnement eines Topics braucht man nichts mehr zu tun. Deswegen sind Topics sehr bequem um verschiedenen Beziehungen zu organisieren: one-to-many, many-to-one and many-to-many.
+Das MQTT Protokoll benötigt einen Datenbroker. Dieses ist die zentrale Idee dieser Technologie. Alle Geräte senden ihre Daten nur zu diesem Broker und erhalten ihre Informationen auch nur von ihm. Nach dem Empfang des Paketes sendet der Broker es zu allen Geräten in dem Netzwerk, die es abonniert haben. Wenn ein Gerät etwas von dem Broker möchte, muss er das entsprechende Topic abonnieren. Topics entstehen dynamisch bei Abonnement oder beim Empfang eines Paketes mit diesem Topic. Nach dem Abonnement eines Topics braucht man nichts mehr zu tun. Deswegen sind Topics sehr bequem um verschiedenen Beziehungen zu organisieren: one-to-many, many-to-one and many-to-many.
 
 **Wichtig:**
 
-*   Die Geräte stellen selber die Kommunikation mit dem Broker her. Sie können hniter einer NAT liegen und  müssen keine feste IP besitzen,
+*   Die Geräte stellen selber die Kommunikation mit dem Broker her. Sie können hinter einer NAT liegen und müssen keine feste IP besitzen,
 *   Man kann den Traffic mit SSL absichern,
 *   MQTT Broker ermöglichen es diese über ein Websocket Protokoll auf Port 80 zu erreichen,
-*   Mehrere Broker können miteinander verbunden werden und abonnieren dann die Nachrichte gegenseitig.
+*   Mehrere Broker können miteinander verbunden werden und abonnieren dann die Nachrichten gegenseitig.
 
 # Installation
 
-Die Installation findet im Admin im Reiter _**Adapter**_ statt. In der Gruppe Kommunikation befindet sich eine Zeile **_MQTT Adapter_**, dort wird über das (+)-Icon ganz rechts eine neue Instanz angelegt. 
+Die Installation findet im Admin im Reiter _**Adapter**_ statt. In der Gruppe Kommunikation befindet sich eine Zeile **_MQTT Adapter_**, dort wird über das (+)-Icon ganz rechts eine neue Instanz angelegt. 
 
 [![](http://www.iobroker.net/wp-content/uploads//1-1024x342.png)](http://www.iobroker.net/wp-content/uploads//1.png) 
 
-Ein pop-up Fenster erscheint mit den Installationsinformationen und schließt nach der Installation eigenständig. 
+Ein Pop-up-Fenster erscheint mit den Installationsinformationen und schließt nach der Installation eigenständig. 
 
 [![](http://www.iobroker.net/wp-content/uploads//2-300x153.png)](http://www.iobroker.net/wp-content/uploads//2.png)
 
-Wenn alles klappt befindet sich anschließend unter dem Reiter _**Instanzen**_ die neu installierte **mqtt.0** Instanz.
+Wenn alles klappt, befindet sich anschließend unter dem Reiter _**Instanzen**_ die neu installierte **mqtt.0** Instanz.
 
-[![](http://www.iobroker.net/wp-content/uploads//3-300x156.png)](http://www.iobroker.net/wp-content/uploads//3.png)  
+[![](http://www.iobroker.net/wp-content/uploads//3-300x156.png)](http://www.iobroker.net/wp-content/uploads//3.png)  
 
 # Konfiguration
 
-Wie bereits oben gesagt, besteht ein MQTT-System aus einem Broker und Clients.  Der ioBroker Server kann als Broker oder als Client arbeiten.  Entsprechend des gewünschten Modus wird der Typ auf _**server/broker**_ oder **_Client/subscriber_** eingestellt. Hier sollte die Einstellung gut überlegt werden.
+Wie bereits oben gesagt, besteht ein MQTT-System aus einem Broker und Clients.  Der ioBroker Server kann als Broker oder als Client arbeiten.  Entsprechend des gewünschten Modus wird der Typ auf _**server/broker**_ oder **_Client/subscriber_** eingestellt. Hier sollte die Einstellung gut überlegt werden.
 
-## IoBroker als MQTT-Broker
+## IoBroker als MQTT-Broker
 
 Die Grundeinstellungen um den Adapter als Server/Broker zu verwenden sind in der Abbildung gezeigt: 
 
@@ -37,24 +37,24 @@ Die Grundeinstellungen um den Adapter als Server/Broker zu verwenden sind in der
 
 ### Allgemeine Einstellungen
 
-*   **Typ** - Entsprechend der gewünschten Verwendung wird der Typ auf _**server/broker**_ oder **_Client/subscriber_** eingestellt
+*   **Typ** - Entsprechend der gewünschten Verwendung wird der Typ auf _**server/broker**_ oder **_Client/subscriber_** eingestellt
 *   **Use WebSockets** - Wenn man Websockets für die Verbindung benötigt, muss diese Checkbox aktiviert werden. Dann läuft der TCP-Server parallel zum WebSocket Server,
-*   **Port** - Der Port um mit TCP zu verbinden (default: 1883),  ein WebSocket Server (siehe oben) läuft einen Port höher (default: 1884),
+*   **Port** - Der Port um mit TCP zu verbinden (default: 1883),  ein WebSocket Server (siehe oben) läuft einen Port höher (default: 1884),
 
 ### Verbindungseinstellungen
 
-*   **SSL** - Diese Option wird benötigt um den gesamten Datenverkehr zu verschlüsseln (TCP und WebSocket), deshalb muss man in den jetzt zur Verfügung stehenden Feldern die zu verwendenden Zertifikate angeben. In den Pulldowns kann man diese aus den in den Systemeinstellungen angelegten Zertifikaten auswählen,
+*   **SSL** - diese Option wird benötigt, um den gesamten Datenverkehr zu verschlüsseln (TCP und WebSocket), deshalb muss man in den jetzt zur Verfügung stehenden Feldern die zu verwendenden Zertifikate angeben. In den Pulldowns kann man diese aus den in den Systemeinstellungen angelegten Zertifikaten auswählen,
 
 ![](ioBroker_Adapter_MQTT_Konfig_Server_SSH.jpg)
 
 ### Authentication Einstellungen
 
-*   **Username** und **Passwort** - Wenn gewünscht kann hier ein Username und ein Passwort vergeben werden. Dies muss auf jeden Fall mit SSH Verschlüsselung benutzt werden, damit Passworte nicht unverschlüsselt übertragen werden.
+*   **Username** und **Passwort** - wenn gewünscht kann hier ein Username und ein Passwort vergeben werden. Dies muss auf jeden Fall mit SSH Verschlüsselung benutzt werden, damit Passworte nicht unverschlüsselt übertragen werden.
 
 ### MQTT Einstellungen
 
-*   **Maske für Bekanntgeben von eigenen States** - Diese Maske (oder mehrere durch Komma getrennt)dienen dazu die Variablen zu filtern, die an den Client geschickt werden sollen. Man kann Sonderzeichen angeben um eine Gruppe von Nachrichten zu definieren (z.B.  `memRSS, mqtt.0` - sendet alle Variablen zum memory status aller Adapter und alle variablen der **mqtt.0 Adapter** Instanz),
-*   **Publish nur bei Änderungen** - sending data to the client will be made only in case of change of a variable (if the state simply update - the value is not changed, the customer message will not be sent) from the client will be accepted any message, even if the value has not changed,
+*   **Maske für Bekanntgeben von eigenen States** - Diese Maske (oder mehrere durch Komma getrennt)dienen dazu die Variablen zu filtern, die an den Client geschickt werden sollen. Man kann Sonderzeichen angeben um eine Gruppe von Nachrichten zu definieren (z.B.  `memRSS, mqtt.0` - sendet alle Variablen zum memory status aller Adapter und alle variablen der **mqtt.0 Adapter** Instanz),
+*   **Publish nur bei Änderungen** - sending data to the client will be made only in case of change of a variable (if the state simply update - the value is not changed, the customer message will not be sent) from the client will be accepted any message, even if the value has not changed,
 *   **To give private values at startup** - for each successful client connection will be transferred to all known states (defined by the mask state) – in order to tell the client about the current state of the ioBroker,
 *   **Post status subscribes** - immediately after the subscription will be sent to the customer value of the variable on which it is signed (at the first start or restart the client will receive the values of variables on which it is signed, can be used to initialize variables),
 *   **The prefix for all values** - if the specified value, it will be added as a prefix to every sent topic, for example, if you specify iobroker/, then all topics sent along the following lines: `iobroker/mqtt/0/connected`,
@@ -203,11 +203,11 @@ void loop() {
 }
 </pre>
 
-The result of the part of the broker (temperature and humidity data is updated with the preset time period): [![](http://www.iobroker.net/wp-content/uploads//6-1024x201.png)](http://www.iobroker.net/wp-content/uploads//6.png) The result of the client-side (incoming data subscription output to the console for debugging): [![](http://www.iobroker.net/wp-content/uploads//MQTT-server4.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-server4.jpg)  
+The result of the part of the broker (temperature and humidity data is updated with the preset time period): [![](http://www.iobroker.net/wp-content/uploads//6-1024x201.png)](http://www.iobroker.net/wp-content/uploads//6.png) The result of the client-side (incoming data subscription output to the console for debugging): [![](http://www.iobroker.net/wp-content/uploads//MQTT-server4.jpg)](http://www.iobroker.net/wp-content/uploads//MQTT-server4.jpg)  
 
 ## IoBroker working as MQTT-client
 
-For an instance MQTT driver earned as a client / subscriber - you need to choose the appropriate type of configuration. In this set of options will change slightly: [![](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Client.jpg)](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Client.jpg)  
+For an instance MQTT driver earned as a client / subscriber - you need to choose the appropriate type of configuration. In this set of options will change slightly: [![](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Client.jpg)](http://www.iobroker.net/wp-content/uploads//ioBroker_Adapter_MQTT_Konfig_Client.jpg)  
 
 ### Allgemeine Einstellungen
 
@@ -215,7 +215,7 @@ For an instance MQTT driver earned as a client / subscriber - you need to choose
 
 ### Verbindungseinstellungen
 
-- specifies the URL and port of the broker (if you want to encrypt traffic, indicated SSL) - settings to connect to the broker,  
+- specifies the URL and port of the broker (if you want to encrypt traffic, indicated SSL) - settings to connect to the broker,  
 
 ### **Authentication settings**
 
@@ -244,7 +244,7 @@ Examples for setting the subscription mask variables (patterns). Consider topics
 
 If you want to subscribe to a certain set of topics, you can use the characters # (pound sign) or + (plus sign).
 
-*   "Sport/Tennis/#" (subscription only "Sport/Tennis" and "Sport/Tennis/Finals")
+*   "Sport/Tennis/#" (subscription only "Sport/Tennis" and "Sport/Tennis/Finals")
 *   "Sport/Tennis/+" (subscription only "Sport/Tennis/Finals", but not "Sport/Tennis")
 
 For JMS topics, if you want to subscribe to all topics "Finals", you can use the characters # (pound sign) or + (plus sign)

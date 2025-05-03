@@ -11,7 +11,7 @@ describe('MQTT client', function () {
     let adapter;
     let simulatedServer;
     let client;
-    const states   = {};
+    const states = {};
     this.timeout(3000);
 
     before('MQTT client: Start MQTT simulatedServer', done => {
@@ -19,9 +19,9 @@ describe('MQTT client', function () {
             port: ++port,
             url: '127.0.0.1',
             onchange: true,
-            clientId: 'testAdapter'
+            clientId: 'testAdapter',
         });
-        simulatedServer = new SimulatedServer({port, dontSend: true});
+        simulatedServer = new SimulatedServer({ port, dontSend: true });
         client = new Client(adapter, states);
         done();
     });

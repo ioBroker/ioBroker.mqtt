@@ -1,6 +1,6 @@
 'use strict';
 const path = require('node:path');
-const rootDir = path.normalize(__dirname + '/../../');
+const rootDir = path.normalize(`${__dirname}/../../`);
 let adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName = adapterName[adapterName.length - 2];
 
@@ -16,16 +16,16 @@ const logger = {
     },
     error: function (msg) {
         console.error(msg);
-    }
+    },
 };
 
 function States(cb, stateChange) {
     const that = this;
-    const _States = require(rootDir + 'tmp/node_modules/iobroker.js-controller/lib/states');
+    const _States = require(`${rootDir}tmp/node_modules/iobroker.js-controller/lib/states`);
     let callbackId = 0;
 
     const options = {
-        stateChange: (id, state) => stateChange && stateChange(id, state)
+        stateChange: (id, state) => stateChange && stateChange(id, state),
     };
 
     that.namespace = 'test';
@@ -37,13 +37,13 @@ function States(cb, stateChange) {
             port: 19000,
             options: {
                 auth_pass: null,
-                retry_max_delay: 15000
-            }
+                retry_max_delay: 15000,
+            },
         },
         logger: logger,
         change: (id, state) => {
             if (!id || typeof id !== 'string') {
-                console.log('Something is wrong! ' + JSON.stringify(id));
+                console.log(`Something is wrong! ${JSON.stringify(id)}`);
                 return;
             }
 
@@ -55,105 +55,107 @@ function States(cb, stateChange) {
             // If someone want to have log messages
             if (that.logList && id.match(/\.logging$/)) {
                 that.logRedirect(state ? state.val : false, id.substring(0, id.length - '.logging'.length));
-            } else
-                if (id === 'log.system.adapter.' + that.namespace) {
-                    that.processLog(state);
-                } else if (id === 'messagebox.system.adapter.' + that.namespace && state) {
-                    // Read it from fifo list
-                    that.states.delMessage('system.adapter.' + that.namespace, state._id);
-                    const obj = state;
-                    if (obj) {
-                        // If callback stored for this request
-                        if (obj.callback &&
-                            obj.callback.ack &&
-                            obj.callback.id &&
-                            that.callbacks &&
-                            that.callbacks['_' + obj.callback.id]) {
-                            // Call callback function
-                            if (that.callbacks['_' + obj.callback.id].cb) {
-                                that.callbacks['_' + obj.callback.id].cb(obj.message);
-                                delete that.callbacks['_' + obj.callback.id];
-                            }
-                            // delete too old callbacks IDs, like garbage collector
-                            const now = Date.now();
-                            for (const _id in that.callbacks) {
-                                if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000) delete that.callbacks[_id];
-                            }
-
-                        } else {
-                            if (options.message) {
-                                // Else inform about new message the adapter
-                                options.message(obj);
-                            }
-                            that.emit('message', obj);
+            } else if (id === `log.system.adapter.${that.namespace}`) {
+                that.processLog(state);
+            } else if (id === `messagebox.system.adapter.${that.namespace}` && state) {
+                // Read it from fifo list
+                that.states.delMessage(`system.adapter.${that.namespace}`, state._id);
+                const obj = state;
+                if (obj) {
+                    // If callback stored for this request
+                    if (obj.callback?.ack && obj.callback.id && that.callbacks?.[`_${obj.callback.id}`]) {
+                        // Call callback function
+                        if (that.callbacks[`_${obj.callback.id}`].cb) {
+                            that.callbacks[`_${obj.callback.id}`].cb(obj.message);
+                            delete that.callbacks[`_${obj.callback.id}`];
                         }
-                    }
-                } else {
-                    if (id.slice(that.namespace.length) === that.namespace) {
-                        if (typeof options.stateChange === 'function') options.stateChange(id.slice(that.namespace.length + 1), state);
-                        // emit 'stateChange' event instantly
-                        setImmediate(() => that.emit('stateChange', id.slice(that.namespace.length + 1), state));
-
+                        // delete too old callbacks IDs, like garbage collector
+                        const now = Date.now();
+                        for (const _id in that.callbacks) {
+                            if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000)
+                                delete that.callbacks[_id];
+                        }
                     } else {
-                        if (typeof options.stateChange === 'function') options.stateChange(id, state);
-                        if (id.substring(0, 4) === 'log.') {
-                            console.log('LOG');
+                        if (options.message) {
+                            // Else inform about a new message the adapter
+                            options.message(obj);
                         }
-                        if (that.emit) {
-                            // emit 'stateChange' event instantly
-                            setImmediate(() => that.emit('stateChange', id, state));
-                        }
+                        that.emit('message', obj);
                     }
                 }
+            } else {
+                if (id.slice(that.namespace.length) === that.namespace) {
+                    if (typeof options.stateChange === 'function')
+                        options.stateChange(id.slice(that.namespace.length + 1), state);
+                    // emit 'stateChange' event instantly
+                    setImmediate(() => that.emit('stateChange', id.slice(that.namespace.length + 1), state));
+                } else {
+                    if (typeof options.stateChange === 'function') options.stateChange(id, state);
+                    if (id.substring(0, 4) === 'log.') {
+                        console.log('LOG');
+                    }
+                    if (that.emit) {
+                        // emit 'stateChange' event instantly
+                        setImmediate(() => that.emit('stateChange', id, state));
+                    }
+                }
+            }
         },
-        connectTimeout: (error) => {
+        connectTimeout: error => {
             if (logger) logger.error(that.namespace + ' no connection to states DB');
             if (cb) cb('Timeout');
-        }
+        },
     });
 
-    // Send message to other adapter instance or all instances of adapter
+    // Send a message to another adapter instance or all instances of adapter
     that.sendTo = function sendTo(objName, command, message, callback) {
         if (typeof message === 'undefined') {
             message = command;
             command = 'send';
         }
-        const obj = { command: command, message: message, from: 'system.adapter.' + that.namespace };
+        const obj = { command: command, message: message, from: `system.adapter.${that.namespace}` };
 
-        if (!objName.match(/^system\.adapter\./)) objName = 'system.adapter.' + objName;
+        if (!objName.match(/^system\.adapter\./)) objName = `system.adapter.${objName}`;
 
-        that.log.info('sendTo "' + command + '" to ' + objName + ' from system.adapter.' + that.namespace + ': ' + JSON.stringify(message));
+        that.log.info(
+            `sendTo "${command}" to ${objName} from system.adapter.${that.namespace}: ${JSON.stringify(message)}`,
+        );
 
         // If not specific instance
         if (!objName.match(/\.[0-9]+$/)) {
-            // Send to all instances of adapter
-            that.objects.getObjectView('system', 'instance', { startkey: objName + '.', endkey: objName + '.\u9999' }, (err, _obj) => {
-                if (_obj) {
-                    for (let i = 0; i < _obj.rows.length; i++) {
-                        that.states.pushMessage(_obj.rows[i].id, obj);
+            // Send it to all instances of adapter
+            that.objects.getObjectView(
+                'system',
+                'instance',
+                { startkey: `${objName}.`, endkey: `${objName}.\u9999` },
+                (err, _obj) => {
+                    if (_obj) {
+                        for (let i = 0; i < _obj.rows.length; i++) {
+                            that.states.pushMessage(_obj.rows[i].id, obj);
+                        }
                     }
-                }
-            });
+                },
+            );
         } else {
             if (callback) {
                 if (typeof callback === 'function') {
                     // force subscribe even no messagebox enabled
                     if (!that.common.messagebox && !that.mboxSubscribed) {
                         that.mboxSubscribed = true;
-                        that.states.subscribeMessage('system.adapter.' + that.namespace);
+                        that.states.subscribeMessage(`system.adapter.${that.namespace}`);
                     }
 
                     obj.callback = {
                         message: message,
                         id: callbackId++,
                         ack: false,
-                        time: Date.now()
+                        time: Date.now(),
                     };
-                    if (callbackId >= 0xFFFFFFFF) {
+                    if (callbackId >= 0xffffffff) {
                         callbackId = 1;
                     }
                     if (!that.callbacks) that.callbacks = {};
-                    that.callbacks['_' + obj.callback.id] = { cb: callback };
+                    that.callbacks[`_${obj.callback.id}`] = { cb: callback };
 
                     // delete too old callbacks IDs
                     const now = Date.now();
@@ -178,13 +180,14 @@ function States(cb, stateChange) {
             message = command;
             command = 'send';
         }
-        const obj = { command: command, message: message, from: 'system.adapter.' + that.namespace };
+        const obj = { command: command, message: message, from: `system.adapter.${that.namespace}` };
 
-        if (objName && objName.substring(0, 'system.host.'.length) !== 'system.host.') objName = 'system.host.' + objName;
+        if (objName && objName.substring(0, 'system.host.'.length) !== 'system.host.')
+            objName = `system.host.${objName}`;
 
         if (!objName) {
             // Send to all hosts
-            that.objects.getObjectList({ startkey: 'system.host.', endkey: 'system.host.' + '\u9999' }, null, (err, res) => {
+            that.objects.getObjectList({ startkey: 'system.host.', endkey: `system.host.\u9999` }, null, (err, res) => {
                 if (!err && res.rows.length) {
                     for (let i = 0; i < res.rows.length; i++) {
                         const parts = res.rows[i].id.split('.');
@@ -208,11 +211,11 @@ function States(cb, stateChange) {
                         message: message,
                         id: callbackId++,
                         ack: false,
-                        time: Date.now()
+                        time: Date.now(),
                     };
-                    if (callbackId >= 0xFFFFFFFF) callbackId = 1;
+                    if (callbackId >= 0xffffffff) callbackId = 1;
                     if (!that.callbacks) that.callbacks = {};
-                    that.callbacks['_' + obj.callback.id] = { cb: callback };
+                    that.callbacks[`_${obj.callback.id}`] = { cb: callback };
                 } else {
                     obj.callback = callback;
                     obj.callback.ack = true;
@@ -246,7 +249,7 @@ function States(cb, stateChange) {
             state.ack = ack;
         }
 
-        state.from = 'system.adapter.' + that.namespace;
+        state.from = `system.adapter.${that.namespace}`;
         if (options && options.user && options.user !== 'system.user.admin') {
             checkStates(id, options, 'setState', err => {
                 if (err) {
@@ -341,14 +344,14 @@ function States(cb, stateChange) {
             end = undefined;
         }
 
-        start = start || Math.round((new Date()).getTime() / 1000) - 31536000; // - 1 year
-        end = end || Math.round((new Date()).getTime() / 1000) + 5000;
+        start = start || Math.round(new Date().getTime() / 1000) - 31536000; // - 1 year
+        end = end || Math.round(new Date().getTime() / 1000) + 5000;
 
         const history = [];
         const docs = [];
 
         // get data from states
-        that.log.debug('get states history ' + id + ' ' + start + ' ' + end);
+        that.log.debug(`get states history ${id} ${start} ${end}`);
         that.getFifo(id, (err, res) => {
             if (!err && res) {
                 let iProblemCount = 0;
@@ -364,20 +367,20 @@ function States(cb, stateChange) {
                     }
                     history.push(res[i]);
                 }
-                if (iProblemCount) that.log.warn('got null states ' + iProblemCount + ' times for ' + id);
+                if (iProblemCount) that.log.warn(`got null states ${iProblemCount} times for ${id}`);
 
-                that.log.debug('got ' + res.length + ' datapoints for ' + id);
+                that.log.debug(`got ${res.length} datapoints for ${id}`);
             } else {
                 if (err !== 'Not exists') {
                     that.log.error(err);
                 } else {
-                    that.log.debug('datapoints for ' + id + ' do not yet exist');
+                    that.log.debug(`datapoints for ${id} do not yet exist`);
                 }
             }
 
             // fetch a history document from objectDB
             function getObjectsLog(cid, callback) {
-                that.log.info('getObjectLog ' + cid);
+                that.log.info(`getObjectLog ${cid}`);
                 that.getForeignObject(cid, options, (err, res) => {
                     if (!err && res.common.data) {
                         for (let i = 0; i < res.common.data.length; i++) {
@@ -389,7 +392,7 @@ function States(cb, stateChange) {
                             history.push(res.common.data[i]);
                         }
                     } else {
-                        that.log.warn(cid + ' not found');
+                        that.log.warn(`${cid} not found`);
                     }
                     callback(err);
                 });
@@ -401,7 +404,7 @@ function States(cb, stateChange) {
                     callback(null, history);
                     return;
                 }
-                const cid = 'history.' + id + '.' + ts2day(ts);
+                const cid = `history.${id}.${ts2day(ts)}`;
                 if (docs.indexOf(cid) !== -1) {
                     getObjectsLog(cid, err => queue(ts - 86400)); // - 1 day
                 } else {
@@ -409,26 +412,30 @@ function States(cb, stateChange) {
                 }
             }
 
-            // get list of available history documents
-            that.objects.getObjectList({ startkey: 'history.' + id, endkey: 'history.' + id + '\u9999' }, options, (err, res) => {
-                if (!err && res.rows.length) {
-                    for (let i = 0; i < res.rows.length; i++) {
-                        docs.push(res.rows[i].id);
+            // get a list of available history documents
+            that.objects.getObjectList(
+                { startkey: `history.${id}`, endkey: `history.${id}\u9999` },
+                options,
+                (err, res) => {
+                    if (!err && res.rows.length) {
+                        for (let i = 0; i < res.rows.length; i++) {
+                            docs.push(res.rows[i].id);
+                        }
+                        queue(end);
+                    } else {
+                        callback(null, history);
                     }
-                    queue(end);
-                } else {
-                    callback(null, history);
-                }
-            });
+                },
+            );
         });
     };
 
     // normally only foreign history has interest, so there is no getHistory and getForeignHistory
     that.getHistory = function getHistory(id, options, callback) {
         options = options || {};
-        options.end = options.end || Math.round((new Date()).getTime() / 1000) + 5000;
+        options.end = options.end || Math.round(new Date().getTime() / 1000) + 5000;
         if (!options.count && !options.start) {
-            options.start = options.start || Math.round((new Date()).getTime() / 1000) - 604800; // - 1 week
+            options.start = options.start || Math.round(new Date().getTime() / 1000) - 604800; // - 1 week
         }
 
         if (!options.instance) {
@@ -450,7 +457,7 @@ function States(cb, stateChange) {
     that.idToDCS = function idToDCS(id) {
         if (!id) return null;
         const parts = id.split('.');
-        if (parts[0] + '.' + parts[1] !== that.namespace) {
+        if (`${parts[0]}.${parts[1]}` !== that.namespace) {
             that.log.warn('Try to decode id not from this adapter');
             return null;
         }
@@ -492,7 +499,6 @@ function States(cb, stateChange) {
         } else {
             that.states.delState(id, callback);
         }
-
     };
 
     that.delState = function delState(id, options, callback) {
@@ -535,7 +541,7 @@ function States(cb, stateChange) {
         }
 
         if (typeof callback !== 'function') {
-            logger.error('getForeignStates invalid callback for ' + pattern);
+            logger.error(`getForeignStates invalid callback for ${pattern}`);
             return;
         }
 
@@ -558,7 +564,7 @@ function States(cb, stateChange) {
         if (pattern && pattern !== '*') {
             params = {
                 startkey: pattern.replace('*', ''),
-                endkey: pattern.replace('*', '\u9999')
+                endkey: pattern.replace('*', '\u9999'),
             };
         }
         that.objects.getObjectView('system', 'state', params, options, (err, res) => {
@@ -583,14 +589,16 @@ function States(cb, stateChange) {
                             return;
                         }
                         for (let i = 0; i < res.rows.length; i++) {
-                            if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
+                            if (typeof arr[i] === 'string') {
+                                arr[i] = JSON.parse(arr[i]);
+                            }
                             list[keys[i]] = arr[i] || {};
                         }
                         if (typeof callback === 'function') callback(null, list);
                     });
                 });
             } else {
-                that.states.getStates(keys, function (err, arr) {
+                that.states.getStates(keys, (err, arr) => {
                     if (err) {
                         callback(err);
                         return;
@@ -599,19 +607,21 @@ function States(cb, stateChange) {
                         if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
                         list[keys[i]] = arr[i] || {};
                     }
-                    if (typeof callback === 'function') callback(null, list);
+                    if (typeof callback === 'function') {
+                        callback(null, list);
+                    }
                 });
             }
         });
     };
 
     that.subscribeForeignStates = function subscribeForeignStates(pattern, options) {
-        if (!pattern) pattern = '*';
+        pattern ||= '*';
         that.states.subscribe(pattern, options);
     };
 
     that.unsubscribeForeignStates = function unsubscribeForeignStates(pattern, options) {
-        if (!pattern) pattern = '*';
+        pattern ||= '*';
         that.states.unsubscribe(pattern, options);
     };
 
@@ -627,7 +637,7 @@ function States(cb, stateChange) {
 
     that.unsubscribeStates = function unsubscribeStates(pattern, options) {
         if (!pattern || pattern === '*') {
-            that.states.unsubscribe(that.namespace + '.*', options);
+            that.states.unsubscribe(`${that.namespace}.*`, options);
         } else {
             pattern = that._fixId(pattern, 'state');
             that.states.unsubscribe(pattern, options);
@@ -669,14 +679,14 @@ function States(cb, stateChange) {
     };
 
     that.getMessage = function getMessage(callback) {
-        that.states.getMessage('system.adapter.' + that.namespace, callback);
+        that.states.getMessage(`system.adapter.${that.namespace}`, callback);
     };
 
     that.lenMessage = function lenMessage(callback) {
-        that.states.lenMessage('system.adapter.' + that.namespace, callback);
+        that.states.lenMessage(`system.adapter.${that.namespace}`, callback);
     };
 
-    logger.debug(that.namespace + ' statesDB connected');
+    logger.debug(`${that.namespace} statesDB connected`);
 
     if (typeof cb === 'function') {
         setImmediate(() => cb(), 0);

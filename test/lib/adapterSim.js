@@ -26,7 +26,7 @@ module.exports = function (config) {
         debug: text => console.log(`[${new Date().toISOString()} ${text}`),
         info: text => console.log(`[${new Date().toISOString()} ${text}`),
         warn: text => console.warn(`[${new Date().toISOString()} ${text}`),
-        error: text => console.error(`[${new Date().toISOString()} ${text}`)
+        error: text => console.error(`[${new Date().toISOString()} ${text}`),
     };
 
     this.setState = (id, state, ack, cb) => {
@@ -46,7 +46,7 @@ module.exports = function (config) {
         if (typeof state !== 'object') {
             state = {
                 val: state,
-                ack: ack || false
+                ack: ack || false,
             };
         }
         state.ts = Date.now();
@@ -68,7 +68,7 @@ module.exports = function (config) {
         cb && cb(null, states[id]);
     };
 
-    this.getStatesAsync = (pattern) => {
+    this.getStatesAsync = pattern => {
         if (!pattern.startsWith(`${this.namespace}.`)) {
             pattern = `${this.namespace}.${pattern}`;
         }
@@ -86,25 +86,29 @@ module.exports = function (config) {
             }
             resolve(result);
         });
-    }
+    };
 
     this.getStateAsync = id => {
         return new Promise((resolve, reject) =>
-            this.getState(id, (err, state) => err ? reject(err) : resolve(state)));
+            this.getState(id, (err, state) => (err ? reject(err) : resolve(state))),
+        );
     };
     this.setStateAsync = (id, val, ack) => {
         return new Promise((resolve, reject) =>
-            this.setState(id, val, ack, (err, state) => err ? reject(err) : resolve(state)));
+            this.setState(id, val, ack, (err, state) => (err ? reject(err) : resolve(state))),
+        );
     };
 
     this.getForeignStateAsync = id => {
         return new Promise((resolve, reject) =>
-            this.getForeignState(id, (err, state) => err ? reject(err) : resolve(state)));
+            this.getForeignState(id, (err, state) => (err ? reject(err) : resolve(state))),
+        );
     };
 
     this.setForeignStateAsync = (id, state, ack) => {
         return new Promise((resolve, reject) =>
-            this.setForeignState(id, state, ack, err => err ? reject(err) : resolve()));
+            this.setForeignState(id, state, ack, err => (err ? reject(err) : resolve())),
+        );
     };
 
     this.getObject = (id, cb) => {
@@ -116,8 +120,7 @@ module.exports = function (config) {
     };
 
     this.delForeignObjectAsync = id => {
-        return new Promise(resolve =>
-            this.getForeignObject(id, () => resolve()));
+        return new Promise(resolve => this.getForeignObject(id, () => resolve()));
     };
 
     this.setObject = (id, obj, cb) => {
@@ -129,8 +132,7 @@ module.exports = function (config) {
     };
 
     this.setObjectAsync = (id, obj) => {
-        return new Promise(resolve =>
-            this.setObject(id, obj, (err, obj) => resolve(obj)));
+        return new Promise(resolve => this.setObject(id, obj, (err, obj) => resolve(obj)));
     };
 
     this.getForeignObject = (id, cb) => {
@@ -138,13 +140,11 @@ module.exports = function (config) {
     };
 
     this.getForeignObjectAsync = id => {
-        return new Promise(resolve =>
-            this.getForeignObject(id, (err, obj) => resolve(obj)));
+        return new Promise(resolve => this.getForeignObject(id, (err, obj) => resolve(obj)));
     };
 
     this.getObjectAsync = id => {
-        return new Promise(resolve =>
-            this.getObject(id, (err, obj) => resolve(obj)));
+        return new Promise(resolve => this.getObject(id, (err, obj) => resolve(obj)));
     };
 
     this.setForeignObject = (id, obj, cb) => {
@@ -155,8 +155,7 @@ module.exports = function (config) {
     };
 
     this.setForeignObjectAsync = (id, obj) => {
-        return new Promise(resolve =>
-            this.setForeignObject(id, obj, () => resolve()));
+        return new Promise(resolve => this.setForeignObject(id, obj, () => resolve()));
     };
 
     this.setForeignBinaryStateAsync = (id, state) => {

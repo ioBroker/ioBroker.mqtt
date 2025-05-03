@@ -1,4 +1,5 @@
-![Logo](admin/mqtt.png)
+<img src="admin/mqtt.svg" width="100" height="100">
+
 # ioBroker MQTT
 
 ![Number of Installations](https://iobroker.live/badges/mqtt-installed.svg)
@@ -9,7 +10,7 @@
 [![Translation status](https://weblate.iobroker.net/widgets/adapters/-/mqtt/svg-badge.svg)](https://weblate.iobroker.net/engage/adapters/?utm_source=widget)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.mqtt.svg)](https://www.npmjs.com/package/iobroker.mqtt)
 
-**This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
+**This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting, see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
 
 ## MQ Telemetry Transport for ioBroker (MQTT).
 
@@ -29,12 +30,12 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **SSL** - If TCP and WebSockets should run as secure server.
 - **Authentication/Username** - If authentication required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
-- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify group of messages, e.g "*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter mqtt.0
+- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify a group of messages, e.g., `*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter `mqtt.0`
 - **Publish only on change** - New messages will be sent to a client only if the state value changes. Every message sent by the client will be accepted, even if the value does not change.
 - **Publish own states on connect** - by every client connection the all known states will be sent to a client (defined by the state mask), to tell him which states the ioBroker has.
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g., if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
 - **Trace output for every message** - Debug outputs.
-- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
+- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set, every state independent of ack will be sent to partner. 
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). The client will receive sent messages back in this mode.
 - **Interval before send topics by connection** - Pause between connection and when all topics will be sent to a client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
@@ -70,13 +71,13 @@ await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set',
 - **User** - if broker required authentication, define here the username.
 - **Password** - if the username is not empty, the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
-- **Subscribe Patterns** - Subscribe by the pattern. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. 'mqtt/0/#,javascript/#' to subscribe for states of mqtt.0 and javascript
+- **Subscribe Patterns** - Subscribe by the pattern. See chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. `mqtt/0/#,javascript/#` to subscribe for states of `mqtt.0` and `javascript`
 - **Publish only on change** - Store incoming messages only if payload differs from actual stored.
 - **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter.  
 - **Publish all states at start** - Publish all states (defined by the state mask) every time by connection establishment to announce own available states and their values.
 - **Prefix for topics** - The prefix can be defined for own states. Like `/var/ioBroker/`. Name of topics will be for example published with the name `/var/ioBroker/ping/192-168-1-5`.
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
-- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set every state independent of ack will be sent to partner. 
+- **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set, every state independent of ack will be sent to a partner. 
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true).
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: `{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}`); if not the values `states.val` is sent as a single value (example state.val as single value: `true`)
 - **Persistent Session** - When checked, the broker saves the session information of the adapter. This means it tracks which messages have been sent/received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
@@ -117,17 +118,17 @@ The following examples on the use of wildcards, builds on the example provided i
 - `Sport/Basketball/Finals`
 - `Sport/Swimming/Finals`
 
-If you want to subscribe to all Tennis topics, you can use the number sign '#', or the plus sign '+'.
+If you want to subscribe to all Tennis topics, you can use the number sign `#`, or the plus sign `+`.
 
 - `Sport/Tennis/#` (this will receive `Sport/Tennis` and `Sport/Tennis/Finals`)
 - `Sport/Tennis/+` (this will receive `Sport/Tennis/Finals` but not `Sport/Tennis`)
 
-For JMS topics, if you want to subscribe to all Finals topics, you can use the number sign '#', or the plus sign '+'.
+For JMS topics, if you want to subscribe to all Finals topics, you can use the number sign `#`, or the plus sign `+`.
 
 - `Sport/#/Finals`
 - `Sport/+/Finals`
 
-For MQTT topics, if you want to subscribe to all Finals topics, you can use the plus sign '+'.
+For MQTT topics, if you want to subscribe to all Finals topics, you can use the plus sign `+`.
 
 `Sport/+/Finals`
 
@@ -159,6 +160,10 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (Code-X77) Corrected TLS communication
+* (bluefox) Packages updated
+
 ### 6.1.2 (2024-09-04)
 * (bluefox) Corrected error if the client has no ID
 
@@ -180,7 +185,7 @@ The broker was tested with the following clients:
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2024, bluefox <dogafox@gmail.com>
+Copyright (c) 2014-2025, bluefox <dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

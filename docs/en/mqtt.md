@@ -6,7 +6,7 @@
 [MQTT](http://mqtt.org/) (Message Queue Telemetry Transport) is a lightweight protocol 
 used for communication between devices (M2M - machine-to-machine). 
 It uses a model publisher-subscriber to send messages over TCP / IP protocol. 
-The central part of the protocol is MQTT-server or broker who has access to the 
+The central part of the protocol is MQTT server or broker who has access to the 
 publisher and the subscriber. This protocol is very primitive: a short title, without 
 integrity (that is why the transmission is implemented on top of TCP), does not impose any restrictions 
 on the structure, coding or database schema. The only requirement for the data in each packet - they 
@@ -14,9 +14,9 @@ must be accompanied by the identifier information channel. This identifier speci
 
 The MQTT Protocol requires a data broker. This is the Central idea of the technology. All devices send 
 data only to the broker and receive data also from him only. After receiving the packet, the broker 
-sends it to all devices on the network according to their subscription . For the device to get 
-something from the broker it must subscribe to a topic. Topics arise dynamically upon subscription 
-or upon arrival of the package with this topic. By subscribing to a topic, you can give up. Thus 
+sends it to all devices on the network according to their subscription. For the device to get 
+something from the broker, it must subscribe to a topic. Topics arise dynamically upon subscription 
+or upon the arrival of the package with this topic. By subscribing to a topic, you can give up. Thus, 
 topics are a convenient mechanism for organizing different kinds of relationships: one-to-many, 
 many-to-one and many-to-many.
 
@@ -31,7 +31,7 @@ many-to-one and many-to-many.
 
 Installation is on the **Driver** tab page of the [administration system](http://www.iobroker.net/?page_id=4179&lang=en). 
 In the driver group **Network** find a line called **MQTT Adapter**, and press the 
-button with the plus icon in the right side of the line.   
+button with the plus icon on the right side of the line.   
 
 ![](img/mqtt_1.png)
 
@@ -49,18 +49,18 @@ As stated above, MQTT protocol implies a broker and clients. ioBroker server can
 Setting to specify the operating mode - the type (server / broker or the customer / subscriber) 
 Consider every option.
 
-### IoBroker working as MQTT-broker
+### IoBroker working as MQTT broker
 
-Basic settings if you intend to use the server/broker is shown in the picture: 
+Basic settings if you intend to use the server/broker are shown in the picture: 
 
 ![](img/mqtt_4.png)
 
-*   **Use WebSockets** - if there is a need to use WEB sockets for connection, you must install this option, with TCP-server will run in parallel with the WebSocket server,
+*   **Use WebSockets** - if there is a need to use WEB sockets for connection, you must install this option, with TCP server will run in parallel with the WebSocket server,
 *   **Port** - the port to connect on TCP (default is 1883), a WebSocket server (see option above) runs on port +1 (default: 1884),
 *   **SSL** - this option is used if you want to encrypt all traffic (TCP or the WebSocket), thus it is necessary to specify certificates - simply select from a list of pre-set (specified in the system settings, see the [systems management driver description](http://www.iobroker.net/?page_id=4179&lang=en)),
-*   **authentication settings** (username and password) - indicate, if necessary a specific user authentication, this setting is always used in conjunction with SSL-encryption option (not to transmit passwords in clear text over an insecure connection),
+*   **authentication settings** (username and password) - indicate, if necessary a specific user authentication, this setting is always used in conjunction with an SSL-encryption option (not to transmit passwords in clear text over an insecure connection),
 *   **Mask private values** - the template (or several comma-separated) to filter variables ioBroker, which will be sent to the client, you can use special characters to specify a group of messages (for example, `memRSS, mqtt.0` - can be transmitted all the variables memory status of all drivers and all **mqtt.0 driver** instance variables),
-*   **To send only changes** - sending data to the client will be made only in case of change of a variable (if the state simply update - the value is not changed, the customer message will not be sent) from the client will be accepted any message, even if the value has not changed,
+*   **To send only changes** - sending data to the client will be made only in case of change of a variable (if the state simply updates - the value is not changed, the customer message will not be sent) from the client will be accepted any message, even if the value has not changed,
 *   **To give private values at startup** - for each successful client connection will be transferred to all known states (defined by the mask state) – in order to tell the client about the current state of the ioBroker,
 *   **Post status subscribes** - immediately after the subscription will be sent to the customer value of the variable on which it is signed (at the first start or restart the client will receive the values of variables on which it is signed, can be used to initialize variables),
 *   **The prefix for all values** - if the specified value, it will be added as a prefix to every sent topic, for example, if you specify iobroker/, then all topics sent along the following lines: `iobroker/mqtt/0/connected`,
@@ -71,9 +71,9 @@ Basic settings if you intend to use the server/broker is shown in the picture:
 As an example, consider the exchange of data between the client based on the [arduino board](https://www.arduino.cc/) and the broker is an instance of mqtt.0 driver system ioBroker.
 
 *   - the client – the fee for developing [arduino UNO](https://www.arduino.cc/en/Main/ArduinoBoardUno) + [ethernet shield](https://store.arduino.cc/product/A000072) based on W5100 chip,
-*   - to work with the ethernet board uses the standard [library](https://www.arduino.cc/en/Reference/Ethernet) for working with MQTT library [Pubsubclient](https://github.com/knolleary/pubsubclient),
-*   - the AM2302 sensor (temperature and humidity) connected to pin_8 for the survey used library with DHTlib with [DHTlib](https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib) resource github.com,
-*   - led **led_green** is connected to pin_9, control in discrete mode on/off
+*   - to work with the ethernet board, use the standard [library](https://www.arduino.cc/en/Reference/Ethernet) for working with MQTT library [Pubsubclient](https://github.com/knolleary/pubsubclient),
+*   - the AM2302 sensor (temperature and humidity) connected to pin_8 for the survey used a library with [DHTlib](https://github.com/RobTillaart/Arduino/tree/master/libraries/DHTlib) resource GitHub.com,
+*   - LED **led_green** is connected to pin_9, control in discrete mode on/off
 *   - broker – ioBroker system driver mqtt.
 
 Format topics of data exchange:
@@ -224,12 +224,12 @@ The result of the client-side (incoming data subscription output to the console 
 
 ### IoBroker working as MQTT-client
 
-For an instance MQTT driver earned as a client / subscriber - you need to choose the appropriate type of configuration. 
+For instance, MQTT driver earned as a client / subscriber - you need to choose the appropriate type of configuration. 
 In this set of options will change slightly: 
 
 ![](img/mqtt_4.png)
 
-*   **Connection settings** - specifies the URL and port of the broker (if you want to encrypt traffic, indicated SSL) - settings to connect to the broker,
+*   **Connection settings** - specify the URL and port of the broker (if you want to encrypt traffic, indicate SSL) - settings to connect to the broker,
 *   **Authentication settings** - user name and password, if the broker requires authentication (it is appropriate to use SSL to avoid transmitting the password in clear text),
 *   **Patterns** - a mask for variables for which the customer subscribes (variables broker), the values are listed separated by commas, the # (pound) is used to indicate the set,
 *   **Mask private values** - filter variables that should be published (client variables) whose values are listed separated by commas, for indicating a set use the symbol * (asterisk),
@@ -252,7 +252,7 @@ Examples for setting the subscription mask variables (patterns). Consider topics
 
 If you want to subscribe to a certain set of topics, you can use the characters # (pound sign) or + (plus sign).
 
-*   "Sport/Tennis/#" (subscription only "Sport/Tennis" and "Sport/Tennis/Finals")
+*   "Sport/Tennis/#" (subscription only "Sport/Tennis" and "Sport/Tennis/Finals")
 *   "Sport/Tennis/+" (subscription only "Sport/Tennis/Finals", but not "Sport/Tennis")
 
 For JMS topics, if you want to subscribe to all topics "Finals", you can use the characters # (pound sign) or + (plus sign)
@@ -265,7 +265,7 @@ For MQTT topics if you want to subscribe to all topics "Finals", you can use the
 *   "Sport/+/Finals"
 
 As an example, consider the exchange of data between the two systems ioBroker. There is a working system ioBroker for 
-BananaPi-Board (IP address 192.168.69.51), it launched MQTT- driver in the server/broker mode from the example above. 
+BananaPi-Board (IP address 192.168.69.51), it launched MQTT driver in the server/broker mode from the example above. 
 To the server connects a client that publishes data from the sensor DHT22 – temperature and humidity, 
 as well as signed variables of interval measurement transmission and the status led (enable/disable) – in the example above. 
 The second operating system ioBroker on the Board Cubietruck, it will run the MQTT driver in a client/subscriber mode. 
@@ -776,7 +776,7 @@ Create topics for publication (for example, lighting of the hall - port **P7** M
 
 ![](img/mqtt_example-cloud9.png)
 
-then create subscription for the topics (temperature, humidity, hall light on port **P7** MegaD): 
+then create subscription for the topics (temperature, humidity, hall light on port **P7** MegaD): 
 
 ![](img/mqtt_example-cloud10.png)
 

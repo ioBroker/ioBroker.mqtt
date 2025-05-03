@@ -2,7 +2,7 @@
 const mqtt = require('mqtt');
 
 function Client(cbConnected, cbChanged, config) {
-    if (typeof config === 'string') config = {name: config};
+    if (typeof config === 'string') config = { name: config };
     config = config || {};
     config.url = config.url || '127.0.0.1';
     if (config.user) {
@@ -73,7 +73,7 @@ function Client(cbConnected, cbChanged, config) {
         }
         const opts = {
             retain: retain || false,
-            qos: qos || 0
+            qos: qos || 0,
         };
         console.log(`Test MQTT Client ${config.clientId} publish "${topic}" -> "${message}" : ${JSON.stringify(opts)}`);
         this.client.publish(topic, message, opts, cb);

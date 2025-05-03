@@ -89,13 +89,16 @@ Blockly.Words['mqtt_tooltip'] = {
     pt: 'Enviar uma mensagem sobre um tópico definido pelo usuário',
     nl: 'Stuur een bericht naar een gebruiker',
     fr: 'Envoyer un message sur un sujet défini',
-    it: 'Invia un messaggio su un argomento definito dall\'utente',
+    it: "Invia un messaggio su un argomento definito dall'utente",
     es: 'Enviar un mensaje sobre un tema definido por el usuario',
     pl: 'Wysyłanie wiadomości na temat użytkownika określonego tematu',
     uk: 'Надіслати повідомлення на певну тему користувача',
     'zh-cn': '关于用户界定专题的信息',
 };
-Blockly.Words['mqtt_help'] = { en: 'https://github.com/ioBroker/ioBroker.mqtt/blob/master/docs/en/README.md', de: 'https://github.com/ioBroker/ioBroker.mqtt/blob/master/docs/de/README.md' };
+Blockly.Words['mqtt_help'] = {
+    en: 'https://github.com/ioBroker/ioBroker.mqtt/blob/master/docs/en/README.md',
+    de: 'https://github.com/ioBroker/ioBroker.mqtt/blob/master/docs/de/README.md',
+};
 
 Blockly.Sendto.blocks['mqtt_sendmessage'] =
     '<block type="mqtt_sendmessage">' +
@@ -139,11 +142,9 @@ Blockly.Blocks['mqtt_sendmessage'] = {
             .appendField(Blockly.Translate('mqtt_sendmessage'))
             .appendField(new Blockly.FieldDropdown(options), 'INSTANCE');
 
-        this.appendValueInput('TOPIC')
-            .appendField(Blockly.Translate('mqtt_topic'));
+        this.appendValueInput('TOPIC').appendField(Blockly.Translate('mqtt_topic'));
 
-        this.appendValueInput('MESSAGE')
-            .appendField(Blockly.Translate('mqtt_message'));
+        this.appendValueInput('MESSAGE').appendField(Blockly.Translate('mqtt_message'));
 
         this.appendDummyInput('RETAIN')
             .appendField(Blockly.Translate('mqtt_retain'))

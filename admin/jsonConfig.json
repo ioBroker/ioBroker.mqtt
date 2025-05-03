@@ -1,400 +1,400 @@
 {
-  "type": "tabs",
-  "i18n": true,
-  "items": {
-    "mainTab": {
-      "type": "panel",
-      "label": "Connection",
-      "items": {
-        "type": {
-          "type": "select",
-          "options": [
-            { "value": "client", "label": "Client" },
-            { "value": "server", "label": "Server" }
-          ],
-          "label": "IP",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
+    "type": "tabs",
+    "i18n": true,
+    "items": {
+        "mainTab": {
+            "type": "panel",
+            "label": "Connection",
+            "items": {
+                "type": {
+                    "type": "select",
+                    "options": [
+                        { "value": "client", "label": "Client" },
+                        { "value": "server", "label": "Server" }
+                    ],
+                    "label": "IP",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "_connection": {
+                    "newLine": true,
+                    "type": "header",
+                    "text": "Connection settings",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "size": 3
+                },
+                "url": {
+                    "newLine": true,
+                    "type": "text",
+                    "hidden": "data.type === 'server'",
+                    "label": "URL:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "bind": {
+                    "newLine": true,
+                    "type": "ip",
+                    "hidden": "data.type !== 'server'",
+                    "label": "IP address",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "listenOnAllPorts": true
+                },
+                "port": {
+                    "type": "number",
+                    "label": "Port:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "min": 1,
+                    "max": 65565
+                },
+                "webSocket": {
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'server'",
+                    "label": "Use WebSockets:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "infoMessageWebSocket": {
+                    "newLine": true,
+                    "type": "staticText",
+                    "hidden": "data.type !== 'server' || !data.webSocket",
+                    "text": "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12
+                },
+                "ssl": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Secure:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "rejectUnauthorized": {
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'client' || !data.ssl",
+                    "label": "rejectUnauthorized",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "selfSigned": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'client' || !data.ssl",
+                    "label": "Use Self-Signed-Certificate (only if SSL is enabled)",
+                    "tooltip": "!!! This option is only effective is enabled AND SSL is active. If SSL is disabled, this setting has no effect. !!!",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "rootCertificatePath": {
+                    "type": "text",
+                    "hidden": "data.type !== 'client' || !data.ssl || !data.selfSigned",
+                    "label": "Root Certificate Path",
+                    "placeholder": "/path/to/root-ca.pem",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "doNotCheckPublicIP": {
+                    "newLine": true,
+                    "label": "Do not check if this instance is available from internet",
+                    "type": "checkbox",
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 4,
+                    "hidden": "data.type !== 'server' || !!data.pass"
+                },
+                "certPublic": {
+                    "newLine": true,
+                    "type": "certificate",
+                    "hidden": "data.type !== 'server' || !data.ssl",
+                    "label": "Public certificate:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "certType": "public"
+                },
+                "certPrivate": {
+                    "type": "certificate",
+                    "hidden": "data.type !== 'server' || !data.ssl",
+                    "label": "Private certificate:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "certType": "private"
+                },
+                "certChained": {
+                    "type": "certificate",
+                    "hidden": "data.type !== 'server' || !data.ssl",
+                    "label": "Chained certificate:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "certType": "chained"
+                },
+                "_auth": {
+                    "newLine": true,
+                    "type": "header",
+                    "size": 3,
+                    "text": "Authentication settings",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12
+                },
+                "user": {
+                    "type": "text",
+                    "label": "User:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "pass": {
+                    "type": "password",
+                    "label": "Password:",
+                    "sm": 12,
+                    "md": 9,
+                    "lg": 8,
+                    "repeat": true
+                },
+                "_test": {
+                    "type": "sendTo",
+                    "hidden": "data.type !== 'client'",
+                    "label": "Test connection",
+                    "command": "test",
+                    "variant": "contained",
+                    "jsonData": "{\"user\": \"${data.user}\", \"pass\": \"${data.pass}\", \"url\": \"${data.url}\", \"port\": ${data.port}, \"ssl\": ${data.ssl}}"
+                }
+            }
         },
-        "_connection": {
-          "newLine": true,
-          "type": "header",
-          "text": "Connection settings",
-          "sm": 12,
-          "md": 12,
-          "lg": 12,
-          "size": 3
+        "clientTab": {
+            "type": "panel",
+            "hidden": "data.type !== 'client'",
+            "label": "Client settings",
+            "items": {
+                "patterns": {
+                    "newLine": true,
+                    "type": "chips",
+                    "hidden": "data.type !== 'client'",
+                    "label": "Patterns:",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "delimiter": ",",
+                    "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')"
+                },
+                "clientId": {
+                    "newLine": true,
+                    "hidden": "data.type !== 'client'",
+                    "type": "text",
+                    "label": "Client ID:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "persistent": {
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'client'",
+                    "label": "Persistent Session",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                }
+            }
         },
-        "url": {
-          "newLine": true,
-          "type": "text",
-          "hidden": "data.type === 'server'",
-          "label": "URL:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
+        "serverTab": {
+            "type": "panel",
+            "hidden": "data.type !== 'server'",
+            "label": "Server settings",
+            "items": {
+                "publishOnSubscribe": {
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'server'",
+                    "label": "Publish states on subscribe:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "noRetain": {
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'server'",
+                    "label": "Publish messages without \"retain\" flag",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "forceCleanSession": {
+                    "newLine": true,
+                    "type": "select",
+                    "hidden": "data.type !== 'server'",
+                    "options": [
+                        { "value": "no", "label": "Use client settings" },
+                        { "value": "clean", "label": "Always clean sessions for all clients" },
+                        { "value": "keep", "label": "Always keep sessions for all clients" }
+                    ],
+                    "label": "Force clean session",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "ignoredTopics": {
+                    "newLine": true,
+                    "type": "chips",
+                    "label": "Ignored Topics:",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "delimiter": ",",
+                    "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
+                }
+            }
         },
-        "bind": {
-          "newLine": true,
-          "type": "ip",
-          "hidden": "data.type !== 'server'",
-          "label": "IP address",
-          "sm": 12,
-          "md": 6,
-          "lg": 4,
-          "listenOnAllPorts": true
-        },
-        "port": {
-          "type": "number",
-          "label": "Port:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4,
-          "min": 1,
-          "max": 65565
-        },
-        "webSocket": {
-          "type": "checkbox",
-          "hidden": "data.type !== 'server'",
-          "label": "Use WebSockets:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "infoMessageWebSocket": {
-          "newLine": true,
-          "type": "staticText",
-          "hidden": "data.type !== 'server' || !data.webSocket",
-          "text": "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.",
-          "sm": 12,
-          "md": 12,
-          "lg": 12
-        },
-        "ssl": {
-          "newLine": true,
-          "type": "checkbox",
-          "label": "Secure:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "rejectUnauthorized": {
-          "type": "checkbox",
-          "hidden": "data.type !== 'client' || !data.ssl",
-          "label": "rejectUnauthorized",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "selfSigned": {
-          "newLine": true,
-          "type": "checkbox",
-          "hidden": "data.type !== 'client' || !data.ssl",
-          "label": "Use Self-Signed-Certificate (only if SSL is enabled)",
-          "tooltip": "!!! This option is only effective is enabled AND SSL is active. If SSL is disabled, this setting has no effect. !!!",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "rootCertificatePath": {
-          "type": "text",
-          "hidden": "data.type !== 'client' || !data.ssl || !data.selfSigned",
-          "label": "Root Certificate Path",
-          "placeholder": "/path/to/root-ca.pem",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "doNotCheckPublicIP": {
-          "newLine": true,
-          "label": "Do not check if this instance is available from internet",
-          "type": "checkbox",
-          "sm": 12,
-          "md": 4,
-          "lg": 4,
-          "hidden": "data.type !== 'server' || !!data.pass"
-        },
-        "certPublic": {
-          "newLine": true,
-          "type": "certificate",
-          "hidden": "data.type !== 'server' || !data.ssl",
-          "label": "Public certificate:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4,
-          "certType": "public"
-        },
-        "certPrivate": {
-          "type": "certificate",
-          "hidden": "data.type !== 'server' || !data.ssl",
-          "label": "Private certificate:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4,
-          "certType": "private"
-        },
-        "certChained": {
-          "type": "certificate",
-          "hidden": "data.type !== 'server' || !data.ssl",
-          "label": "Chained certificate:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4,
-          "certType": "chained"
-        },
-        "_auth": {
-          "newLine": true,
-          "type": "header",
-          "size": 3,
-          "text": "Authentication settings",
-          "sm": 12,
-          "md": 12,
-          "lg": 12
-        },
-        "user": {
-          "type": "text",
-          "label": "User:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "pass": {
-          "type": "password",
-          "label": "Password:",
-          "sm": 12,
-          "md": 9,
-          "lg": 8,
-          "repeat": true
-        },
-        "_test": {
-          "type": "sendTo",
-          "hidden": "data.type !== 'client'",
-          "label": "Test connection",
-          "command": "test",
-          "variant": "contained",
-          "jsonData": "{\"user\": \"${data.user}\", \"pass\": \"${data.pass}\", \"url\": \"${data.url}\", \"port\": ${data.port}, \"ssl\": ${data.ssl}}"
+        "mqttTab": {
+            "type": "panel",
+            "label": "MQTT Settings",
+            "items": {
+                "prefix": {
+                    "newLine": true,
+                    "type": "text",
+                    "label": "Prefix for topics:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 6
+                },
+                "publish": {
+                    "newLine": true,
+                    "type": "chips",
+                    "label": "Mask to publish own state",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "delimiter": ",",
+                    "help": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
+                },
+                "onchange": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Store only on change:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "publishAllOnStart": {
+                    "type": "checkbox",
+                    "label": "Publish all states at start:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "debug": {
+                    "type": "checkbox",
+                    "label": "Trace output for every message:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "sendAckToo": {
+                    "type": "checkbox",
+                    "label": "Send states (ack=true) too:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "extraSet": {
+                    "type": "checkbox",
+                    "label": "Use different topic names for set and get:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "sendStateObject": {
+                    "type": "checkbox",
+                    "label": "Send state object as mqtt message",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "maxTopicLength": {
+                    "newLine": true,
+                    "type": "number",
+                    "label": "Max topic length:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "help": "chars"
+                },
+                "sendOnStartInterval": {
+                    "type": "number",
+                    "label": "Interval before send topics by connection:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "help": "ms"
+                },
+                "sendInterval": {
+                    "type": "number",
+                    "label": "Send interval:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3,
+                    "help": "ms"
+                },
+                "defaultQoS": {
+                    "newLine": true,
+                    "type": "select",
+                    "options": [
+                        { "value": "0", "label": "0 - At most once" },
+                        { "value": "1", "label": "1 - At least once" },
+                        { "value": "2", "label": "2 - Exactly once" }
+                    ],
+                    "label": "Default QoS:",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "retain": {
+                    "type": "checkbox",
+                    "label": "Set retain flag",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 3
+                },
+                "removePrefix": {
+                    "newLine": true,
+                    "type": "text",
+                    "label": "Remove prefix from topics",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "help": "Like \"javascript.0.\" to remove it from all topics"
+                },
+                "ignoreNewObjects": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Do not create new states",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                },
+                "allBinaries": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "All new topics will be processed as binary",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
+                }
+            }
         }
-      }
-    },
-    "clientTab": {
-      "type": "panel",
-      "hidden": "data.type !== 'client'",
-      "label": "Client settings",
-      "items": {
-        "patterns": {
-          "newLine": true,
-          "type": "chips",
-          "hidden": "data.type !== 'client'",
-          "label": "Patterns:",
-          "sm": 12,
-          "md": 12,
-          "lg": 12,
-          "delimiter": ",",
-          "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')"
-        },
-        "clientId": {
-          "newLine": true,
-          "hidden": "data.type !== 'client'",
-          "type": "text",
-          "label": "Client ID:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "persistent": {
-          "type": "checkbox",
-          "hidden": "data.type !== 'client'",
-          "label": "Persistent Session",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        }
-      }
-    },
-    "serverTab": {
-      "type": "panel",
-      "hidden": "data.type !== 'server'",
-      "label": "Server settings",
-      "items": {
-        "publishOnSubscribe": {
-          "type": "checkbox",
-          "hidden": "data.type !== 'server'",
-          "label": "Publish states on subscribe:",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "noRetain": {
-          "type": "checkbox",
-          "hidden": "data.type !== 'server'",
-          "label": "Publish messages without \"retain\" flag",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "forceCleanSession": {
-          "newLine": true,
-          "type": "select",
-          "hidden": "data.type !== 'server'",
-          "options": [
-            { "value": "no", "label": "Use client settings" },
-            { "value": "clean", "label": "Always clean sessions for all clients" },
-            { "value": "keep", "label": "Always keep sessions for all clients" }
-          ],
-          "label": "Force clean session",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "ignoredTopics": {
-          "newLine": true,
-          "type": "chips",
-          "label": "Ignored Topics:",
-          "sm": 12,
-          "md": 12,
-          "lg": 12,
-          "delimiter": ",",
-          "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
-        }
-      }
-    },
-    "mqttTab": {
-      "type": "panel",
-      "label": "MQTT Settings",
-      "items": {
-        "prefix": {
-          "newLine": true,
-          "type": "text",
-          "label": "Prefix for topics:",
-          "sm": 12,
-          "md": 6,
-          "lg": 6
-        },
-        "publish": {
-          "newLine": true,
-          "type": "chips",
-          "label": "Mask to publish own state",
-          "sm": 12,
-          "md": 12,
-          "lg": 12,
-          "delimiter": ",",
-          "help": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
-        },
-        "onchange": {
-          "newLine": true,
-          "type": "checkbox",
-          "label": "Store only on change:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "publishAllOnStart": {
-          "type": "checkbox",
-          "label": "Publish all states at start:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "debug": {
-          "type": "checkbox",
-          "label": "Trace output for every message:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "sendAckToo": {
-          "type": "checkbox",
-          "label": "Send states (ack=true) too:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "extraSet": {
-          "type": "checkbox",
-          "label": "Use different topic names for set and get:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "sendStateObject": {
-          "type": "checkbox",
-          "label": "Send state object as mqtt message",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "maxTopicLength": {
-          "newLine": true,
-          "type": "number",
-          "label": "Max topic length:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3,
-          "help": "chars"
-        },
-        "sendOnStartInterval": {
-          "type": "number",
-          "label": "Interval before send topics by connection:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3,
-          "help": "ms"
-        },
-        "sendInterval": {
-          "type": "number",
-          "label": "Send interval:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3,
-          "help": "ms"
-        },
-        "defaultQoS": {
-          "newLine": true,
-          "type": "select",
-          "options": [
-            { "value": "0", "label": "0 - At most once" },
-            { "value": "1", "label": "1 - At least once" },
-            { "value": "2", "label": "2 - Exactly once" }
-          ],
-          "label": "Default QoS:",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "retain": {
-          "type": "checkbox",
-          "label": "Set retain flag",
-          "sm": 12,
-          "md": 6,
-          "lg": 3
-        },
-        "removePrefix": {
-          "newLine": true,
-          "type": "text",
-          "label": "Remove prefix from topics",
-          "sm": 12,
-          "md": 12,
-          "lg": 12,
-          "help": "Like \"javascript.0.\" to remove it from all topics"
-        },
-        "ignoreNewObjects": {
-          "newLine": true,
-          "type": "checkbox",
-          "label": "Do not create new states",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        },
-        "allBinaries": {
-          "newLine": true,
-          "type": "checkbox",
-          "label": "All new topics will be processed as binary",
-          "sm": 12,
-          "md": 6,
-          "lg": 4
-        }
-      }
     }
-  }
 }
