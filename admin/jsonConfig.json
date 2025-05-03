@@ -62,6 +62,15 @@
           "md": 6,
           "lg": 4
         },
+        "infoMessageWebSocket": {
+          "newLine": true,
+          "type": "staticText",
+          "hidden": "data.type !== 'server' || !data.webSocket",
+          "text": "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.",
+          "sm": 12,
+          "md": 12,
+          "lg": 12
+        },
         "ssl": {
           "newLine": true,
           "type": "checkbox",
@@ -74,6 +83,25 @@
           "type": "checkbox",
           "hidden": "data.type !== 'client' || !data.ssl",
           "label": "rejectUnauthorized",
+          "sm": 12,
+          "md": 6,
+          "lg": 4
+        },
+        "selfSigned": {
+          "newLine": true,
+          "type": "checkbox",
+          "hidden": "data.type !== 'client' || !data.ssl",
+          "label": "Use Self-Signed-Certificate (only if SSL is enabled)",
+          "tooltip": "!!! This option is only effective is enabled AND SSL is active. If SSL is disabled, this setting has no effect. !!!",
+          "sm": 12,
+          "md": 6,
+          "lg": 4
+        },
+        "rootCertificatePath": {
+          "type": "text",
+          "hidden": "data.type !== 'client' || !data.ssl || !data.selfSigned",
+          "label": "Root Certificate Path",
+          "placeholder": "/path/to/root-ca.pem",
           "sm": 12,
           "md": 6,
           "lg": 4
