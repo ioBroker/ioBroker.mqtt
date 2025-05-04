@@ -1,330 +1,350 @@
 {
-    "common": {
-        "name": "mqtt",
-        "version": "6.1.2",
-        "news": {
-            "6.1.2": {
-                "en": "Corrected error if the client has no ID",
-                "de": "Fehler behoben, wenn der Client keine ID hat",
-                "ru": "Исправлена ошибка, если у клиента нет ID",
-                "pt": "Erro corrigido se o cliente não tiver identificação",
-                "nl": "Gecorrigeerde fout als de client geen ID heeft",
-                "fr": "Erreur corrigée si le client n'a pas d'identifiant",
-                "it": "Errore corretto se il client non ha ID",
-                "es": "Error corregido si el cliente no tiene identificación",
-                "pl": "Skorygowany błąd, jeśli klient nie ma ID",
-                "uk": "Виправлена помилка, якщо клієнт не має ідентифікатора",
-                "zh-cn": "如果客户端没有ID, 已更正错误"
-            },
-            "6.1.1": {
-                "en": "Added information about connected clients in the server mode",
-                "de": "Weitere Informationen zu verbundenen Clients im Servermodus",
-                "ru": "Добавлена информация о подключенных клиентах в серверном режиме",
-                "pt": "InformaÃ§Ãμes adicionais sobre clientes conectados no modo servidor",
-                "nl": "Informatie over verbonden clients toegevoegd in de servermodus",
-                "fr": "Ajout d'informations sur les clients connectés en mode serveur",
-                "it": "Aggiunte informazioni sui client connessi nella modalità server",
-                "es": "Información adicional sobre clientes conectados en el modo servidor",
-                "pl": "Dodano informacje o podłączonych klientach w trybie serwera",
-                "uk": "Додано інформацію про підключені клієнти в режимі сервера",
-                "zh-cn": "在服务器模式中添加了连接客户端的信息"
-            },
-            "6.0.2": {
-                "en": "Added a space to the connection string for better readability",
-                "de": "Hinzufügen eines Platzes zum Verbindungsstring für eine bessere Lesbarkeit",
-                "ru": "Добавлено пространство к строке подключения для лучшей читаемости",
-                "pt": "Adicionado um espaço para a cadeia de conexão para melhor legibilidade",
-                "nl": "Een ruimte aan de verbindingsstring toegevoegd voor betere leesbaarheid",
-                "fr": "Ajout d'un espace à la chaîne de connexion pour une meilleure lisibilité",
-                "it": "Aggiunto uno spazio alla stringa di connessione per una migliore leggibilità",
-                "es": "Añadido un espacio a la cadena de conexión para una mejor legibilidad",
-                "pl": "Dodano przestrzeń do łańcucha połączeń dla lepszej czytelności",
-                "uk": "Додано простір на рядок з'єднання для кращого зчитування",
-                "zh-cn": "添加到连接字符串中的空格以更好地读取"
-            },
-            "6.0.1": {
-                "en": "remove binary state handling as these are no longer existing\nhandle the messages as a state object if properties are valid",
-                "de": "entfernen der binären zustandsbehandlung, da diese nicht mehr vorhanden sind\ndie nachrichten als zustandsobjekt verwalten, wenn eigenschaften gültig sind",
-                "ru": "удалить управление бинарным состоянием, поскольку они больше не существуют\nобрабатывать сообщения как объект состояния, если свойства действительны",
-                "pt": "remover o manuseio de estado binário como estes não são mais existentes\nlidar com as mensagens como um objeto de estado se as propriedades são válidas",
-                "nl": "binaire statusbehandeling verwijderen omdat deze niet meer bestaan\nde berichten als een statusobject behandelen als eigenschappen geldig zijn",
-                "fr": "supprimer la manipulation de l'état binaire car celles-ci ne sont plus existantes\ngérer les messages comme un objet d'état si les propriétés sont valides",
-                "it": "rimuovere la gestione dello stato binario come questi non sono più esistenti\ngestire i messaggi come oggetto di stato se le proprietà sono valide",
-                "es": "eliminar el manejo de estado binario ya que estos ya no existen\nmanejar los mensajes como objeto de estado si las propiedades son válidas",
-                "pl": "usuń obsługę stanu binarnego, ponieważ nie istnieją\nobsługi wiadomości jako obiektu stanu, jeśli właściwości są prawidłowe",
-                "uk": "видаліть бінарну державну обробку, оскільки це більше не існує\nобробляти повідомлення як державний об'єкт, якщо властивості дійсні",
-                "zh-cn": "删除已不存在的二进制状态处理\n如果属性有效, 将信件作为状态对象处理"
-            },
-            "6.0.0": {
-                "en": "Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required\nFixed blockly definitions",
-                "de": "Bruchänderungen: NodeJS >= 18.x und js-Controller >= 5 sind erforderlich\nFeste blockweise Definitionen",
-                "ru": "Перерывные изменения: NodeJS >= 18.x и js-контроллер >= 5 требуется\nИсправленные блокированные определения",
-                "pt": "Alterações de ruptura: NodeJS >= 18.x e js-controller >= 5 são necessários\nDefinições bloqueadas fixas",
-                "nl": "Voor de toepassing van deze onderverdeling wordt verstaan onder: 5 zijn vereist\nVaste blokdefinities",
-                "fr": "Breaking Changes: NodeJS >= 18.x et js-controller >= 5 sont nécessaires\nDéfinition par blocs",
-                "it": "Cambiamenti di rottura: NodeJS >= 18.x e js-controller >= 5 sono necessari\nDefinizioni bloccate fissate",
-                "es": "Cambios de ruptura: NodeJS >= 18.x y js-controller √= 5 se requieren\nDefiniciones bloqueadas fijas",
-                "pl": "Breaking Changes: NodeJS > = 18.x i kontroler js- > = 5 są wymagane\nPoprawione definicje blokowane",
-                "uk": "Зміна несправностей: NodeJS >= 18.x і js-controller >= 5 обов'язкові\nФіксовані визначення блоків",
-                "zh-cn": "突破更改:节点JS QQ 18.x和js控制器 QQ 需要5个\n固定的区块定义"
-            },
-            "5.2.0": {
-                "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing\nAdded an option to filter certain topics",
-                "de": "behoben: bestätigen aufMessage()\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung\nHinzugefügt eine Option, bestimmte Themen zu filtern",
-                "ru": "фиксированный: подтвердить наСообщение()\nДобавить проверку подлинности для обработки запроса\nДобавлена опция фильтровать определенные темы",
-                "pt": "corrigido: confirme noMessage()\nAdicionado a validação de autenticação para solicitar o processamento\nAdicionado uma opção para filtrar certos tópicos",
-                "nl": "vast: bevestig onMessage()\nDe authenticatievalidatie toegevoegd om verwerking te vragen\nEen optie toegevoegd om bepaalde onderwerpen te filteren",
-                "fr": "fixe: confirmer surMessage()\nAjout de la validation d'authentification pour demander le traitement\nAjout d'une option pour filtrer certains sujets",
-                "it": "fisso: conferma suMessage()\nAggiunta la validazione dell'autenticazione per richiedere l'elaborazione\nAggiunto un'opzione per filtrare alcuni argomenti",
-                "es": "fijo: confirm onMessage()\nAñadido la validación de autenticación para solicitar procesamiento\nAñadido una opción para filtrar ciertos temas",
-                "pl": "stałe: potwierdzenie wiadomości ()\nDodano potwierdzenie uwierzytelniania, aby zażądać przetwarzania\nDodano opcję filtrowania niektórych tematów",
-                "uk": "фіксована: підтвердження наMessage()\nДодано перевірку автентичності для обробки запитів\nДодана можливість фільтрувати певні теми",
-                "zh-cn": "固定: 在Message上确认( )\n添加认证验证到请求处理中\n添加了过滤某些话题的选项"
-            },
-            "5.1.0": {
-                "en": "Added security check if the server is available from the internet without protection",
-                "de": "Sicherheitsüberprüfung hinzugefügt, wenn der Server im Internet ohne Schutz verfügbar ist",
-                "ru": "Добавлена проверка безопасности, если сервер доступен из интернета без защиты",
-                "pt": "Verificação de segurança adicionada se o servidor estiver disponível na internet sem proteção",
-                "nl": "Controleer of de server beschikbaar is van het internet zonder bescherming",
-                "fr": "Vérification de sécurité supplémentaire si le serveur est disponible sur Internet sans protection",
-                "it": "Aggiunto controllo di sicurezza se il server è disponibile da internet senza protezione",
-                "es": "Control de seguridad adicional si el servidor está disponible en Internet sin protección",
-                "pl": "W przypadku, gdy serwer jest dostępny z Internetu bez ochrony",
-                "uk": "Додано контроль безпеки, якщо сервер доступний з Інтернету без захисту",
-                "zh-cn": "如果没有保护,如果服务器可以从互联网上查看安全检查。"
-            }
+  "common": {
+    "name": "mqtt",
+    "version": "6.1.3",
+    "news": {
+      "6.1.3": {
+        "en": "Corrected TLS communication\nPackages updated",
+        "de": "Korrigierte TLS-Kommunikation\nPakete aktualisiert",
+        "ru": "Исправленная связь TLS\nОбновленные пакеты",
+        "pt": "Comunicação TLS corrigida\nPacotes atualizados",
+        "nl": "Gecorrigeerde TLS-communicatie\nPakketten bijgewerkt",
+        "fr": "Communication TLS corrigée\nMise à jour des paquets",
+        "it": "Corretto comunicazione TLS\nPacchetti aggiornati",
+        "es": "Comunicación corregida del TLS\nPaquetes actualizados",
+        "pl": "Poprawiona komunikacja TLS\nAktualizacja pakietów",
+        "uk": "Виправлено комунікацію TLS\nПакети оновлені",
+        "zh-cn": "更正的 TLS 通信\n更新软件包"
+      },
+      "6.1.2": {
+        "en": "Corrected error if the client has no ID",
+        "de": "Fehler behoben, wenn der Client keine ID hat",
+        "ru": "Исправлена ошибка, если у клиента нет ID",
+        "pt": "Erro corrigido se o cliente não tiver identificação",
+        "nl": "Gecorrigeerde fout als de client geen ID heeft",
+        "fr": "Erreur corrigée si le client n'a pas d'identifiant",
+        "it": "Errore corretto se il client non ha ID",
+        "es": "Error corregido si el cliente no tiene identificación",
+        "pl": "Skorygowany błąd, jeśli klient nie ma ID",
+        "uk": "Виправлена помилка, якщо клієнт не має ідентифікатора",
+        "zh-cn": "如果客户端没有ID, 已更正错误"
+      },
+      "6.1.1": {
+        "en": "Added information about connected clients in the server mode",
+        "de": "Weitere Informationen zu verbundenen Clients im Servermodus",
+        "ru": "Добавлена информация о подключенных клиентах в серверном режиме",
+        "pt": "InformaÃ§Ãμes adicionais sobre clientes conectados no modo servidor",
+        "nl": "Informatie over verbonden clients toegevoegd in de servermodus",
+        "fr": "Ajout d'informations sur les clients connectés en mode serveur",
+        "it": "Aggiunte informazioni sui client connessi nella modalità server",
+        "es": "Información adicional sobre clientes conectados en el modo servidor",
+        "pl": "Dodano informacje o podłączonych klientach w trybie serwera",
+        "uk": "Додано інформацію про підключені клієнти в режимі сервера",
+        "zh-cn": "在服务器模式中添加了连接客户端的信息"
+      },
+      "6.0.2": {
+        "en": "Added a space to the connection string for better readability",
+        "de": "Hinzufügen eines Platzes zum Verbindungsstring für eine bessere Lesbarkeit",
+        "ru": "Добавлено пространство к строке подключения для лучшей читаемости",
+        "pt": "Adicionado um espaço para a cadeia de conexão para melhor legibilidade",
+        "nl": "Een ruimte aan de verbindingsstring toegevoegd voor betere leesbaarheid",
+        "fr": "Ajout d'un espace à la chaîne de connexion pour une meilleure lisibilité",
+        "it": "Aggiunto uno spazio alla stringa di connessione per una migliore leggibilità",
+        "es": "Añadido un espacio a la cadena de conexión para una mejor legibilidad",
+        "pl": "Dodano przestrzeń do łańcucha połączeń dla lepszej czytelności",
+        "uk": "Додано простір на рядок з'єднання для кращого зчитування",
+        "zh-cn": "添加到连接字符串中的空格以更好地读取"
+      },
+      "6.0.1": {
+        "en": "remove binary state handling as these are no longer existing\nhandle the messages as a state object if properties are valid",
+        "de": "entfernen der binären zustandsbehandlung, da diese nicht mehr vorhanden sind\ndie nachrichten als zustandsobjekt verwalten, wenn eigenschaften gültig sind",
+        "ru": "удалить управление бинарным состоянием, поскольку они больше не существуют\nобрабатывать сообщения как объект состояния, если свойства действительны",
+        "pt": "remover o manuseio de estado binário como estes não são mais existentes\nlidar com as mensagens como um objeto de estado se as propriedades são válidas",
+        "nl": "binaire statusbehandeling verwijderen omdat deze niet meer bestaan\nde berichten als een statusobject behandelen als eigenschappen geldig zijn",
+        "fr": "supprimer la manipulation de l'état binaire car celles-ci ne sont plus existantes\ngérer les messages comme un objet d'état si les propriétés sont valides",
+        "it": "rimuovere la gestione dello stato binario come questi non sono più esistenti\ngestire i messaggi come oggetto di stato se le proprietà sono valide",
+        "es": "eliminar el manejo de estado binario ya que estos ya no existen\nmanejar los mensajes como objeto de estado si las propiedades son válidas",
+        "pl": "usuń obsługę stanu binarnego, ponieważ nie istnieją\nobsługi wiadomości jako obiektu stanu, jeśli właściwości są prawidłowe",
+        "uk": "видаліть бінарну державну обробку, оскільки це більше не існує\nобробляти повідомлення як державний об'єкт, якщо властивості дійсні",
+        "zh-cn": "删除已不存在的二进制状态处理\n如果属性有效, 将信件作为状态对象处理"
+      },
+      "6.0.0": {
+        "en": "Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required\nFixed blockly definitions",
+        "de": "Bruchänderungen: NodeJS >= 18.x und js-Controller >= 5 sind erforderlich\nFeste blockweise Definitionen",
+        "ru": "Перерывные изменения: NodeJS >= 18.x и js-контроллер >= 5 требуется\nИсправленные блокированные определения",
+        "pt": "Alterações de ruptura: NodeJS >= 18.x e js-controller >= 5 são necessários\nDefinições bloqueadas fixas",
+        "nl": "Voor de toepassing van deze onderverdeling wordt verstaan onder: 5 zijn vereist\nVaste blokdefinities",
+        "fr": "Breaking Changes: NodeJS >= 18.x et js-controller >= 5 sont nécessaires\nDéfinition par blocs",
+        "it": "Cambiamenti di rottura: NodeJS >= 18.x e js-controller >= 5 sono necessari\nDefinizioni bloccate fissate",
+        "es": "Cambios de ruptura: NodeJS >= 18.x y js-controller √= 5 se requieren\nDefiniciones bloqueadas fijas",
+        "pl": "Breaking Changes: NodeJS > = 18.x i kontroler js- > = 5 są wymagane\nPoprawione definicje blokowane",
+        "uk": "Зміна несправностей: NodeJS >= 18.x і js-controller >= 5 обов'язкові\nФіксовані визначення блоків",
+        "zh-cn": "突破更改:节点JS QQ 18.x和js控制器 QQ 需要5个\n固定的区块定义"
+      },
+      "5.2.0": {
+        "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing\nAdded an option to filter certain topics",
+        "de": "behoben: bestätigen aufMessage()\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung\nHinzugefügt eine Option, bestimmte Themen zu filtern",
+        "ru": "фиксированный: подтвердить наСообщение()\nДобавить проверку подлинности для обработки запроса\nДобавлена опция фильтровать определенные темы",
+        "pt": "corrigido: confirme noMessage()\nAdicionado a validação de autenticação para solicitar o processamento\nAdicionado uma opção para filtrar certos tópicos",
+        "nl": "vast: bevestig onMessage()\nDe authenticatievalidatie toegevoegd om verwerking te vragen\nEen optie toegevoegd om bepaalde onderwerpen te filteren",
+        "fr": "fixe: confirmer surMessage()\nAjout de la validation d'authentification pour demander le traitement\nAjout d'une option pour filtrer certains sujets",
+        "it": "fisso: conferma suMessage()\nAggiunta la validazione dell'autenticazione per richiedere l'elaborazione\nAggiunto un'opzione per filtrare alcuni argomenti",
+        "es": "fijo: confirm onMessage()\nAñadido la validación de autenticación para solicitar procesamiento\nAñadido una opción para filtrar ciertos temas",
+        "pl": "stałe: potwierdzenie wiadomości ()\nDodano potwierdzenie uwierzytelniania, aby zażądać przetwarzania\nDodano opcję filtrowania niektórych tematów",
+        "uk": "фіксована: підтвердження наMessage()\nДодано перевірку автентичності для обробки запитів\nДодана можливість фільтрувати певні теми",
+        "zh-cn": "固定: 在Message上确认( )\n添加认证验证到请求处理中\n添加了过滤某些话题的选项"
+      }
+    },
+    "titleLang": {
+      "en": "MQTT Broker/Client",
+      "de": "MQTT Broker/Client",
+      "ru": "Брокер MQTT/Клиент",
+      "pt": "MQTT Broker/Cliente",
+      "nl": "MQTT-makelaar/klant",
+      "fr": "Courtier MQTT/Client",
+      "it": "Broker/Cliente MQTT",
+      "es": "Agente MQTT/Cliente",
+      "pl": "Broker/klient MQTT",
+      "uk": "Брокер MQTT/Клієнт",
+      "zh-cn": "MQTT经纪人/客户"
+    },
+    "desc": {
+      "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
+      "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
+      "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера",
+      "pt": "Este adaptador permite enviar e receber mensagens MQTT da ioBroker e ser um corretor",
+      "nl": "Met deze adapter kunt u MQTT-berichten van ioBroker verzenden en ontvangen en makelaar worden",
+      "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
+      "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
+      "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
+      "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera",
+      "uk": "Цей адаптер дозволяє надсилати та отримувати повідомлення MQTT від ioBroker та бути брокером",
+      "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
+    },
+    "authors": [
+      "bluefox <dogafox@gmail.com>",
+      "Apollon77 <iobroker@fischer-ka.de>",
+      "Matthias Kleine <info@haus-automatisierung.com>"
+    ],
+    "docs": {
+      "en": "docs/en/mqtt.md",
+      "ru": "docs/ru/mqtt.md"
+    },
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
+    "platform": "Javascript/Node.js",
+    "mode": "daemon",
+    "compact": true,
+    "blockly": true,
+    "messagebox": true,
+    "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
+    "loglevel": "info",
+    "icon": "mqtt.svg",
+    "keywords": [
+      "notification",
+      "MQTT",
+      "message"
+    ],
+    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.svg",
+    "type": "protocols",
+    "plugins": {
+      "sentry": {
+        "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
+      }
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=5.0.19"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=6.6.0"
+      }
+    ],
+    "tier": 2,
+    "connectionType": "local",
+    "dataSource": "push",
+    "adminUI": {
+      "config": "json"
+    },
+    "messages": [
+      {
+        "condition": {
+          "operand": "and",
+          "rules": [
+            "oldVersion<3.0.0",
+            "newVersion>=3.0.0"
+          ]
         },
-        "titleLang": {
-            "en": "MQTT Broker/Client",
-            "de": "MQTT Broker/Client",
-            "ru": "Брокер MQTT/Клиент",
-            "pt": "MQTT Broker/Cliente",
-            "nl": "MQTT-makelaar/klant",
-            "fr": "Courtier MQTT/Client",
-            "it": "Broker/Cliente MQTT",
-            "es": "Agente MQTT/Cliente",
-            "pl": "Broker/klient MQTT",
-            "uk": "Брокер MQTT/Клієнт",
-            "zh-cn": "MQTT经纪人/客户"
+        "title": {
+          "en": "Re-enter the password after Update!",
+          "de": "Passwort muss nach dem Update erneut eingegeben werden!",
+          "ru": "Повторно введите пароль после обновления!",
+          "pt": "Digite novamente a senha após Atualizar!",
+          "nl": "Voer het wachtwoord opnieuw in na Update!",
+          "fr": "Entrez à nouveau le mot de passe après la mise à jour !",
+          "it": "Reinserire la password dopo l'aggiornamento!",
+          "es": "Vuelva a ingresar la contraseña después de ¡Actualizar!",
+          "pl": "Wprowadź hasło ponownie po aktualizacji!",
+          "zh-cn": "更新后重新输入密码！"
         },
-        "desc": {
-            "en": "This adapter allows to send and receive MQTT messages from ioBroker and to be a broker",
-            "de": "Adapter ermöglicht eine Kommunikation mit dem MQTT broker und kann auch selbst ein broker/server sein",
-            "ru": "Драйвер позволяет подключатся к MQTT брокерам, а также самому выступать в роли брокера",
-            "pt": "Este adaptador permite enviar e receber mensagens MQTT da ioBroker e ser um corretor",
-            "nl": "Met deze adapter kunt u MQTT-berichten van ioBroker verzenden en ontvangen en makelaar worden",
-            "fr": "Cet adaptateur permet d'envoyer et de recevoir des messages MQTT de ioBroker et d'être un courtier",
-            "it": "Questo adattatore consente di inviare e ricevere messaggi MQTT da ioBroker e di essere un broker",
-            "es": "Este adaptador permite enviar y recibir mensajes MQTT de ioBroker y ser un intermediario",
-            "pl": "Ten adapter umożliwia wysyłanie i odbieranie wiadomości MQTT od ioBroker i brokera",
-            "uk": "Цей адаптер дозволяє надсилати та отримувати повідомлення MQTT від ioBroker та бути брокером",
-            "zh-cn": "该适配器允许从ioBroker发送和接收MQTT消息并成为代理"
+        "text": {
+          "en": "After installing this update the password needs to be re-entered in the Instance-Settings!",
+          "de": "Nach der Installation dieses Updates muss das Passwort in den Instanz-Einstellungen neu eingegeben werden!",
+          "ru": "После установки этого обновления необходимо заново ввести пароль в Instance-Settings!",
+          "pt": "Depois de instalar esta atualização, a senha precisa ser reinserida nas configurações da instância!",
+          "nl": "Na het installeren van deze update moet het wachtwoord opnieuw worden ingevoerd in de Instance-Settings!",
+          "fr": "Après avoir installé cette mise à jour, le mot de passe doit être ressaisi dans les paramètres de l'instance !",
+          "it": "Dopo aver installato questo aggiornamento, è necessario reinserire la password nelle impostazioni dell'istanza!",
+          "es": "¡Después de instalar esta actualización, la contraseña debe volver a ingresarse en la Configuración de instancia!",
+          "pl": "Po zainstalowaniu tej aktualizacji hasło należy ponownie wprowadzić w ustawieniach instancji!",
+          "zh-cn": "安装此更新后，需要在实例设置中重新输入密码！"
         },
-        "authors": [
-            "bluefox <dogafox@gmail.com>",
-            "Apollon77 <iobroker@fischer-ka.de>",
-            "Matthias Kleine <info@haus-automatisierung.com>"
-        ],
-        "docs": {
-            "en": "docs/en/mqtt.md",
-            "ru": "docs/ru/mqtt.md"
-        },
-        "licenseInformation": {
-            "license": "MIT",
-            "type": "free"
-        },
-        "platform": "Javascript/Node.js",
-        "mode": "daemon",
-        "compact": true,
-        "blockly": true,
-        "messagebox": true,
-        "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
-        "loglevel": "info",
-        "icon": "mqtt.svg",
-        "keywords": ["notification", "MQTT", "message"],
-        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.mqtt/master/admin/mqtt.svg",
-        "type": "protocols",
-        "plugins": {
-            "sentry": {
-                "dsn": "https://40b55da1fb50459eab397fe8291e75fe@sentry.iobroker.net/91"
-            }
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=5.0.19"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=6.6.0"
-            }
-        ],
-        "tier": 2,
-        "connectionType": "local",
-        "dataSource": "push",
-        "adminUI": {
-            "config": "json"
-        },
-        "messages": [
-            {
-                "condition": {
-                    "operand": "and",
-                    "rules": ["oldVersion<3.0.0", "newVersion>=3.0.0"]
-                },
-                "title": {
-                    "en": "Re-enter the password after Update!",
-                    "de": "Passwort muss nach dem Update erneut eingegeben werden!",
-                    "ru": "Повторно введите пароль после обновления!",
-                    "pt": "Digite novamente a senha após Atualizar!",
-                    "nl": "Voer het wachtwoord opnieuw in na Update!",
-                    "fr": "Entrez à nouveau le mot de passe après la mise à jour !",
-                    "it": "Reinserire la password dopo l'aggiornamento!",
-                    "es": "Vuelva a ingresar la contraseña después de ¡Actualizar!",
-                    "pl": "Wprowadź hasło ponownie po aktualizacji!",
-                    "zh-cn": "更新后重新输入密码！"
-                },
-                "text": {
-                    "en": "After installing this update the password needs to be re-entered in the Instance-Settings!",
-                    "de": "Nach der Installation dieses Updates muss das Passwort in den Instanz-Einstellungen neu eingegeben werden!",
-                    "ru": "После установки этого обновления необходимо заново ввести пароль в Instance-Settings!",
-                    "pt": "Depois de instalar esta atualização, a senha precisa ser reinserida nas configurações da instância!",
-                    "nl": "Na het installeren van deze update moet het wachtwoord opnieuw worden ingevoerd in de Instance-Settings!",
-                    "fr": "Après avoir installé cette mise à jour, le mot de passe doit être ressaisi dans les paramètres de l'instance !",
-                    "it": "Dopo aver installato questo aggiornamento, è necessario reinserire la password nelle impostazioni dell'istanza!",
-                    "es": "¡Después de instalar esta actualización, la contraseña debe volver a ingresarse en la Configuración de instancia!",
-                    "pl": "Po zainstalowaniu tej aktualizacji hasło należy ponownie wprowadzić w ustawieniach instancji!",
-                    "zh-cn": "安装此更新后，需要在实例设置中重新输入密码！"
-                },
-                "level": "warn",
-                "buttons": ["agree", "cancel"]
-            },
-            {
-                "condition": {
-                    "operand": "and",
-                    "rules": ["oldVersion<4.0.0", "newVersion>=4.0.0"]
-                },
-                "title": {
-                    "en": "Subscription behavior changed",
-                    "de": "Abonnementverhalten geändert",
-                    "ru": "Поведение подписки изменилось",
-                    "pt": "Comportamento de assinatura alterado",
-                    "nl": "Abonnementsgedrag gewijzigd",
-                    "fr": "Le comportement d'abonnement a changé",
-                    "it": "Il comportamento dell'abbonamento è cambiato",
-                    "es": "Comportamiento de suscripción cambiado",
-                    "pl": "Zmieniono zachowanie subskrypcji",
-                    "zh-cn": "订阅行为已更改"
-                },
-                "text": {
-                    "en": "In client mode only the own \"mqtt.X.*\" states will be subscribed. In server mode with an empty \"publish\" setting, no states will be subscribed.",
-                    "de": "Im Client-Modus werden nur die eigenen \"mqtt.X.*\"-Zustände abonniert. Im Server-Modus mit einer leeren „Veröffentlichen“-Einstellung werden keine Zustände abonniert.",
-                    "ru": "В режиме клиента будут подписаны только собственные состояния \"mqtt.X.*\". В режиме сервера с пустой настройкой «публикация» никакие состояния не будут подписаны.",
-                    "pt": "No modo cliente, apenas os próprios estados \"mqtt.X.*\" serão inscritos. No modo de servidor com uma configuração \"publicar\" vazia, nenhum estado será inscrito.",
-                    "nl": "In client-modus worden alleen de eigen \"mqtt.X.*\"-statussen geabonneerd. In servermodus met een lege \"publish\"-instelling, worden geen staten geabonneerd.",
-                    "fr": "En mode client, seuls les propres états \"mqtt.X.*\" seront souscrits. En mode serveur avec un paramètre \"publier\" vide, aucun état ne sera souscrit.",
-                    "it": "In modalità client verranno sottoscritti solo i propri stati \"mqtt.X.*\". In modalità server con un'impostazione \"pubblica\" vuota, nessuno stato verrà sottoscritto.",
-                    "es": "En modo cliente sólo se suscribirán los propios estados \"mqtt.X.*\". En el modo de servidor con una configuración de \"publicación\" vacía, no se suscribirá ningún estado.",
-                    "pl": "W trybie klienta subskrybowane będą tylko własne stany \"mqtt.X.*\". W trybie serwera z pustym ustawieniem „publikuj”, żadne stany nie będą subskrybowane.",
-                    "zh-cn": "在客户端模式下，只会订阅自己的“mqtt.X.*”状态。在“发布”设置为空的服务器模式下，不会订阅任何状态。"
-                },
-                "level": "warn",
-                "buttons": ["agree", "cancel"]
-            }
+        "level": "warn",
+        "buttons": [
+          "agree",
+          "cancel"
         ]
-    },
-    "encryptedNative": ["pass"],
-    "protectedNative": ["pass"],
-    "native": {
-        "type": "client",
-        "clientId": "",
-        "bind": "0.0.0.0",
-        "port": 1883,
-        "ssl": false,
-        "rejectUnauthorized": true,
-        "user": "",
-        "pass": "",
-        "url": "127.0.0.1",
-        "patterns": "#",
-        "onchange": true,
-        "publishAllOnStart": true,
-        "debug": false,
-        "publish": "mqtt.0.*",
-        "certPublic": "",
-        "certPrivate": "",
-        "certChained": "",
-        "prefix": "",
-        "forceCleanSession": "no",
-        "sendAckToo": false,
-        "sendStateObject": false,
-        "webSocket": false,
-        "maxTopicLength": 100,
-        "publishOnSubscribe": true,
-        "extraSet": false,
-        "sendOnStartInterval": 2000,
-        "sendInterval": 10,
-        "keepalive": 1000,
-        "reconnectPeriod": 10,
-        "connectTimeout": 30,
-        "persistent": false,
-        "defaultQoS": 0,
-        "retain": false,
-        "retransmitInterval": 2000,
-        "retransmitCount": 10,
-        "storeClientsTime": 1440,
-        "removePrefix": "",
-        "ignoreNewObjects": false,
-        "noRetain": false,
-        "allBinaries": false,
-        "doNotCheckPublicIP": false,
-        "ignoredTopics": ""
-    },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": {
-                    "en": "Information",
-                    "de": "Information",
-                    "ru": "Информация",
-                    "pt": "Em formação",
-                    "nl": "Informatie",
-                    "fr": "Informations",
-                    "it": "Informazione",
-                    "es": "Información",
-                    "pl": "Informacja",
-                    "uk": "Інформація",
-                    "zh-cn": "信息"
-                }
-            },
-            "native": {}
+      },
+      {
+        "condition": {
+          "operand": "and",
+          "rules": [
+            "oldVersion<4.0.0",
+            "newVersion>=4.0.0"
+          ]
         },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "name": {
-                    "en": "Connected client for MQTT",
-                    "de": "Verbundener Client für MQTT",
-                    "ru": "Подключенный клиент для MQTT",
-                    "pt": "Cliente conectado para MQTT",
-                    "nl": "Geconnecteerd cliënt voor MQT",
-                    "fr": "Client connecté pour MQTT",
-                    "it": "Client collegato per MQTT",
-                    "es": "Cliente conectado para MQTT",
-                    "pl": "Kliencki klient dla MQTT",
-                    "uk": "Підключений клієнт для MQTT",
-                    "zh-cn": "MQTT的客户"
-                },
-                "type": "boolean",
-                "role": "indicator.reachable",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+        "title": {
+          "en": "Subscription behavior changed",
+          "de": "Abonnementverhalten geändert",
+          "ru": "Поведение подписки изменилось",
+          "pt": "Comportamento de assinatura alterado",
+          "nl": "Abonnementsgedrag gewijzigd",
+          "fr": "Le comportement d'abonnement a changé",
+          "it": "Il comportamento dell'abbonamento è cambiato",
+          "es": "Comportamiento de suscripción cambiado",
+          "pl": "Zmieniono zachowanie subskrypcji",
+          "zh-cn": "订阅行为已更改"
+        },
+        "text": {
+          "en": "In client mode only the own \"mqtt.X.*\" states will be subscribed. In server mode with an empty \"publish\" setting, no states will be subscribed.",
+          "de": "Im Client-Modus werden nur die eigenen \"mqtt.X.*\"-Zustände abonniert. Im Server-Modus mit einer leeren „Veröffentlichen“-Einstellung werden keine Zustände abonniert.",
+          "ru": "В режиме клиента будут подписаны только собственные состояния \"mqtt.X.*\". В режиме сервера с пустой настройкой «публикация» никакие состояния не будут подписаны.",
+          "pt": "No modo cliente, apenas os próprios estados \"mqtt.X.*\" serão inscritos. No modo de servidor com uma configuração \"publicar\" vazia, nenhum estado será inscrito.",
+          "nl": "In client-modus worden alleen de eigen \"mqtt.X.*\"-statussen geabonneerd. In servermodus met een lege \"publish\"-instelling, worden geen staten geabonneerd.",
+          "fr": "En mode client, seuls les propres états \"mqtt.X.*\" seront souscrits. En mode serveur avec un paramètre \"publier\" vide, aucun état ne sera souscrit.",
+          "it": "In modalità client verranno sottoscritti solo i propri stati \"mqtt.X.*\". In modalità server con un'impostazione \"pubblica\" vuota, nessuno stato verrà sottoscritto.",
+          "es": "En modo cliente sólo se suscribirán los propios estados \"mqtt.X.*\". En el modo de servidor con una configuración de \"publicación\" vacía, no se suscribirá ningún estado.",
+          "pl": "W trybie klienta subskrybowane będą tylko własne stany \"mqtt.X.*\". W trybie serwera z pustym ustawieniem „publikuj”, żadne stany nie będą subskrybowane.",
+          "zh-cn": "在客户端模式下，只会订阅自己的“mqtt.X.*”状态。在“发布”设置为空的服务器模式下，不会订阅任何状态。"
+        },
+        "level": "warn",
+        "buttons": [
+          "agree",
+          "cancel"
+        ]
+      }
     ]
+  },
+  "encryptedNative": [
+    "pass"
+  ],
+  "protectedNative": [
+    "pass"
+  ],
+  "native": {
+    "type": "client",
+    "clientId": "",
+    "bind": "0.0.0.0",
+    "port": 1883,
+    "ssl": false,
+    "rejectUnauthorized": true,
+    "user": "",
+    "pass": "",
+    "url": "127.0.0.1",
+    "patterns": "#",
+    "onchange": true,
+    "publishAllOnStart": true,
+    "debug": false,
+    "publish": "mqtt.0.*",
+    "certPublic": "",
+    "certPrivate": "",
+    "certChained": "",
+    "prefix": "",
+    "forceCleanSession": "no",
+    "sendAckToo": false,
+    "sendStateObject": false,
+    "webSocket": false,
+    "maxTopicLength": 100,
+    "publishOnSubscribe": true,
+    "extraSet": false,
+    "sendOnStartInterval": 2000,
+    "sendInterval": 10,
+    "keepalive": 1000,
+    "reconnectPeriod": 10,
+    "connectTimeout": 30,
+    "persistent": false,
+    "defaultQoS": 0,
+    "retain": false,
+    "retransmitInterval": 2000,
+    "retransmitCount": 10,
+    "storeClientsTime": 1440,
+    "removePrefix": "",
+    "ignoreNewObjects": false,
+    "noRetain": false,
+    "allBinaries": false,
+    "doNotCheckPublicIP": false,
+    "ignoredTopics": ""
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": {
+          "en": "Information",
+          "de": "Information",
+          "ru": "Информация",
+          "pt": "Em formação",
+          "nl": "Informatie",
+          "fr": "Informations",
+          "it": "Informazione",
+          "es": "Información",
+          "pl": "Informacja",
+          "uk": "Інформація",
+          "zh-cn": "信息"
+        }
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "name": {
+          "en": "Connected client for MQTT",
+          "de": "Verbundener Client für MQTT",
+          "ru": "Подключенный клиент для MQTT",
+          "pt": "Cliente conectado para MQTT",
+          "nl": "Geconnecteerd cliënt voor MQT",
+          "fr": "Client connecté pour MQTT",
+          "it": "Client collegato per MQTT",
+          "es": "Cliente conectado para MQTT",
+          "pl": "Kliencki klient dla MQTT",
+          "uk": "Підключений клієнт для MQTT",
+          "zh-cn": "MQTT的客户"
+        },
+        "type": "boolean",
+        "role": "indicator.reachable",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }

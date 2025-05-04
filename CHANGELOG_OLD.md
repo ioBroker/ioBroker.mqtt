@@ -1,4 +1,8 @@
 # Older changes
+## 6.0.0 (2024-07-13)
+* Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required
+* (klein0r) Fixed blockly definitions
+
 ## 5.2.0 (2024-01-08)
 * (ticaki) fixed: confirm onMessage()
 * (orpheus55) Added the authentication validation to request processing

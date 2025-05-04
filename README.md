@@ -160,7 +160,7 @@ The broker was tested with the following clients:
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 6.1.3 (2025-05-04)
 * (Code-X77) Corrected TLS communication
 * (bluefox) Packages updated
 
@@ -176,10 +176,6 @@ The broker was tested with the following clients:
 ### 6.0.1 (2024-08-06)
 * (foxriver76) remove binary state handling as these are no longer existing
 * (klein0r) handle the messages as a state object if properties are valid
-
-### 6.0.0 (2024-07-13)
-* Breaking Changes: NodeJS >= 18.x and js-controller >= 5 are required
-* (klein0r) Fixed blockly definitions
 
 ## License
 
