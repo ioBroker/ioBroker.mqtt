@@ -1,8 +1,7 @@
-import config, { reactConfig } from '@iobroker/eslint-config';
+import config from '@iobroker/eslint-config';
 
 export default [
     ...config,
-    ...reactConfig,
     {
         languageOptions: {
             parserOptions: {
@@ -21,6 +20,9 @@ export default [
         },
     },
     {
-        ignores: ['*.mjs'],
+        ignores: ['*.mjs', 'test/*.*'],
+    },
+    {
+        files: ['lib/*.js', '*.js'], // Hier werden die gewünschten Dateien angegeben
     },
 ];

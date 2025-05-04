@@ -7,6 +7,5 @@
         "declaration": false,
         "skipLibCheck": true,
         "module": "commonjs"
-    },
-    "include": ["src/**/*.ts", "src/**/*.js"]
+    }
 }

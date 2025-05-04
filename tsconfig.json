@@ -4,7 +4,7 @@
         "noEmit": true,
         "allowJs": true,
         "checkJs": true,
-        "outDir": "./build-backend/",
+        "outDir": "./dist/",
         "sourceMap": true,
         "inlineSources": true,
 
@@ -17,6 +17,6 @@
         "esModuleInterop": true,
         "types": ["@types/node", "@iobroker/types"],
     },
-    "include": ["src/**/*.ts"],
+    "include": ["lib/**/*.js", "main.js"],
     "exclude": ["node_modules/**", "admin/**"]
 }
