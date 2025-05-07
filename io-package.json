@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "6.1.3",
+    "version": "6.1.4",
     "news": {
+      "6.1.4": {
+        "en": "Allowed disabling the client objects creation\nCreate client objects with timeout (1s) to prevent memory leaks",
+        "de": "Erlaubt, die Erstellung von Client-Objekten zu deaktivieren\nErstellen Sie Client-Objekte mit Timeout (1s) um Speicherlecks zu verhindern",
+        "ru": "Разрешено отключение создания объектов клиента\nСоздание клиентских объектов с тайм-аутом (1s) для предотвращения утечек памяти",
+        "pt": "Permitir desabilitar a criação de objetos cliente\nCriar objetos de cliente com timeout (1s) para evitar vazamentos de memória",
+        "nl": "De aanmaak van client-objecten wordt uitgeschakeld\nObjecten aanmaken met timeout (1s) om geheugenlekken te voorkomen",
+        "fr": "Autorisé à désactiver la création d'objets client\nCréer des objets client avec timeout (1s) pour prévenir les fuites de mémoire",
+        "it": "Consentito disabilitare la creazione di oggetti client\nCrea oggetti client con timeout (1s) per evitare perdite di memoria",
+        "es": "Permitido desactivar la creación de objetos cliente\nCrear objetos cliente con timeout (1s) para evitar fugas de memoria",
+        "pl": "Dozwolone wyłączanie tworzenia obiektów klienta\nUtwórz obiekty klienta z timeout (1s), aby zapobiec wyciekom pamięci",
+        "uk": "Здійснено відключення створення об’єктів клієнта\nСтворіть об'єкти клієнтів з таймером (1-і) для запобігання витоків пам'яті",
+        "zh-cn": "允许禁用客户端对象创建\n创建有超时(1s)的客户对象,防止内存泄漏"
+      },
       "6.1.3": {
         "en": "Corrected TLS communication\nPackages updated",
         "de": "Korrigierte TLS-Kommunikation\nPakete aktualisiert",
@@ -80,19 +93,6 @@
         "pl": "Breaking Changes: NodeJS > = 18.x i kontroler js- > = 5 są wymagane\nPoprawione definicje blokowane",
         "uk": "Зміна несправностей: NodeJS >= 18.x і js-controller >= 5 обов'язкові\nФіксовані визначення блоків",
         "zh-cn": "突破更改:节点JS QQ 18.x和js控制器 QQ 需要5个\n固定的区块定义"
-      },
-      "5.2.0": {
-        "en": "fixed: confirm onMessage()\nAdded the authentication validation to request processing\nAdded an option to filter certain topics",
-        "de": "behoben: bestätigen aufMessage()\nHinzufügen der Authentifizierungsvalidierung für die Bearbeitung\nHinzugefügt eine Option, bestimmte Themen zu filtern",
-        "ru": "фиксированный: подтвердить наСообщение()\nДобавить проверку подлинности для обработки запроса\nДобавлена опция фильтровать определенные темы",
-        "pt": "corrigido: confirme noMessage()\nAdicionado a validação de autenticação para solicitar o processamento\nAdicionado uma opção para filtrar certos tópicos",
-        "nl": "vast: bevestig onMessage()\nDe authenticatievalidatie toegevoegd om verwerking te vragen\nEen optie toegevoegd om bepaalde onderwerpen te filteren",
-        "fr": "fixe: confirmer surMessage()\nAjout de la validation d'authentification pour demander le traitement\nAjout d'une option pour filtrer certains sujets",
-        "it": "fisso: conferma suMessage()\nAggiunta la validazione dell'autenticazione per richiedere l'elaborazione\nAggiunto un'opzione per filtrare alcuni argomenti",
-        "es": "fijo: confirm onMessage()\nAñadido la validación de autenticación para solicitar procesamiento\nAñadido una opción para filtrar ciertos temas",
-        "pl": "stałe: potwierdzenie wiadomości ()\nDodano potwierdzenie uwierzytelniania, aby zażądać przetwarzania\nDodano opcję filtrowania niektórych tematów",
-        "uk": "фіксована: підтвердження наMessage()\nДодано перевірку автентичності для обробки запитів\nДодана можливість фільтрувати певні теми",
-        "zh-cn": "固定: 在Message上确认( )\n添加认证验证到请求处理中\n添加了过滤某些话题的选项"
       }
     },
     "titleLang": {

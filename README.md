@@ -167,7 +167,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 6.1.4 (2025-05-07)
 * (bluefox) Allowed disabling the client objects creation
 * (bluefox) Create client objects with timeout (1s) to prevent memory leaks
 
@@ -183,10 +183,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 6.0.2 (2024-08-13)
 * (bluefox) Added a space to the connection string for better readability
-
-### 6.0.1 (2024-08-06)
-* (foxriver76) remove binary state handling as these are no longer existing
-* (klein0r) handle the messages as a state object if properties are valid
 
 ## License
 
