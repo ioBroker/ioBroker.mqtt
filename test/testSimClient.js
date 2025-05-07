@@ -2,7 +2,7 @@
 const expect = require('chai').expect;
 const Adapter = require('./lib/adapterSim');
 const SimulatedServer = require('./lib/mqttServer');
-const ClientEmitter = require('./dist/lib/mqttClient');
+const ClientEmitter = require('./lib/mqttClient');
 const Client = require('../dist/lib/MQTTClient');
 
 let port = 1883;
