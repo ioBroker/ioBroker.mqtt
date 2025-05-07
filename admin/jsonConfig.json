@@ -256,6 +256,14 @@
                     "lg": 12,
                     "delimiter": ",",
                     "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
+                },
+                "doNotCreateClientObjects": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Do not create client objects",
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4
                 }
             }
         },

@@ -27,6 +27,29 @@ class MQTT extends utils.Adapter {
 
     async onReady() {
         this.config.maxTopicLength = this.config.maxTopicLength || 100;
+
+        if (this.config.doNotCreateClientObjects) {
+            // delete all server connection information
+            const states = await this.getStatesAsync('info.clients.*');
+            for (const id in states) {
+                await this.delForeignObjectAsync(id);
+            }
+        }
+        // update connected clients
+        if (this.config.type === 'server') {
+            const channel = await this.getObjectAsync('info.clients');
+            if (!channel) {
+                await this.setObjectAsync('info.clients', {
+                    type: 'channel',
+                    common: {
+                        name: 'Clients',
+                        role: 'info',
+                    },
+                    native: {},
+                });
+            }
+        }
+
         if (this.config.ssl && this.config.type === 'server') {
             // Load certificates
             this.getCertificates(async (err, certificates) => {

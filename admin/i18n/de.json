@@ -15,6 +15,7 @@
   "Connection settings": "Verbindungseinstellungen",
   "Default QoS:": "Standard-QoS:",
   "Do not check if this instance is available from internet": "Nicht überprüfen, ob diese Instanz aus dem Internet erreichbar ist",
+  "Do not create client objects": "Keine Clientobjekte erstellen",
   "Do not create new states": "Keine neuen Zustände erstellen",
   "Enable first the adapter to test client.": "Die Instanz muss aktiviert sein um den Client zu testen.",
   "First save the adapter": "Die Instanz-Einstellungen müssen zuerst gespeichert werden.",

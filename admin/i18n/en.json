@@ -15,6 +15,7 @@
   "Connection settings": "Connection settings",
   "Default QoS:": "Default QoS:",
   "Do not check if this instance is available from internet": "Do not check if this instance is available from internet",
+  "Do not create client objects": "Do not create client objects",
   "Do not create new states": "Do not create new states",
   "Enable first the adapter to test client.": "The instance needs to be enabled to be able to test the client.",
   "First save the adapter": "The instance settings need to be saved first.",

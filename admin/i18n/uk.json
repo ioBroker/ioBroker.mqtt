@@ -15,6 +15,7 @@
   "Connection settings": "Налаштування підключення",
   "Default QoS:": "QoS за замовчуванням:",
   "Do not check if this instance is available from internet": "Не перевіряйте, чи доступний цей екземпляр в Інтернеті",
+  "Do not create client objects": "Не створювати клієнтські об'єкти",
   "Do not create new states": "Не створювати нових держав",
   "Enable first the adapter to test client.": "Екземпляр потрібно ввімкнути, щоб мати можливість тестувати клієнта.",
   "First save the adapter": "Спочатку потрібно зберегти налаштування екземпляра.",

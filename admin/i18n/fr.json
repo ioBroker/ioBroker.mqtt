@@ -15,6 +15,7 @@
     "Connection settings": "Connection settings",
     "Default QoS:": "Qualité de service par défaut :",
     "Do not check if this instance is available from internet": "Ne vérifiez pas si cette instance est disponible sur Internet",
+    "Do not create client objects": "Ne pas créer d'objets clients",
     "Do not create new states": "Ne créez pas de nouveaux états",
     "Enable first the adapter to test client.": "Activez d'abord l'adaptateur pour tester le client.",
     "First save the adapter": "D'abord enregistrer l'adaptateur",

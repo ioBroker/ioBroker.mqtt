@@ -15,6 +15,7 @@
   "Connection settings": "连接设置",
   "Default QoS:": "默认服务质量：",
   "Do not check if this instance is available from internet": "不检查此实例是否可从 Internet 获取",
+  "Do not create client objects": "不创建客户端对象",
   "Do not create new states": "不要创建新状态",
   "Enable first the adapter to test client.": "首先启用适配器来测试客户端。",
   "First save the adapter": "首先保存适配器",

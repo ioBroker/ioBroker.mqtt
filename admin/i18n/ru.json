@@ -15,6 +15,7 @@
   "Connection settings": "Настройки соединения",
   "Default QoS:": "Качество обслуживания по умолчанию:",
   "Do not check if this instance is available from internet": "Не проверять, доступен ли этот экземпляр из Интернета",
+  "Do not create client objects": "Не создавать клиентские объекты",
   "Do not create new states": "Не создавать новые состояния",
   "Enable first the adapter to test client.": "Сначала включите адаптер для тестирования клиента.",
   "First save the adapter": "Сначала сохраните настройки",

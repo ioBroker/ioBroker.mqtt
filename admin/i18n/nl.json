@@ -15,6 +15,7 @@
   "Connection settings": "Connection settings",
   "Default QoS:": "Standaard QoS:",
   "Do not check if this instance is available from internet": "Controleer niet of dit exemplaar beschikbaar is via internet",
+  "Do not create client objects": "Maak geen clientobjecten",
   "Do not create new states": "Maak geen nieuwe staten",
   "Enable first the adapter to test client.": "Schakel eerst de adapter in om de client te testen.",
   "First save the adapter": "Sla eerst de adapter op",

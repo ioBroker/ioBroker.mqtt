@@ -297,7 +297,8 @@
     "noRetain": false,
     "allBinaries": false,
     "doNotCheckPublicIP": false,
-    "ignoredTopics": ""
+    "ignoredTopics": "",
+    "doNotCreateClientObjects": false
   },
   "objects": [],
   "instanceObjects": [
