@@ -48,18 +48,18 @@
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
   },
-  "main": "main.js",
+  "main": "dist/main.js",
   "files": [
     "admin/",
-    "main.js",
+    "dist/",
     "LICENSE",
     "docs/",
-    "io-package.json",
-    "lib/"
+    "io-package.json"
   ],
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha --exit",
     "release": "release-script",
+    "build": "tsc -p tsconfig.build.json",
     "release-patch": "release-script patch --yes",
     "release-minor": "release-script minor --yes",
     "release-major": "release-script major --yes",

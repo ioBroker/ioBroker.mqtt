@@ -393,14 +393,6 @@
                     "sm": 12,
                     "md": 6,
                     "lg": 4
-                },
-                "allBinaries": {
-                    "newLine": true,
-                    "type": "checkbox",
-                    "label": "All new topics will be processed as binary",
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4
                 }
             }
         }

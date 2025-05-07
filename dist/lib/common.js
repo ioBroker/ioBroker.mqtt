@@ -1,5 +1,12 @@
-'use strict';
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertID2topic = convertID2topic;
+exports.pattern2RegEx = pattern2RegEx;
+exports.isIgnoredTopic = isIgnoredTopic;
+exports.state2string = state2string;
+exports.convertTopic2id = convertTopic2id;
+exports.ensureObjectStructure = ensureObjectStructure;
+exports.convertMessage = convertMessage;
 function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
     let topic;
     id = (id || '').toString();
@@ -8,20 +15,23 @@ function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
     }
     if (pattern?.startsWith(prefix + namespace)) {
         topic = prefix + id;
-    } else if (pattern?.startsWith(namespace)) {
+    }
+    else if (pattern?.startsWith(namespace)) {
         topic = id;
-    } else if (prefix && pattern?.startsWith(prefix)) {
+    }
+    else if (prefix && pattern?.startsWith(prefix)) {
         topic = prefix + id; // .substring(namespace.length + 1);
-    } else if (id.startsWith(namespace)) {
+    }
+    else if (id.startsWith(namespace)) {
         topic = (prefix || '') + id.substring(namespace.length + 1);
-    } else {
+    }
+    else {
         topic = (prefix || '') + id;
     }
     topic = topic.replace(/\./g, '/');
     topic = topic.replace(/[+#]/g, '_');
     return topic;
 }
-
 /*4.7.1.3 Single level wildcard
 
  The plus sign (‘+’ U+002B) is a wildcard character that matches only one topic level.
@@ -43,7 +53,6 @@ function pattern2RegEx(pattern, adapter) {
     pattern = pattern.replace(/#/g, '*');
     pattern = pattern.replace(/\$/g, '\\$');
     pattern = pattern.replace(/\^/g, '\\^');
-
     if (pattern !== '*') {
         if (pattern[0] === '*' && pattern[pattern.length - 1] !== '*') {
             pattern += '$';
@@ -57,7 +66,8 @@ function pattern2RegEx(pattern, adapter) {
         if (pattern[pattern.length - 1] === '+') {
             pattern = `${pattern.substring(0, pattern.length - 1)}[^.]*$`;
         }
-    } else {
+    }
+    else {
         return '.*';
     }
     pattern = pattern.replace(/\./g, '\\.');
@@ -65,13 +75,12 @@ function pattern2RegEx(pattern, adapter) {
     pattern = pattern.replace(/\+/g, '[^.]*');
     return pattern;
 }
-
 /**
  * Checks whether a received topic should be ignored
  *
- * @param topic {string} The topic to check
- * @param ignoredTopicsRegexes {RegExp[]} The ignored topics filter
- * @returns {boolean} Whether it should be ignored
+ * @param topic The topic to check
+ * @param ignoredTopicsRegexes The ignored topics filter
+ * @returns Whether it should be ignored
  */
 function isIgnoredTopic(topic, ignoredTopicsRegexes) {
     if (ignoredTopicsRegexes.length === 0) {
@@ -84,12 +93,10 @@ function isIgnoredTopic(topic, ignoredTopicsRegexes) {
     }
     return false;
 }
-
 function state2string(val, sendStateObject) {
     if (sendStateObject === undefined || sendStateObject === null) {
         sendStateObject = false;
     }
-
     if (val && typeof val === 'object') {
         if (val.val === null) {
             return 'null';
@@ -97,30 +104,27 @@ function state2string(val, sendStateObject) {
         return val.val === null
             ? 'null'
             : val.val === undefined
-              ? 'undefined'
-              : sendStateObject === true
-                ? JSON.stringify(val)
-                : val.val.toString();
+                ? 'undefined'
+                : sendStateObject === true
+                    ? JSON.stringify(val)
+                    : val.val.toString();
     }
     return val === null
         ? 'null'
         : val === undefined
-          ? 'undefined'
-          : sendStateObject === true
-            ? JSON.stringify(val)
-            : val.toString();
+            ? 'undefined'
+            : sendStateObject === true
+                ? JSON.stringify(val)
+                : val.toString();
 }
-
 function convertTopic2id(topic, dontCutNamespace, prefix, namespace) {
     if (!topic) {
         return topic;
     }
-
     // Remove own prefix if
     if (prefix && topic.substring(0, prefix.length) === prefix) {
         topic = topic.substring(prefix.length);
     }
-
     topic = topic.replace(/\//g, '.').replace(/\s/g, '_');
     if (topic[0] === '.') {
         topic = topic.substring(1);
@@ -128,7 +132,6 @@ function convertTopic2id(topic, dontCutNamespace, prefix, namespace) {
     if (topic[topic.length - 1] === '.') {
         topic = topic.substring(0, topic.length - 1);
     }
-
     if (!dontCutNamespace && topic.startsWith(namespace)) {
         topic = topic.substring(namespace.length + 1);
     }
@@ -136,10 +139,8 @@ function convertTopic2id(topic, dontCutNamespace, prefix, namespace) {
     if (topic.endsWith('.')) {
         topic = topic.substring(0, topic.length - 1);
     }
-
     return topic;
 }
-
 async function ensureObjectStructure(adapter, id, verifiedObjects) {
     if (!id.startsWith(`${adapter.namespace}.`)) {
         return;
@@ -149,11 +150,9 @@ async function ensureObjectStructure(adapter, id, verifiedObjects) {
     }
     id = id.substring(adapter.namespace.length + 1);
     let idToCheck = adapter.namespace;
-
     const idArr = id.split('.');
     idArr.pop(); // the last is created as an object in any way
     verifiedObjects[id] = true;
-
     for (const part of idArr) {
         idToCheck += `.${part}`;
         if (verifiedObjects[idToCheck] === true) {
@@ -163,21 +162,19 @@ async function ensureObjectStructure(adapter, id, verifiedObjects) {
         let obj;
         try {
             obj = await adapter.getForeignObjectAsync(idToCheck);
-        } catch {
+        }
+        catch {
             // ignore
         }
-        if (
-            obj?.type === 'folder' &&
+        if (obj?.type === 'folder' &&
             obj.native &&
             !obj.native.autocreated &&
             !Object.keys(obj.native).length &&
-            obj.common?.name === part
-        ) {
+            obj.common?.name === part) {
             // Object from the very first auto-create try
             // We re-create the object with our reason identifier
             obj = null;
         }
-
         if (!obj?.common) {
             adapter.log.debug(`Create folder object for ${idToCheck}`);
             try {
@@ -190,22 +187,20 @@ async function ensureObjectStructure(adapter, id, verifiedObjects) {
                         autocreated: 'by automatic ensure logic',
                     },
                 });
-            } catch (err) {
+            }
+            catch (err) {
                 adapter.log.info(`Can not create parent folder object: ${err.message}`);
             }
         }
         verifiedObjects[idToCheck] = true;
     }
 }
-
 function convertMessage(topic, message, adapter, clientID) {
     let type = typeof message;
-
     if (type !== 'string' && type !== 'number' && type !== 'boolean') {
-        message = message ? message?.toString('utf8') : 'null';
+        message = message ? message.toString('utf8') : 'null';
         type = 'string';
     }
-
     // try to convert 101,124,444,... To utf8 string
     if (type === 'string' && message.match(/^(\d)+,\s?(\d)+,\s?(\d)+/)) {
         const parts = message.split(',');
@@ -215,24 +210,24 @@ function convertMessage(topic, message, adapter, clientID) {
                 str += String.fromCharCode(parseInt(parts[p].trim(), 10));
             }
             message = str;
-        } catch {
+        }
+        catch {
             // cannot convert and ignore it
         }
     }
-
     if (type === 'string') {
         // Try to convert value
         const _val = message.replace(',', '.');
-
         if (isFinite(_val)) {
-            message = parseFloat(_val);
-        } else if (message === 'true') {
-            message = true;
-        } else if (message === 'false') {
-            message = false;
+            return parseFloat(_val);
+        }
+        if (message === 'true') {
+            return true;
+        }
+        if (message === 'false') {
+            return false;
         }
     }
-
     if (type === 'string' && message[0] === '{') {
         try {
             const _message = JSON.parse(message);
@@ -251,22 +246,16 @@ function convertMessage(topic, message, adapter, clientID) {
                 //}
                 //if (valid) message = _message;
             }
-        } catch {
+        }
+        catch {
             if (clientID) {
                 adapter.log.error(`Client [${clientID}] Cannot parse "${topic}": ${message}`);
-            } else {
+            }
+            else {
                 adapter.log.warn(`Cannot parse "${topic}": ${message}`);
             }
         }
     }
-
     return message;
 }
-
-exports.convertMessage = convertMessage;
-exports.convertTopic2id = convertTopic2id;
-exports.convertID2topic = convertID2topic;
-exports.state2string = state2string;
-exports.ensureObjectStructure = ensureObjectStructure;
-exports.isIgnoredTopic = isIgnoredTopic;
-exports.pattern2RegEx = pattern2RegEx;
+//# sourceMappingURL=common.js.map
