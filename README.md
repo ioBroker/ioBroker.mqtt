@@ -167,6 +167,10 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Breaking change: removed binary states
+* (bluefox) Migrated to TypeScript
+
 ### 6.1.4 (2025-05-07)
 * (bluefox) Allowed disabling the client objects creation
 * (bluefox) Create client objects with timeout (1s) to prevent memory leaks
