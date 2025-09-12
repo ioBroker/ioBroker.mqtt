@@ -23,11 +23,8 @@ describe('Test convert version', function () {
         // Should return the original string since JSON parsing failed
         expect(result).to.be.equal(malformedJson);
         
-        // Should have logged the error as debug level
-        expect(logCalls.length).to.be.equal(1);
-        expect(logCalls[0].level).to.be.equal('debug'); // Should be debug after fix
-        expect(logCalls[0].msg).to.include('Cannot parse "weatherstation"');
-        expect(logCalls[0].msg).to.include(malformedJson);
+        // Should not log anything since this is expected behavior
+        expect(logCalls.length).to.be.equal(0);
     });
 
     it('Malformed JSON without clientID should be returned as string', async () => {
@@ -47,11 +44,8 @@ describe('Test convert version', function () {
         // Should return the original string since JSON parsing failed
         expect(result).to.be.equal(malformedJson);
         
-        // Should have logged the error as debug level
-        expect(logCalls.length).to.be.equal(1);
-        expect(logCalls[0].level).to.be.equal('debug'); // Should be debug after fix
-        expect(logCalls[0].msg).to.include('Cannot parse "test"');
-        expect(logCalls[0].msg).to.include(malformedJson);
+        // Should not log anything since this is expected behavior
+        expect(logCalls.length).to.be.equal(0);
     });
 
     it('Valid JSON should be parsed correctly', async () => {
