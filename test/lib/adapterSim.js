@@ -172,5 +172,13 @@ module.exports = function (config) {
         states = {};
     };
 
+    this.setTimeout = (func, time) => {
+        return setTimeout(func, time);
+    };
+
+    this.clearTimeout = timer => {
+        clearTimeout(timer);
+    };
+
     return this;
 };
