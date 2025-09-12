@@ -5,6 +5,7 @@ admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 iob_npm.done
 .vs/
+*.tgz
 
 
 # ioBroker dev-server
