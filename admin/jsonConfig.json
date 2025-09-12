@@ -13,9 +13,11 @@
                         { "value": "server", "label": "Server" }
                     ],
                     "label": "IP",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_connection": {
                     "newLine": true,
@@ -31,26 +33,32 @@
                     "type": "text",
                     "hidden": "data.type === 'server'",
                     "label": "URL:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "bind": {
                     "newLine": true,
                     "type": "ip",
                     "hidden": "data.type !== 'server'",
                     "label": "IP address",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "listenOnAllPorts": true
                 },
                 "port": {
                     "type": "number",
                     "label": "Port:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "min": 1,
                     "max": 65565
                 },
@@ -58,9 +66,11 @@
                     "type": "checkbox",
                     "hidden": "data.type !== 'server'",
                     "label": "Use WebSockets:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "infoMessageWebSocket": {
                     "newLine": true,
@@ -75,17 +85,21 @@
                     "newLine": true,
                     "type": "checkbox",
                     "label": "Secure:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "rejectUnauthorized": {
                     "type": "checkbox",
                     "hidden": "data.type !== 'client' || !data.ssl",
                     "label": "rejectUnauthorized",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "selfSigned": {
                     "newLine": true,
@@ -93,26 +107,32 @@
                     "hidden": "data.type !== 'client' || !data.ssl",
                     "label": "Use Self-Signed-Certificate (only if SSL is enabled)",
                     "tooltip": "!!! This option is only effective is enabled AND SSL is active. If SSL is disabled, this setting has no effect. !!!",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "rootCertificatePath": {
                     "type": "text",
                     "hidden": "data.type !== 'client' || !data.ssl || !data.selfSigned",
                     "label": "Root Certificate Path",
                     "placeholder": "/path/to/root-ca.pem",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "doNotCheckPublicIP": {
                     "newLine": true,
                     "label": "Do not check if this instance is available from internet",
                     "type": "checkbox",
+                    "xs": 12,
                     "sm": 12,
                     "md": 4,
                     "lg": 4,
+                    "xl": 4,
                     "hidden": "data.type !== 'server' || !!data.pass"
                 },
                 "certPublic": {
@@ -120,27 +140,33 @@
                     "type": "certificate",
                     "hidden": "data.type !== 'server' || !data.ssl",
                     "label": "Public certificate:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "certType": "public"
                 },
                 "certPrivate": {
                     "type": "certificate",
                     "hidden": "data.type !== 'server' || !data.ssl",
                     "label": "Private certificate:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "certType": "private"
                 },
                 "certChained": {
                     "type": "certificate",
                     "hidden": "data.type !== 'server' || !data.ssl",
                     "label": "Chained certificate:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "certType": "chained"
                 },
                 "_auth": {
@@ -155,16 +181,20 @@
                 "user": {
                     "type": "text",
                     "label": "User:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "pass": {
                     "type": "password",
                     "label": "Password:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 9,
                     "lg": 8,
+                    "xl": 8,
                     "repeat": true
                 },
                 "_test": {
@@ -187,9 +217,11 @@
                     "type": "chips",
                     "hidden": "data.type !== 'client'",
                     "label": "Patterns:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
+                    "xl": 12,
                     "delimiter": ",",
                     "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')"
                 },
@@ -198,17 +230,21 @@
                     "hidden": "data.type !== 'client'",
                     "type": "text",
                     "label": "Client ID:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "persistent": {
                     "type": "checkbox",
                     "hidden": "data.type !== 'client'",
                     "label": "Persistent Session",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
@@ -221,17 +257,21 @@
                     "type": "checkbox",
                     "hidden": "data.type !== 'server'",
                     "label": "Publish states on subscribe:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "noRetain": {
                     "type": "checkbox",
                     "hidden": "data.type !== 'server'",
                     "label": "Publish messages without \"retain\" flag",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "forceCleanSession": {
                     "newLine": true,
@@ -243,17 +283,21 @@
                         { "value": "keep", "label": "Always keep sessions for all clients" }
                     ],
                     "label": "Force clean session",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "ignoredTopics": {
                     "newLine": true,
                     "type": "chips",
                     "label": "Ignored Topics:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
+                    "xl": 12,
                     "delimiter": ",",
                     "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
                 },
@@ -261,9 +305,11 @@
                     "newLine": true,
                     "type": "checkbox",
                     "label": "Do not create client objects",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
@@ -275,17 +321,21 @@
                     "newLine": true,
                     "type": "text",
                     "label": "Prefix for topics:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 6
+                    "lg": 6,
+                    "xl": 6
                 },
                 "publish": {
                     "newLine": true,
                     "type": "chips",
                     "label": "Mask to publish own state",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
+                    "xl": 12,
                     "delimiter": ",",
                     "help": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
                 },
@@ -293,68 +343,86 @@
                     "newLine": true,
                     "type": "checkbox",
                     "label": "Store only on change:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "publishAllOnStart": {
                     "type": "checkbox",
                     "label": "Publish all states at start:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "debug": {
                     "type": "checkbox",
                     "label": "Trace output for every message:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "sendAckToo": {
                     "type": "checkbox",
                     "label": "Send states (ack=true) too:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "extraSet": {
                     "type": "checkbox",
                     "label": "Use different topic names for set and get:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "sendStateObject": {
                     "type": "checkbox",
                     "label": "Send state object as mqtt message",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "maxTopicLength": {
                     "newLine": true,
                     "type": "number",
                     "label": "Max topic length:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 3,
+                    "xl": 3,
                     "help": "chars"
                 },
                 "sendOnStartInterval": {
                     "type": "number",
                     "label": "Interval before send topics by connection:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 3,
+                    "xl": 3,
                     "help": "ms"
                 },
                 "sendInterval": {
                     "type": "number",
                     "label": "Send interval:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 3,
+                    "xl": 3,
                     "help": "ms"
                 },
                 "defaultQoS": {
@@ -366,41 +434,51 @@
                         { "value": "2", "label": "2 - Exactly once" }
                     ],
                     "label": "Default QoS:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "retain": {
                     "type": "checkbox",
                     "label": "Set retain flag",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 3
+                    "lg": 3,
+                    "xl": 3
                 },
                 "removePrefix": {
                     "newLine": true,
                     "type": "text",
                     "label": "Remove prefix from topics",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
                     "lg": 12,
+                    "xl": 12,
                     "help": "Like \"javascript.0.\" to remove it from all topics"
                 },
                 "ignoreNewObjects": {
                     "newLine": true,
                     "type": "checkbox",
                     "label": "Do not create new states",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "allBinaries": {
                     "newLine": true,
                     "type": "checkbox",
                     "label": "All new topics will be processed as binary",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }
