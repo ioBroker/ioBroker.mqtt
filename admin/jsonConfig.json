@@ -13,9 +13,11 @@
                         { "value": "server", "label": "Server" }
                     ],
                     "label": "IP",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "_connection": {
                     "newLine": true,
@@ -31,26 +33,32 @@
                     "type": "text",
                     "hidden": "data.type === 'server'",
                     "label": "URL:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "bind": {
                     "newLine": true,
                     "type": "ip",
                     "hidden": "data.type !== 'server'",
                     "label": "IP address",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "listenOnAllPorts": true
                 },
                 "port": {
                     "type": "number",
                     "label": "Port:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
                     "lg": 4,
+                    "xl": 4,
                     "min": 1,
                     "max": 65565
                 },
@@ -58,9 +66,11 @@
                     "type": "checkbox",
                     "hidden": "data.type !== 'server'",
                     "label": "Use WebSockets:",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 4
+                    "lg": 4,
+                    "xl": 4
                 },
                 "infoMessageWebSocket": {
                     "newLine": true,
