@@ -77,9 +77,11 @@
                     "type": "staticText",
                     "hidden": "data.type !== 'server' || !data.webSocket",
                     "text": "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.",
+                    "xs": 12,
                     "sm": 12,
                     "md": 12,
-                    "lg": 12
+                    "lg": 12,
+                    "xl": 12
                 },
                 "ssl": {
                     "newLine": true,
@@ -203,7 +205,12 @@
                     "label": "Test connection",
                     "command": "test",
                     "variant": "contained",
-                    "jsonData": "{\"user\": \"${data.user}\", \"pass\": \"${data.pass}\", \"url\": \"${data.url}\", \"port\": ${data.port}, \"ssl\": ${data.ssl}}"
+                    "jsonData": "{\"user\": \"${data.user}\", \"pass\": \"${data.pass}\", \"url\": \"${data.url}\", \"port\": ${data.port}, \"ssl\": ${data.ssl}}",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
