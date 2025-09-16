@@ -68,5 +68,7 @@
   "chars": "chars",
   "connected": "connected",
   "ms": "ms",
-  "rejectUnauthorized": "Reject unauthorized servers"
+  "rejectUnauthorized": "Reject unauthorized servers",
+  "Parse comma-separated numbers as character codes": "Parse comma-separated numbers as character codes",
+  "Convert comma-separated numbers like '72,101,108,108,111' to text strings like 'Hello'. Only values 0-255 are supported.": "Convert comma-separated numbers like '72,101,108,108,111' to text strings like 'Hello'. Only values 0-255 are supported."
 }

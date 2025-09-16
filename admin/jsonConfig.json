@@ -479,6 +479,16 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "parseCharCodes": {
+                    "type": "checkbox",
+                    "label": "Parse comma-separated numbers as character codes",
+                    "tooltip": "Convert comma-separated numbers like '72,101,108,108,111' to text strings like 'Hello'. Only values 0-255 are supported.",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         }
