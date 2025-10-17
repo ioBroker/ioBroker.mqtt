@@ -68,5 +68,9 @@
   "chars": "символов",
   "connected": "успешно",
   "ms": "мс",
-  "rejectUnauthorized": "Отклонить неавторизованные серверы"
+  "rejectUnauthorized": "Отклонить неавторизованные серверы",
+  "Protocol settings": "Настройки протокола",
+  "MQTT Protocol Version:": "Версия протокола MQTT",
+  "MQTT v3.1.1 (default)": "MQTT v3.1.1 (по умолчанию)",
+  "MQTT v5": "MQTT v5"
 }

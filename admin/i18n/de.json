@@ -68,5 +68,9 @@
     "chars": "Zeichen",
     "connected": "verbunden",
     "ms": "ms",
-    "rejectUnauthorized": "Nicht autorisierte Server ablehnen"
+    "rejectUnauthorized": "Nicht autorisierte Server ablehnen",
+    "Protocol settings": "Protokoll-Einstellungen",
+    "MQTT Protocol Version:": "MQTT-Protokollversion",
+    "MQTT v3.1.1 (default)": "MQTT v3.1.1 (Standard)",
+    "MQTT v5": "MQTT v5"
 }

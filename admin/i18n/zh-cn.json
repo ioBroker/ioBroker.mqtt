@@ -68,5 +68,9 @@
   "chars": "字符",
   "connected": "连接的",
   "ms": "毫秒",
-  "rejectUnauthorized": "拒绝未经授权的服务器"
+  "rejectUnauthorized": "拒绝未经授权的服务器",
+  "Protocol settings": "协议设置",
+  "MQTT Protocol Version:": "MQTT协议版本",
+  "MQTT v3.1.1 (default)": "MQTT v3.1.1 (默认)",
+  "MQTT v5": "MQTT v5"
 }
