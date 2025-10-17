@@ -199,7 +199,32 @@
                     "xl": 8,
                     "repeat": true
                 },
+                "_protocol": {
+                    "newLine": true,
+                    "type": "header",
+                    "size": 3,
+                    "text": "Protocol settings",
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12
+                },
+                "protocolVersion": {
+                    "newLine": true,
+                    "type": "select",
+                    "options": [
+                        { "value": 4, "label": "MQTT v3.1.1 (default)" },
+                        { "value": 5, "label": "MQTT v5" }
+                    ],
+                    "label": "MQTT Protocol Version:",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4,
+                    "default": 4
+                },
                 "_test": {
+                    "newLine": true,
                     "type": "sendTo",
                     "hidden": "data.type !== 'client'",
                     "label": "Test connection",

@@ -135,7 +135,7 @@ class MQTT extends utils.Adapter {
                 this.checkTimeout = setTimeout(async () => {
                     this.checkTimeout = null;
                     try {
-                        await checkPublicIP(this.config.port, this.config.ssl);
+                        await checkPublicIP(this.config.port, this.config.ssl, this.config.protocolVersion);
                     } catch (e) {
                         // this supported first from js-controller 5.0.
                         this.sendToHost(
