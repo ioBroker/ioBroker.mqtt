@@ -68,5 +68,9 @@
   "chars": "символи",
   "connected": "підключений",
   "ms": "РС",
-  "rejectUnauthorized": "Відхиляти неавторизовані сервери"
+  "rejectUnauthorized": "Відхиляти неавторизовані сервери",
+  "Protocol settings": "Налаштування протоколу",
+  "MQTT Protocol Version:": "Версія протоколу MQTT",
+  "MQTT v3.1.1 (default)": "MQTT v3.1.1 (за замовчуванням)",
+  "MQTT v5": "MQTT v5"
 }
