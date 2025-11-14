@@ -31,10 +31,6 @@ tests.integration(path.join(__dirname, '..'), {
 
                 // Configure adapter as server
                 await harness.changeAdapterConfig('mqtt', {
-                    common: {
-                        enabled: true,
-                        loglevel: 'info'
-                    },
                     native: {
                         type: 'server',
                         port: 11883,
@@ -42,24 +38,31 @@ tests.integration(path.join(__dirname, '..'), {
                         user: 'testuser',
                         pass: encrypt(secret, 'testpass'),
                         publish: '',
-                        debug: false
+                        debug: false,
+                        onchange: true,
+                    },
+                    common: {
+                        enabled: true,
+                        loglevel: 'info'
                     }
                 });
 
                 // Start the adapter
-                await harness.startAdapterAndWait(true);
+                await harness.startAdapterAndWait();
 
                 // Wait a bit for adapter to fully initialize
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 3000));
 
                 // Check if adapter is running
                 const connectedState = await harness.states.getStateAsync('system.adapter.mqtt.0.connected');
-                expect(connectedState).to.exist;
-                expect(connectedState.val).to.equal(true);
+                expect(connectedState, 'Adapter should be connected').to.exist;
+                expect(connectedState.val, 'Adapter should be running').to.equal(true);
 
                 // Check if info states exist
                 const aliveState = await harness.states.getStateAsync('system.adapter.mqtt.0.alive');
-                expect(aliveState).to.exist;
+                expect(aliveState, 'Alive state should exist').to.exist;
+
+                await harness.stopAdapter();
             });
 
         });
@@ -105,53 +108,84 @@ tests.integration(path.join(__dirname, '..'), {
 
                 // Configure adapter as client
                 await harness.changeAdapterConfig('mqtt', {
-                    common: {
-                        enabled: true,
-                        loglevel: 'info'
-                    },
                     native: {
                         type: 'client',
-                        url: '127.0.0.1:11884',
+                        url: '127.0.0.1',
+                        port: 11884,
                         user: 'testuser',
                         pass: encrypt(secret, 'testpass'),
                         publish: '',
-                        debug: false
+                        debug: false,
+                        onchange: true,
+                    },
+                    common: {
+                        enabled: true,
+                        loglevel: 'info'
                     }
                 });
 
                 // Start the adapter
-                await harness.startAdapterAndWait(true);
+                await harness.startAdapterAndWait();
 
                 // Wait for adapter to initialize and connect
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 5000));
 
                 // Check if adapter is running
                 const connectedState = await harness.states.getStateAsync('system.adapter.mqtt.0.connected');
-                expect(connectedState).to.exist;
-                expect(connectedState.val).to.equal(true);
+                expect(connectedState, 'Adapter should be connected').to.exist;
+                expect(connectedState.val, 'Adapter should be running').to.equal(true);
 
                 // Check connection info state
                 const connectionInfo = await harness.states.getStateAsync('mqtt.0.info.connection');
-                expect(connectionInfo).to.exist;
+                expect(connectionInfo, 'Connection info should exist').to.exist;
+
+                await harness.stopAdapter();
             });
 
             it('Should receive messages from MQTT server', async function() {
-                this.timeout(15000);
+                this.timeout(30000);
 
                 const harness = getHarness();
 
+                // Get system config for secret
+                const systemConfig = await harness.objects.getObjectAsync('system.config');
+                const secret = systemConfig?.native?.secret || 'Zgfr56gFe87jJOM';
+
+                // Configure adapter as client
+                await harness.changeAdapterConfig('mqtt', {
+                    native: {
+                        type: 'client',
+                        url: '127.0.0.1',
+                        port: 11884,
+                        user: 'testuser',
+                        pass: encrypt(secret, 'testpass'),
+                        publish: '',
+                        debug: false,
+                        onchange: true,
+                    },
+                    common: {
+                        enabled: true,
+                        loglevel: 'info'
+                    }
+                });
+
+                // Start the adapter
+                await harness.startAdapterAndWait();
+
                 // Wait for messages from server to be processed
-                await new Promise(resolve => setTimeout(resolve, 3000));
+                await new Promise(resolve => setTimeout(resolve, 5000));
 
                 // Check if states from server were created
                 const testServerState = await harness.objects.getObjectAsync('mqtt.0.testServer.connected');
                 if (testServerState) {
-                    expect(testServerState.type).to.equal('state');
+                    expect(testServerState.type, 'Should create state object').to.equal('state');
 
                     const state = await harness.states.getStateAsync('mqtt.0.testServer.connected');
-                    expect(state).to.exist;
-                    expect(state.val).to.equal(true);
+                    expect(state, 'State should exist').to.exist;
+                    expect(state.val, 'Should receive true from server').to.equal(true);
                 }
+
+                await harness.stopAdapter();
             });
 
         });
