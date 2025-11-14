@@ -60,8 +60,9 @@
     "lib/"
   ],
   "scripts": {
-    "test": "npm run test:package && npm run test:integration",
+    "test": "npm run test:package && npm run test:unit && npm run test:integration",
     "test:package": "mocha test/package.js --exit",
+    "test:unit": "mocha test/testConvert.js test/testSimClient.js test/testSimServer.js --exit",
     "test:integration": "mocha test/integration.js --exit",
     "release": "release-script",
     "release-patch": "release-script patch --yes",
