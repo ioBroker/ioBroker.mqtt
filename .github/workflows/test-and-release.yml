@@ -38,14 +38,11 @@ jobs:
             - name: Install Dependencies
               run: npm install
 
-    #      - name: Perform a type check
-    #        run: npm run check:ts
-    #        env:
-    #          CI: true
-    # - name: Lint TypeScript code
-    #   run: npm run lint
-    #      - name: Test package files
-    #        run: npm run test:package
+            - name: Lint code
+              run: npm run lint
+
+            - name: Test package files
+              run: npm run test:package
 
     # Runs adapter tests on all supported node versions and OSes
     adapter-tests:
@@ -69,20 +66,13 @@ jobs:
             - name: Install Dependencies
               run: npm install
 
-            - name: Run local tests
+            - name: Run integration tests # (linux/osx)
               if: startsWith(runner.OS, 'windows') == false
-              run: DEBUG=mqttjs* npm test
+              run: DEBUG=testing:* npm run test:integration
+
             - name: Run integration tests # (windows)
               if: startsWith(runner.OS, 'windows')
-              run: set DEBUG=mqttjs:* & npm run test
-    #      - name: Run unit tests
-    #        run: npm run test:unit
-    #      - name: Run integration tests # (linux/osx)
-    #        if: startsWith(runner.OS, 'windows') == false
-    #        run: DEBUG=testing:* npm run test:integration
-    #      - name: Run integration tests # (windows)
-    #        if: startsWith(runner.OS, 'windows')
-    #        run: set DEBUG=testing:* & npm run test:integration
+              run: set DEBUG=testing:* & npm run test:integration
 
     # Deploys the final package to NPM
     deploy:
