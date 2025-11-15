@@ -5,7 +5,7 @@ const adapterName = require('./package.json').name.split('.').pop();
 
 class MQTT extends utils.Adapter {
     /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
+     * @param {Partial<utils.AdapterOptions>} [options]
      */
     constructor(options) {
         super({
@@ -261,7 +261,7 @@ class MQTT extends utils.Adapter {
                 // Try to connect to mqtt broker
                 if (obj.callback && obj.message) {
                     const mqtt = require('mqtt');
-                    const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.user ? `${obj.message.user}:${obj.message.pass}@` : ''}${obj.message.url}${obj.message.port ? ':' + obj.message.port : ''}?clientId=ioBroker.${this.namespace}`;
+                    const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.user ? `${obj.message.user}:${obj.message.pass}@` : ''}${obj.message.url}${obj.message.port ? `:${obj.message.port}` : ''}?clientId=ioBroker.${this.namespace}`;
                     const _client = mqtt.connect(_url);
                     // Set timeout for connection
                     const timeout = setTimeout(() => {
@@ -337,7 +337,7 @@ class MQTT extends utils.Adapter {
 if (require.main !== module) {
     // Export the constructor in compact mode
     /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
+     * @param {Partial<utils.AdapterOptions>} [options]
      */
     module.exports = options => new MQTT(options);
 } else {
