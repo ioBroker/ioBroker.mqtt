@@ -68,5 +68,9 @@
   "chars": "chars",
   "connected": "connected",
   "ms": "ms",
-  "rejectUnauthorized": "Ongeautoriseerde servers weigeren"
+  "rejectUnauthorized": "Ongeautoriseerde servers weigeren",
+  "Protocol settings": "Protocol instellingen",
+  "MQTT Protocol Version:": "MQTT-protocolversie",
+  "MQTT v3.1.1 (default)": "MQTT v3.1.1 (standaard)",
+  "MQTT v5": "MQTT v5"
 }
