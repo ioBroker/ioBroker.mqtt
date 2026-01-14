@@ -5,9 +5,7 @@ export default [
     {
         languageOptions: {
             parserOptions: {
-                projectService: {
-                    allowDefaultProject: ['*.js', '*.mjs'],
-                },
+                projectService: true,
                 tsconfigRootDir: import.meta.dirname,
             },
         },
@@ -20,9 +18,9 @@ export default [
         },
     },
     {
-        ignores: ['*.mjs', 'test/*.*'],
+        ignores: ['*.mjs', 'test/**', 'admin/blockly.js', 'admin/words.js'],
     },
     {
-        files: ['lib/*.js', '*.js'], // Hier werden die gewünschten Dateien angegeben
+        files: ['lib/*.js', 'main.js'], // Linted files
     },
 ];
