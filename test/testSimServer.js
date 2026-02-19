@@ -304,3 +304,271 @@ describe('MQTT server', function () {
         server.destroy(done);
     });
 });
+
+/**
+ * Regression test for the QoS 2 session lockup fix.
+ *
+ * Scenario being tested:
+ *   1. The broker publishes a QoS 2 message to a subscribed client.
+ *   2. The client deliberately withholds the PUBREC for 400 ms while the broker
+ *      retransmits the message.
+ *   3. The client then sends a PUBREC (simulating a late / out-of-order response).
+ *   4. The broker must always respond with PUBREL to complete the QoS 2 handshake
+ *      (the fix). Without the fix the broker would silently drop the PUBREC, leaving
+ *      the client stuck in an infinite PUBREC loop.
+ *
+ * Note on retransmitCount: the value 0 is falsy and is normalised to 10 by the
+ * server (config.retransmitCount ||= 10), so the broker never disconnects the
+ * client during the 400 ms window.  The short retransmitInterval (100 ms) is
+ * kept only to exercise the retransmit path, not to trigger exhaustion.
+ */
+describe('MQTT server: QoS2 session lockup regression', function () {
+    let adapter2;
+    let server2;
+    const states2 = {};
+    this.timeout(5000); // applies to all tests and hooks in this describe
+
+    before('MQTT server: QoS2 lockup: Start server', done => {
+        adapter2 = new Adapter({
+            port: ++port,
+            defaultQoS: 2,
+            onchange: true,
+            // Very short retransmit interval so the message is retransmitted
+            // quickly within the 400 ms wait window.
+            // retransmitCount: 0 →  normalised to 10 by the server, so the client
+            // is never disconnected during this test.
+            retransmitInterval: 100,
+            retransmitCount: 0,
+        });
+        server2 = new Server(adapter2, states2);
+        // Give the TCP server a chance to start listening before the tests run
+        setTimeout(done, 100);
+    });
+
+    it('MQTT server: QoS2 lockup: Broker sends PUBREL for orphaned PUBREC messageId', done => {
+        const net = require('net');
+        const mqttCon = require('mqtt-connection');
+        const stream = net.createConnection(port, '127.0.0.1');
+        const client = mqttCon(stream);
+
+        let capturedMessageId = null;
+        let firstPublishSeen = false;
+
+        stream.on('error', err => {
+            // Only fail the test if it hasn't already passed
+            if (capturedMessageId === null) {
+                done(err);
+            }
+        });
+
+        // Step 1 – Connected: subscribe to the test topic with QoS 2
+        client.on('connack', () => {
+            client.subscribe({
+                subscriptions: [{ topic: 'qos2orphan', qos: 2 }],
+                messageId: 1,
+            });
+        });
+
+        // Step 2 – Subscribed: trigger the broker to publish a QoS 2 message
+        client.on('suback', async () => {
+            // Ensure the object exists before calling onStateChange so that
+            // getMqttMessage can resolve the id → topic mapping.
+            await adapter2.setForeignObjectAsync('mqtt.0.qos2orphan', {
+                _id: 'mqtt.0.qos2orphan',
+                type: 'state',
+                common: { type: 'string', name: 'qos2orphan', role: 'variable', read: true, write: true },
+                native: {},
+            });
+            states2['mqtt.0.qos2orphan'] = { val: 'testPayload', ack: false };
+            server2.onStateChange('mqtt.0.qos2orphan', { val: 'testPayload', ack: false });
+        });
+
+        // Step 3 – PUBLISH received: capture messageId but intentionally withhold PUBREC
+        //          for 400 ms to simulate a slow / delayed client response.
+        client.on('publish', packet => {
+            if (!firstPublishSeen && packet.qos === 2) {
+                firstPublishSeen = true;
+                capturedMessageId = packet.messageId;
+
+                // Wait 400 ms (> 3 × 100 ms retransmit interval) so that the broker
+                // retransmits the message several times before we reply.
+                setTimeout(() => {
+                    expect(capturedMessageId).to.be.a('number');
+                    // Send PUBREC – the broker must always reply with PUBREL
+                    client.pubrec({ messageId: capturedMessageId });
+                }, 400);
+            }
+            // Ignore any retransmitted PUBLISH packets
+        });
+
+        // Step 4 – PUBREL received: the broker must reply to every PUBREC with PUBREL,
+        //          regardless of whether the messageId is still in the outgoing queue
+        //          (this is the behaviour introduced by the fix)
+        client.on('pubrel', packet => {
+            if (packet.messageId === capturedMessageId) {
+                // Complete the handshake from the client side
+                client.pubcomp({ messageId: packet.messageId });
+                // Give pubcomp a moment to be flushed before tearing down the stream
+                setTimeout(() => {
+                    stream.destroy();
+                    done();
+                }, 50);
+            }
+        });
+
+        // Initiate the MQTT connection
+        client.connect({
+            clientId: 'qos2OrphanRegression',
+            clean: true,
+            keepalive: 0,
+            protocolId: 'MQTT',
+            protocolVersion: 4,
+        });
+    }).timeout(5000);
+
+    after('MQTT server: QoS2 lockup: Stop server', done => {
+        server2.destroy(done);
+    });
+});
+
+/**
+ * Tests the retry-exhaustion-disconnect behaviour introduced in fix/retry-exhaustion-disconnect.
+ *
+ * Sequence:
+ *   1. Broker publishes a QoS 1 message to a subscribed persistent-session client.
+ *   2. The client withholds the PUBACK so the broker keeps retransmitting.
+ *   3. The client uses keepalive=0 (disabled), so the broker has no keepalive
+ *      timeout to rely on.  After retransmitCount (2) retries the broker therefore
+ *      disconnects the client via clientClose().  The message is kept in the
+ *      persistent session.
+ *   4. The client reconnects with the same clientId and clean=false.
+ *   5. The broker calls resendMessages2Client(), which resets count to 0 and
+ *      immediately resends the queued message.
+ *   6. The client ACKs the message – test passes.
+ *
+ * keepalive=0 is deliberate: with keepalive > 0 the broker defers to the
+ * stream timeout (1.5 × keepalive) as required by MQTT §3.1.2.10 and does
+ * NOT disconnect on retry exhaustion.
+ *
+ * A dedicated server with retransmitInterval:100 / retransmitCount:2 is used
+ * so the whole scenario runs within ~600 ms.
+ */
+describe('MQTT server: retry exhaustion – disconnect and reconnect', function () {
+    let adapter3;
+    let server3;
+    const states3 = {};
+
+    before('MQTT server: retry/disconnect: Start server', done => {
+        adapter3 = new Adapter({
+            port: ++port,
+            defaultQoS: 1,
+            onchange: true,
+            // retransmitCount must be > 0 to avoid being normalised to 10 by ||=
+            // count > 2 triggers disconnect → disconnect after 3 retransmissions
+            retransmitInterval: 100,
+            retransmitCount: 2,
+        });
+        server3 = new Server(adapter3, states3);
+        setTimeout(done, 100);
+    });
+
+    it('MQTT server: retry/disconnect: broker disconnects unresponsive client and resends on reconnect', function (done) {
+        const net = require('net');
+        const mqttCon = require('mqtt-connection');
+
+        const CLIENT_ID = 'retryExhaustionTest';
+        const TOPIC     = 'retryDisconnectTopic';
+        const PAYLOAD   = 'retryPayload42';
+
+        let phase2Started = false;
+
+        // ── Phase 2: reconnect and expect message resend ──────────────────────
+        function phase2() {
+            if (phase2Started) {
+                return;
+            }
+            phase2Started = true;
+
+            // Small delay to let the broker fully process the close before we reconnect
+            setTimeout(() => {
+                const stream2 = net.createConnection(port, '127.0.0.1');
+                const client2 = mqttCon(stream2);
+
+                stream2.on('error', err => done(err));
+
+                client2.on('publish', packet => {
+                    if (packet.qos === 1) {
+                        // The broker must resend exactly the same payload
+                        expect(packet.payload.toString()).to.equal(PAYLOAD);
+                        // ACK so the broker clears the message from the queue
+                        client2.puback({ messageId: packet.messageId });
+                        setTimeout(() => {
+                            stream2.destroy();
+                            done();
+                        }, 50);
+                    }
+                });
+
+                client2.connect({
+                    clientId: CLIENT_ID,
+                    clean: false, // resume persistent session → triggers resend
+                    keepalive: 0,
+                    protocolId: 'MQTT',
+                    protocolVersion: 4,
+                });
+            }, 50);
+        }
+
+        // ── Phase 1: persistent-session client, subscribe, withhold PUBACK ───
+        const stream1 = net.createConnection(port, '127.0.0.1');
+        const client1 = mqttCon(stream1);
+
+        // Catch RST/ECONNRESET emitted when the broker destroys the connection;
+        // both the raw stream and the mqtt-connection wrapper may surface it.
+        stream1.on('error', () => {});
+        client1.on('error', () => {});
+
+        // Trigger phase 2 as soon as the broker closes the connection
+        stream1.on('close', phase2);
+        // Fallback timer: retransmitInterval(100) × (retransmitCount(2)+2) ticks = ~400ms,
+        // plus generous margin so the timer fires only if the close event is missed
+        let fallbackTimer;
+
+        client1.on('connack', () => {
+            client1.subscribe({
+                subscriptions: [{ topic: TOPIC, qos: 1 }],
+                messageId: 1,
+            });
+        });
+
+        client1.on('suback', async () => {
+            await adapter3.setForeignObjectAsync(`mqtt.0.${TOPIC}`, {
+                _id: `mqtt.0.${TOPIC}`,
+                type: 'state',
+                common: { type: 'string', name: TOPIC, role: 'variable', read: true, write: true },
+                native: {},
+            });
+            states3[`mqtt.0.${TOPIC}`] = { val: PAYLOAD, ack: false };
+            server3.onStateChange(`mqtt.0.${TOPIC}`, { val: PAYLOAD, ack: false });
+
+            // Fallback: if 'close' event is never emitted, trigger phase 2 after
+            // we are certain the broker has exhausted retries and disconnected
+            fallbackTimer = setTimeout(phase2, 800);
+        });
+
+        // Receive the PUBLISH but deliberately never send PUBACK
+        client1.on('publish', () => { /* intentionally empty – no PUBACK */ });
+
+        client1.connect({
+            clientId: CLIENT_ID,
+            clean: false, // persistent session so messages survive disconnect
+            keepalive: 0,
+            protocolId: 'MQTT',
+            protocolVersion: 4,
+        });
+    }).timeout(3000);
+
+    after('MQTT server: retry/disconnect: Stop server', done => {
+        server3.destroy(done);
+    });
+});
