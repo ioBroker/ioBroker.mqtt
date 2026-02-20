@@ -438,7 +438,7 @@ describe('MQTT server: QoS2 session lockup regression', function () {
  *   1. Broker publishes a QoS 1 message to a subscribed persistent-session client.
  *   2. The client withholds the PUBACK so the broker keeps retransmitting.
  *   3. The client uses keepalive=0 (disabled), so the broker has no keepalive
- *      timeout to rely on.  After retransmitCount (2) retries the broker therefore
+ *      timeout to rely on.  After exceeding retransmitCount (2) retries (i.e. after 3 retransmissions) the broker therefore
  *      disconnects the client via clientClose().  The message is kept in the
  *      persistent session.
  *   4. The client reconnects with the same clientId and clean=false.
@@ -529,7 +529,10 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
         client1.on('error', () => {});
 
         // Trigger phase 2 as soon as the broker closes the connection
-        stream1.on('close', phase2);
+        stream1.on('close', () => {
+            clearTimeout(fallbackTimer);
+            phase2();
+        });
         // Fallback timer: retransmitInterval(100) × (retransmitCount(2)+2) ticks = ~400ms,
         // plus generous margin so the timer fires only if the close event is missed
         let fallbackTimer;
@@ -570,5 +573,123 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
 
     after('MQTT server: retry/disconnect: Stop server', done => {
         server3.destroy(done);
+    });
+});
+
+/**
+ * Tests that when keepalive > 0 the broker does NOT disconnect the client when
+ * retransmitCount is exceeded.  Instead it defers to the stream timeout
+ * (1.5 × keepalive) as required by MQTT §3.1.2.10 and keeps retransmitting.
+ *
+ * Sequence:
+ *   1. Broker publishes a QoS 1 message to a subscribed client with keepalive=10s.
+ *   2. The client withholds the PUBACK so the broker keeps retransmitting.
+ *   3. retransmitCount is set to 2, so with keepalive=0 a disconnect would
+ *      occur after 3 retransmissions.
+ *   4. With keepalive > 0 the broker must NOT disconnect; the test verifies that
+ *      the client receives at least retransmitCount+2 publish packets (proving
+ *      the connection is still alive beyond the threshold).
+ *   5. The client ACKs the message so the broker clears it – test passes.
+ *
+ * A dedicated server with retransmitInterval:100 / retransmitCount:2 is used
+ * so the scenario runs in ~500 ms.
+ */
+describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', function () {
+    let adapter4;
+    let server4;
+    const states4 = {};
+    const RETRANSMIT_COUNT = 2;
+
+    before('MQTT server: retry/keepalive: Start server', done => {
+        adapter4 = new Adapter({
+            port: ++port,
+            defaultQoS: 1,
+            onchange: true,
+            retransmitInterval: 100,
+            retransmitCount: RETRANSMIT_COUNT,
+        });
+        server4 = new Server(adapter4, states4);
+        setTimeout(done, 100);
+    });
+
+    it('MQTT server: retry/keepalive: broker keeps retransmitting when keepalive>0', function (done) {
+        const net = require('net');
+        const mqttCon = require('mqtt-connection');
+
+        const CLIENT_ID = 'keepaliveRetryTest';
+        const TOPIC     = 'keepaliveRetryTopic';
+        const PAYLOAD   = 'keepalivePayload99';
+
+        // We need to receive at least retransmitCount+2 publish packets to be
+        // certain the broker did NOT disconnect after exceeding retransmitCount.
+        const REQUIRED_PUBLISHES = RETRANSMIT_COUNT + 2;
+        let publishCount = 0;
+        let testDone = false;
+
+        const stream = net.createConnection(port, '127.0.0.1');
+        const client = mqttCon(stream);
+
+        stream.on('error', err => { if (!testDone) done(err); });
+        client.on('error', err => { if (!testDone) done(err); });
+
+        // If the broker disconnects us the stream closes – that would be a failure.
+        stream.on('close', () => {
+            if (!testDone) {
+                done(new Error(`Broker disconnected client after only ${publishCount} publish(es) – expected no disconnect with keepalive>0`));
+            }
+        });
+
+        client.on('connack', () => {
+            client.subscribe({
+                subscriptions: [{ topic: TOPIC, qos: 1 }],
+                messageId: 1,
+            });
+        });
+
+        client.on('suback', async () => {
+            await adapter4.setForeignObjectAsync(`mqtt.0.${TOPIC}`, {
+                _id: `mqtt.0.${TOPIC}`,
+                type: 'state',
+                common: { type: 'string', name: TOPIC, role: 'variable', read: true, write: true },
+                native: {},
+            });
+            states4[`mqtt.0.${TOPIC}`] = { val: PAYLOAD, ack: false };
+            server4.onStateChange(`mqtt.0.${TOPIC}`, { val: PAYLOAD, ack: false });
+        });
+
+        client.on('publish', packet => {
+            if (packet.qos !== 1) { return; }
+
+            publishCount++;
+
+            if (publishCount < REQUIRED_PUBLISHES) {
+                // Withhold PUBACK to force further retransmissions
+                return;
+            }
+
+            // We have received enough retransmissions – connection is still alive.
+            // Verify the payload is correct, then ACK to let the broker clean up.
+            expect(packet.payload.toString()).to.equal(PAYLOAD);
+            testDone = true;
+            client.puback({ messageId: packet.messageId });
+            setTimeout(() => {
+                stream.destroy();
+                done();
+            }, 50);
+        });
+
+        client.connect({
+            clientId: CLIENT_ID,
+            clean: true,
+            // keepalive=10s: large enough that the stream timeout (15s) never fires
+            // during this short test, proving the broker waits for it.
+            keepalive: 10,
+            protocolId: 'MQTT',
+            protocolVersion: 4,
+        });
+    }).timeout(3000);
+
+    after('MQTT server: retry/keepalive: Stop server', done => {
+        server4.destroy(done);
     });
 });
