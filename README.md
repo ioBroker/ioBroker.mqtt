@@ -168,6 +168,9 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+- (iobroker-bot) Adapter requires node.js >= 20 now.
+
 ### __WORK IN PROGRESS__
 * (Apollon77) Optimized client state generation logic to prevent load issues
 * (Apollon77) Optimized detection of incoming data as ioBroker states 
