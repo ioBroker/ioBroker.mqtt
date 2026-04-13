@@ -353,13 +353,18 @@ describe('MQTT server: QoS2 session lockup regression', function () {
 
         let capturedMessageId = null;
         let firstPublishSeen = false;
+        let finished = false;
 
-        stream.on('error', err => {
-            // Only fail the test if it hasn't already passed
-            if (capturedMessageId === null) {
-                done(err);
+        const finish = err => {
+            if (finished) {
+                return;
             }
-        });
+            finished = true;
+            done(err);
+        };
+
+        stream.on('error', finish);
+        client.on('error', finish);
 
         // Step 1 – Connected: subscribe to the test topic with QoS 2
         client.on('connack', () => {
@@ -411,7 +416,7 @@ describe('MQTT server: QoS2 session lockup regression', function () {
                 // Give pubcomp a moment to be flushed before tearing down the stream
                 setTimeout(() => {
                     stream.destroy();
-                    done();
+                    finish();
                 }, 50);
             }
         });
@@ -495,6 +500,7 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
                 const client2 = mqttCon(stream2);
 
                 stream2.on('error', err => done(err));
+                client2.on('error', err => done(err));
 
                 client2.on('publish', packet => {
                     if (packet.qos === 1) {
