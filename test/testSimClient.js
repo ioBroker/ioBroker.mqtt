@@ -34,6 +34,28 @@ describe('MQTT client', function () {
         }, 200);
     });
 
+    it('MQTT client: New topic with {val:null} payload should get type "mixed"', done => {
+        const topic = 'clientTypetestNull';
+        // A separate MQTT client publishes to the simulated broker;
+        // the broker forwards it to the ioBroker client adapter under test.
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, JSON.stringify({ val: null }));
+                    setTimeout(async () => {
+                        const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
+                        expect(obj).to.exist;
+                        expect(obj.common.type).to.equal('mixed');
+                        publisher.destroy();
+                        done();
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'clientTypeTestPublisher', subscribe: false },
+        );
+    }).timeout(3000);
+
     after('MQTT simulatedServer: Stop MQTT simulatedServer', done => {
         simulatedServer.stop(done);
         client.destroy();

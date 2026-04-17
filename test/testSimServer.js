@@ -300,6 +300,55 @@ describe('MQTT server', function () {
         });
     }).timeout(3000);
 
+    it('MQTT server: New topic with {val:null} payload should get type "mixed"', () => {
+        let emitterClient;
+        const topic = 'typetestNull';
+        return new Promise(resolve => {
+            emitterClient = new Client(
+                isConnected => {
+                    if (isConnected) {
+                        emitterClient.publish(topic, JSON.stringify({ val: null }));
+                        setTimeout(() => resolve(), 300);
+                    }
+                },
+                null,
+                { url: `127.0.0.1:${port}`, clean: true, clientId: 'typeTestNullClient' },
+            );
+        }).then(async () => {
+            const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
+            expect(obj).to.exist;
+            expect(obj.common.type).to.equal('mixed');
+            emitterClient.destroy();
+        });
+    }).timeout(2000);
+
+    it('MQTT server: Existing numeric topic should keep type "number" after repeated JSON state publish', () => {
+        let emitterClient;
+        const topic = 'typetestNumber';
+        return new Promise(resolve => {
+            emitterClient = new Client(
+                isConnected => {
+                    if (isConnected) {
+                        // First publish: creates topic with type 'number'
+                        emitterClient.publish(topic, JSON.stringify({ val: 42 }));
+                        setTimeout(() => {
+                            // Second publish: must not flip type to 'object'
+                            emitterClient.publish(topic, JSON.stringify({ val: 7 }));
+                            setTimeout(() => resolve(), 300);
+                        }, 300);
+                    }
+                },
+                null,
+                { url: `127.0.0.1:${port}`, clean: true, clientId: 'typeTestNumberClient' },
+            );
+        }).then(async () => {
+            const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
+            expect(obj).to.exist;
+            expect(obj.common.type).to.equal('number');
+            emitterClient.destroy();
+        });
+    }).timeout(3000);
+
     after('MQTT server: Stop MQTT server', done => {
         server.destroy(done);
     });
