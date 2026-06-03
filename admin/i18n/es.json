@@ -60,7 +60,7 @@
     "URL:": "URL",
     "Use Self-Signed-Certificate (only if SSL is enabled)": "Utilice un certificado autofirmado (solo si SSL está habilitado)",
     "Use WebSockets:": "Use WebSockets too",
-    "Use chunk patch:": "Use chunk patch",
+    "Use chunk patch:": "Usar parche de fragmentación",
     "Use client settings": "Usar la configuración del cliente",
     "Use different topic names for set and get:": "Use different topic names for set and get",
     "User:": "User",
