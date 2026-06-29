@@ -1,0 +1,286 @@
+import type { MqttAdapterConfig, MqttClientID, MqttPattern, MqttTopic } from './types';
+
+export function convertID2topic(
+    id: string,
+    pattern: MqttPattern | null,
+    prefix: string,
+    namespace: `${string}.${number}`,
+    removePrefix: string,
+): string {
+    let topic;
+    id = (id || '').toString();
+    if (id.startsWith(removePrefix)) {
+        id = id.substring(removePrefix.length);
+    }
+    if (pattern?.startsWith(prefix + namespace)) {
+        topic = prefix + id;
+    } else if (pattern?.startsWith(namespace)) {
+        topic = id;
+    } else if (prefix && pattern?.startsWith(prefix)) {
+        topic = prefix + id; // .substring(namespace.length + 1);
+    } else if (id.startsWith(namespace)) {
+        topic = (prefix || '') + id.substring(namespace.length + 1);
+    } else {
+        topic = (prefix || '') + id;
+    }
+    topic = topic.replace(/\./g, '/');
+    topic = topic.replace(/[+#]/g, '_');
+    return topic;
+}
+
+/*4.7.1.3 Single level wildcard
+
+ The plus sign (‘+’ U+002B) is a wildcard character that matches only one topic level.
+
+ The single-level wildcard can be used at any level in the Topic Filter, including first and last levels. Where it is used it MUST occupy an entire level of the filter [MQTT-4.7.1-3]. It can be used at more than one level in the Topic Filter and can be used in conjunction with the multilevel wildcard.
+
+ Non-normative comment
+ For example, “sport/tennis/+” matches “sport/tennis/player1” and “sport/tennis/player2”, but not “sport/tennis/player1/ranking”. Also, because the single-level wildcard matches only a single level, “sport/+” does not match “sport” but it does match “sport/”.
+
+ Non-normative comment
+ ·         “+” is valid
+ ·         “+/tennis/#” is valid
+ ·         “sport+” is not valid
+ ·         “sport/+/player1” is valid
+ ·         “/finance” matches “+/+” and “/+”, but not “+”
+ */
+export function pattern2RegEx(pattern: MqttPattern, adapter: ioBroker.Adapter): string {
+    pattern = convertTopic2id(pattern, true, (adapter.config as MqttAdapterConfig).prefix, adapter.namespace);
+    pattern = pattern.replace(/#/g, '*');
+    pattern = pattern.replace(/\$/g, '\\$');
+    pattern = pattern.replace(/\^/g, '\\^');
+
+    if (pattern !== '*') {
+        if (pattern[0] === '*' && pattern[pattern.length - 1] !== '*') {
+            pattern += '$';
+        }
+        if (pattern[0] !== '*' && pattern[pattern.length - 1] === '*') {
+            pattern = `^${pattern}`;
+        }
+        if (pattern[0] === '+') {
+            pattern = `^[^.]*${pattern.substring(1)}`;
+        }
+        if (pattern[pattern.length - 1] === '+') {
+            pattern = `${pattern.substring(0, pattern.length - 1)}[^.]*$`;
+        }
+    } else {
+        return '.*';
+    }
+    pattern = pattern.replace(/\./g, '\\.');
+    pattern = pattern.replace(/\\\.\*/g, '\\..*');
+    pattern = pattern.replace(/\+/g, '[^.]*');
+    return pattern;
+}
+
+/**
+ * Checks whether a received topic should be ignored
+ *
+ * @param topic The topic to check
+ * @param ignoredTopicsRegexes The ignored topics filter
+ * @returns Whether it should be ignored
+ */
+export function isIgnoredTopic(topic: MqttTopic, ignoredTopicsRegexes: RegExp[]): boolean {
+    if (ignoredTopicsRegexes.length === 0) {
+        return false;
+    }
+    for (const regex of ignoredTopicsRegexes) {
+        if (regex.test(topic)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function state2string(val: ioBroker.StateValue | ioBroker.State, sendStateObject?: boolean | null): string {
+    if (sendStateObject === undefined || sendStateObject === null) {
+        sendStateObject = false;
+    }
+
+    if (val && typeof val === 'object') {
+        if (val.val === null) {
+            return 'null';
+        }
+        return val.val === null
+            ? 'null'
+            : val.val === undefined
+              ? 'undefined'
+              : sendStateObject === true
+                ? JSON.stringify(val)
+                : val.val.toString();
+    }
+    return val === null
+        ? 'null'
+        : val === undefined
+          ? 'undefined'
+          : sendStateObject === true
+            ? JSON.stringify(val)
+            : val.toString();
+}
+
+export function convertTopic2id(
+    topic: MqttTopic,
+    dontCutNamespace: boolean,
+    prefix: string,
+    namespace: `${string}.${number}`,
+): string {
+    if (!topic) {
+        return topic;
+    }
+
+    // Remove own prefix if
+    if (prefix && topic.substring(0, prefix.length) === prefix) {
+        topic = topic.substring(prefix.length);
+    }
+
+    topic = topic.replace(/\//g, '.').replace(/\s/g, '_');
+    if (topic[0] === '.') {
+        topic = topic.substring(1);
+    }
+    if (topic[topic.length - 1] === '.') {
+        topic = topic.substring(0, topic.length - 1);
+    }
+
+    if (!dontCutNamespace && topic.startsWith(namespace)) {
+        topic = topic.substring(namespace.length + 1);
+    }
+    // If someone sent a training / we remove it
+    if (topic.endsWith('.')) {
+        topic = topic.substring(0, topic.length - 1);
+    }
+
+    return topic;
+}
+
+export async function ensureObjectStructure(
+    adapter: ioBroker.Adapter,
+    id: string,
+    verifiedObjects: Record<string, boolean>,
+): Promise<void> {
+    if (!id.startsWith(`${adapter.namespace}.`)) {
+        return;
+    }
+    if (verifiedObjects[id] === true) {
+        return;
+    }
+    id = id.substring(adapter.namespace.length + 1);
+    let idToCheck = adapter.namespace;
+
+    const idArr = id.split('.');
+    idArr.pop(); // the last is created as an object in any way
+    verifiedObjects[id] = true;
+
+    for (const part of idArr) {
+        idToCheck += `.${part}`;
+        if (verifiedObjects[idToCheck] === true) {
+            continue;
+        }
+        verifiedObjects[idToCheck] = true;
+        let obj;
+        try {
+            obj = await adapter.getForeignObjectAsync(idToCheck);
+        } catch {
+            // ignore
+        }
+        if (
+            obj?.type === 'folder' &&
+            obj.native &&
+            !obj.native.autocreated &&
+            !Object.keys(obj.native).length &&
+            obj.common?.name === part
+        ) {
+            // Object from the very first auto-create try
+            // We re-create the object with our reason identifier
+            obj = null;
+        }
+
+        if (!obj?.common) {
+            adapter.log.debug(`Create folder object for ${idToCheck}`);
+            try {
+                await adapter.setForeignObjectAsync(idToCheck, {
+                    type: 'folder',
+                    common: {
+                        name: part,
+                    },
+                    native: {
+                        autocreated: 'by automatic ensure logic',
+                    },
+                });
+            } catch (err) {
+                adapter.log.info(`Can not create parent folder object: ${(err as Error).message}`);
+            }
+        }
+        verifiedObjects[idToCheck] = true;
+    }
+}
+
+export function convertMessage(
+    topic: MqttTopic,
+    message: any,
+    adapter: ioBroker.Adapter,
+    clientID?: MqttClientID,
+): string | number | boolean | Record<string, any> {
+    let type = typeof message;
+
+    if (type !== 'string' && type !== 'number' && type !== 'boolean') {
+        message = message ? message.toString('utf8') : 'null';
+        type = 'string';
+    }
+
+    // try to convert 101,124,444,... To utf8 string
+    if (type === 'string' && message.match(/^(\d)+,\s?(\d)+,\s?(\d)+/)) {
+        const parts = message.split(',');
+        try {
+            let str = '';
+            for (let p = 0; p < parts.length; p++) {
+                str += String.fromCharCode(parseInt(parts[p].trim(), 10));
+            }
+            message = str;
+        } catch {
+            // cannot convert and ignore it
+        }
+    }
+
+    if (type === 'string') {
+        // Try to convert value
+        const _val = message.replace(',', '.');
+
+        if (isFinite(_val)) {
+            return parseFloat(_val);
+        }
+        if (message === 'true') {
+            return true;
+        }
+        if (message === 'false') {
+            return false;
+        }
+    }
+
+    if (type === 'string' && message[0] === '{') {
+        try {
+            const _message = JSON.parse(message);
+            // Fast solution
+            if (_message.val !== undefined) {
+                message = _message;
+                // Really right, but slow
+                //var valid = true;
+                //for (var attr in _message) {
+                //    if (!Object.prototype.hasOwnProperty.call(_message, attr)) continue;
+                //    if (attr !== 'val' && attr !== 'ack' && attr !== 'ts' && attr !== 'q' &&
+                //        attr !== 'lc' && attr !== 'comm' && attr !== 'lc') {
+                //        valid = false;
+                //        break;
+                //    }
+                //}
+                //if (valid) message = _message;
+            }
+        } catch {
+            if (clientID) {
+                adapter.log.error(`Client [${clientID}] Cannot parse "${topic}": ${message}`);
+            } else {
+                adapter.log.warn(`Cannot parse "${topic}": ${message}`);
+            }
+        }
+    }
+
+    return message;
+}

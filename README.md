@@ -171,6 +171,8 @@ Note: If you have some client that connects and disconnects very often, the list
 ### __WORK IN PROGRESS__
 * (Apollon77) Optimized client state generation logic to prevent load issues
 * (Apollon77) Optimized detection of incoming data as ioBroker states 
+* (bluefox) Breaking change: removed binary states
+* (bluefox) Migrated to TypeScript
 
 ### 6.1.4 (2025-05-07)
 * (bluefox) Allowed disabling the client objects creation

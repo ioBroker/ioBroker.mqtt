@@ -17,6 +17,5 @@
         "esModuleInterop": true,
         "types": ["@types/node", "@iobroker/types"],
     },
-    "include": ["lib/**/*.js", "main.js"],
-    "exclude": ["node_modules/**", "admin/**"]
+    "include": ["src/**/*.ts"]
 }

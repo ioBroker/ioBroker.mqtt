@@ -1,7 +1,7 @@
 'use strict';
 const expect = require('chai').expect;
 const Adapter = require('./lib/adapterSim');
-const Server = require('../lib/server');
+const Server = require('../dist/lib/server');
 const Client = require('./lib/mqttClient');
 
 let port = 1883;
