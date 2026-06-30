@@ -1,5 +1,5 @@
 const expect = require('chai').expect;
-const convertMessage = require('../lib/common').convertMessage;
+const convertMessage = require('../dist/lib/common').convertMessage;
 
 describe('Test convert version', function () {
     it('Number', async () => {
