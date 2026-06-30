@@ -1,78 +1,78 @@
 {
-    "name": "iobroker.mqtt",
-    "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
-    "version": "6.1.4",
-    "author": "bluefox <dogafox@gmail.com>",
-    "contributors": [
-        {
-            "name": "bluefox",
-            "email": "dogafox@gmail.com"
-        },
-        {
-            "name": "Apollon77",
-            "email": "ingo@fischer-ka.de"
-        },
-        {
-            "name": "Matthias Kleine",
-            "email": "info@haus-automatisierung.com"
-        }
-    ],
-    "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ioBroker/ioBroker.mqtt"
+  "name": "iobroker.mqtt",
+  "description": "The adapter allows to send and receive MQTT messages from ioBroker and to be a broker.",
+  "version": "7.0.0",
+  "author": "bluefox <dogafox@gmail.com>",
+  "contributors": [
+    {
+      "name": "bluefox",
+      "email": "dogafox@gmail.com"
     },
-    "keywords": [
-        "ioBroker",
-        "notification",
-        "MQTT",
-        "message"
-    ],
-    "dependencies": {
-        "@iobroker/adapter-core": "^3.4.1",
-        "mqtt": "^5.15.1",
-        "mqtt-connection": "^4.1.0",
-        "websocket-stream": "^5.5.2",
-        "ws": "^8.21.0"
+    {
+      "name": "Apollon77",
+      "email": "ingo@fischer-ka.de"
     },
-    "devDependencies": {
-        "@alcalzone/release-script": "^5.2.1",
-        "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
-        "@alcalzone/release-script-plugin-license": "^5.2.0",
-        "@alcalzone/release-script-plugin-manual-review": "^5.2.0",
-        "@iobroker/adapter-dev": "^1.5.0",
-        "@iobroker/eslint-config": "^2.3.4",
-        "@iobroker/legacy-testing": "^2.0.2",
-        "@iobroker/testing": "^5.2.2",
-        "globals": "^17.7.0",
-        "typescript": "^6.0.3"
-    },
-    "bugs": {
-        "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
-    },
-    "main": "build/main.js",
-    "files": [
-        "admin/",
-        "build/",
-        "LICENSE",
-        "docs/",
-        "io-package.json"
-    ],
-    "scripts": {
-        "test:package": "mocha ./test/testPackageFiles.js --exit",
-        "test:integration": "mocha --exit",
-        "test": "mocha --exit",
-        "release": "release-script",
-        "build": "tsc -p tsconfig.build.json",
-        "release-patch": "release-script patch --yes",
-        "release-minor": "release-script minor --yes",
-        "release-major": "release-script major --yes",
-        "lint": "eslint -c eslint.config.mjs",
-        "translate": "translate-adapter",
-        "update-packages": "npx -y npm-check-updates --upgrade"
-    },
-    "engines": {
-        "node": ">=22"
-    },
-    "license": "MIT"
+    {
+      "name": "Matthias Kleine",
+      "email": "info@haus-automatisierung.com"
+    }
+  ],
+  "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioBroker/ioBroker.mqtt"
+  },
+  "keywords": [
+    "ioBroker",
+    "notification",
+    "MQTT",
+    "message"
+  ],
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.4.1",
+    "mqtt": "^5.15.1",
+    "mqtt-connection": "^4.1.0",
+    "websocket-stream": "^5.5.2",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@alcalzone/release-script": "^5.2.1",
+    "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
+    "@alcalzone/release-script-plugin-license": "^5.2.0",
+    "@alcalzone/release-script-plugin-manual-review": "^5.2.0",
+    "@iobroker/adapter-dev": "^1.5.0",
+    "@iobroker/eslint-config": "^2.3.4",
+    "@iobroker/legacy-testing": "^2.0.2",
+    "@iobroker/testing": "^5.2.2",
+    "globals": "^17.7.0",
+    "typescript": "^6.0.3"
+  },
+  "bugs": {
+    "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
+  },
+  "main": "build/main.js",
+  "files": [
+    "admin/",
+    "build/",
+    "LICENSE",
+    "docs/",
+    "io-package.json"
+  ],
+  "scripts": {
+    "test:package": "mocha ./test/testPackageFiles.js --exit",
+    "test:integration": "mocha --exit",
+    "test": "mocha --exit",
+    "release": "release-script",
+    "build": "tsc -p tsconfig.build.json",
+    "release-patch": "release-script patch --yes",
+    "release-minor": "release-script minor --yes",
+    "release-major": "release-script major --yes",
+    "lint": "eslint -c eslint.config.mjs",
+    "translate": "translate-adapter",
+    "update-packages": "npx -y npm-check-updates --upgrade"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
 }

@@ -167,8 +167,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 7.0.0 (2026-06-30)
 * (Apollon77) Optimized client state generation logic to prevent load issues
 * (Apollon77) Optimized detection of incoming data as ioBroker states 
 * (bluefox) Breaking change: removed binary states
@@ -190,9 +189,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 6.1.1 (2024-08-29)
 * (bluefox) Added information about connected clients in the server mode
-
-### 6.0.2 (2024-08-13)
-* (bluefox) Added a space to the connection string for better readability
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

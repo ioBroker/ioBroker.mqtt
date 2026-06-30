@@ -1,4 +1,7 @@
 # Older changes
+## 6.0.2 (2024-08-13)
+* (bluefox) Added a space to the connection string for better readability
+
 ## 6.0.1 (2024-08-06)
 * (foxriver76) remove binary state handling as these are no longer existing
 * (klein0r) handle the messages as a state object if properties are valid
