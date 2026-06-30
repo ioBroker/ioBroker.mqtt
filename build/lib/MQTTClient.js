@@ -60,7 +60,7 @@ class MQTTClient {
         }
         const topic = this.id2topic[id];
         if (!topic) {
-            this.adapter.getForeignObject(id, (err, obj) => {
+            void this.adapter.getForeignObject(id, (err, obj) => {
                 if (!this.client) {
                     return;
                 }
@@ -119,7 +119,7 @@ class MQTTClient {
         }
         const id = toPublish[0];
         if (!this.id2topic[id]) {
-            this.adapter.getForeignObject(id, (err, obj) => {
+            void this.adapter.getForeignObject(id, (err, obj) => {
                 if (!this.client) {
                     return;
                 }
@@ -219,7 +219,7 @@ class MQTTClient {
             .map(pattern => pattern.trim())
             .filter(pattern => pattern);
         // delete all server connection information
-        this.adapter.getStatesAsync('info.clients.*').then(async (states) => {
+        void this.adapter.getStatesAsync('info.clients.*').then(async (states) => {
             for (const id in states) {
                 await this.adapter.delForeignObjectAsync(id);
             }

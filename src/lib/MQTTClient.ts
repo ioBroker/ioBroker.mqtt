@@ -152,7 +152,7 @@ export default class MQTTClient {
             topic,
             message,
             { qos: this.config.defaultQoS, retain: retain ?? this.config.retain },
-            err => err && this.adapter.log.error(`client publishMessage: ${err as Error}`),
+            err => err && this.adapter.log.error(`client publishMessage: ${err}`),
         );
     }
 
@@ -205,7 +205,7 @@ export default class MQTTClient {
                 { qos: this.config.defaultQoS, retain: this.config.retain },
                 err => {
                     if (err) {
-                        this.adapter.log.error(`client.publish /set: ${err as Error}`);
+                        this.adapter.log.error(`client.publish /set: ${err}`);
                     }
                     setImmediate(() => this.publishAllStates(toPublish));
                 },
@@ -217,7 +217,7 @@ export default class MQTTClient {
                     state2string(this.states[id], this.config.sendStateObject),
                     { qos: this.config.defaultQoS, retain: this.config.retain },
                     err => {
-                        err && this.adapter.log.error(`client.publish AllStates: ${err as Error}`);
+                        err && this.adapter.log.error(`client.publish AllStates: ${err}`);
                         setImmediate(() => this.publishAllStates(toPublish));
                     },
                 );
@@ -784,7 +784,7 @@ export default class MQTTClient {
         });
 
         this.client.on('error', err => {
-            this.adapter.log.error(`Client error: ${err as Error}`);
+            this.adapter.log.error(`Client error: ${err}`);
 
             if (this.connected) {
                 this.adapter.log.info(`Disconnected from ${this.config.url}`);

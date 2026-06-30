@@ -1,5 +1,7 @@
 import type { MqttAdapterConfig, MqttClientID, MqttPattern, MqttTopic } from './types';
 
+const IOBROKER_STATE_PROPERTIES = ['val', 'ack', 'ts', 'q', 'lc', 'from', 'expire', 'user', 'c'];
+
 export function convertID2topic(
     id: string,
     pattern: MqttPattern | null,
@@ -67,7 +69,7 @@ export function pattern2RegEx(pattern: MqttPattern, adapter: ioBroker.Adapter): 
         return '.*';
     }
     pattern = pattern.replace(/\./g, '\\.');
-    pattern = pattern.replace(/\\\.\*/g, '\\..*');
+    pattern = pattern.replace(/\\\.\*/g, '(\\..*)?$');
     pattern = pattern.replace(/\+/g, '[^.]*');
     return pattern;
 }
@@ -258,26 +260,26 @@ export function convertMessage(
     if (type === 'string' && message[0] === '{') {
         try {
             const _message = JSON.parse(message);
-            // Fast solution
             if (_message.val !== undefined) {
-                message = _message;
-                // Really right, but slow
-                //var valid = true;
-                //for (var attr in _message) {
-                //    if (!Object.prototype.hasOwnProperty.call(_message, attr)) continue;
-                //    if (attr !== 'val' && attr !== 'ack' && attr !== 'ts' && attr !== 'q' &&
-                //        attr !== 'lc' && attr !== 'comm' && attr !== 'lc') {
-                //        valid = false;
-                //        break;
-                //    }
-                //}
-                //if (valid) message = _message;
+                // When object has a "val" attribute, then we check if only valid ioBroker
+                // state attributes are included before we handle it as an iobroker state object
+                let valid = true;
+                for (const attr of Object.keys(_message)) {
+                    // Just check the known attributes by name, ignore type for now
+                    if (!IOBROKER_STATE_PROPERTIES.includes(attr)) {
+                        valid = false;
+                        break;
+                    }
+                }
+                if (valid) {
+                    message = _message;
+                }
             }
         } catch {
             if (clientID) {
-                adapter.log.error(`Client [${clientID}] Cannot parse "${topic}": ${message}`);
+                adapter.log.debug(`Client [${clientID}] Invalid JSON for "${topic}": ${message}`);
             } else {
-                adapter.log.warn(`Cannot parse "${topic}": ${message}`);
+                adapter.log.debug(`Invalid JSON for "${topic}": ${message}`);
             }
         }
     }

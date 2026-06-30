@@ -30,7 +30,7 @@ class MQTTServer {
     resendTimer = null;
     verifiedObjects = {};
     channelChecked = false;
-    updateClientsTimeout = null;
+    updateClientsTimeout;
     updateClientsRunning = false;
     updateClientsRestart = false;
     ignoredTopicsRegexes = [];
@@ -162,46 +162,50 @@ class MQTTServer {
             return;
         }
         this.updateClientsRunning = true;
-        const clientIds = [];
-        if (this.clients) {
-            for (const id in this.clients) {
-                const _id = id || this.clients[id].id || this.clients[id].stream.remoteAddress;
-                const oid = `info.clients.${_id.replace(/[.\s]+/g, '_')}`;
-                clientIds.push(oid);
-                const clientObj = await this.adapter.getObjectAsync(oid);
-                if (!clientObj?.native) {
-                    await this.adapter.setObject(oid, {
-                        type: 'state',
-                        common: {
-                            name: _id,
-                            role: 'indicator.reachable',
-                            type: 'boolean',
-                            read: true,
-                            write: false,
-                        },
-                        native: {
-                            ip: this.clients[id].stream.remoteAddress,
-                            port: this.clients[id].stream.remotePort,
-                        },
-                    });
+        try {
+            const clientIds = [];
+            if (this.clients) {
+                for (const id in this.clients) {
+                    const _id = id || this.clients[id]?.id || this.clients[id]?.stream?.remoteAddress;
+                    const oid = `info.clients.${_id.replace(/[.\s]+/g, '_')}`;
+                    clientIds.push(oid);
+                    const clientObj = await this.adapter.getObjectAsync(oid);
+                    if (!clientObj?.native) {
+                        await this.adapter.setObject(oid, {
+                            type: 'state',
+                            common: {
+                                name: _id,
+                                role: 'indicator.reachable',
+                                type: 'boolean',
+                                read: true,
+                                write: false,
+                            },
+                            native: {
+                                ip: this.clients[id]?.stream?.remoteAddress,
+                                port: this.clients[id]?.stream?.remotePort,
+                            },
+                        });
+                    }
+                    else if (clientObj.native.port !== this.clients[id]?.stream?.remotePort ||
+                        clientObj.native.ip !== this.clients[id]?.stream?.remoteAddress) {
+                        clientObj.native.port = this.clients[id]?.stream?.remotePort;
+                        clientObj.native.ip = this.clients[id]?.stream?.remoteAddress;
+                        await this.adapter.setObjectAsync(clientObj._id, clientObj);
+                    }
+                    await this.adapter.setStateAsync(oid, true, true);
                 }
-                else if (clientObj.native.port !== this.clients[id].stream.remotePort ||
-                    clientObj.native.ip !== this.clients[id].stream.remoteAddress) {
-                    clientObj.native.port = this.clients[id].stream.remotePort;
-                    clientObj.native.ip = this.clients[id].stream.remoteAddress;
-                    await this.adapter.setObjectAsync(clientObj._id, clientObj);
+            }
+            // read all other states and set alive to false
+            const allStates = await this.adapter.getStatesAsync('info.clients.*');
+            for (const id in allStates) {
+                if (!clientIds.includes(id.replace(`${this.adapter.namespace}.`, ''))) {
+                    await this.adapter.setState(id, false, true);
                 }
-                await this.adapter.setStateAsync(oid, true, true);
             }
         }
-        // read all other states and set alive to false
-        const allStates = await this.adapter.getStatesAsync('info.clients.*');
-        for (const id in allStates) {
-            if (!clientIds.includes(id.replace(`${this.adapter.namespace}.`, ''))) {
-                await this.adapter.setState(id, false, true);
-            }
+        finally {
+            this.updateClientsRunning = false;
         }
-        this.updateClientsRunning = false;
         if (this.updateClientsRestart) {
             this.updateClientsRestart = false;
             this.startUpdateClientObjects();
@@ -209,10 +213,11 @@ class MQTTServer {
     }
     startUpdateClientObjects() {
         if (this.updateClientsTimeout) {
-            clearTimeout(this.updateClientsTimeout);
-            this.updateClientsTimeout = null;
+            this.adapter.clearTimeout(this.updateClientsTimeout);
+            this.updateClientsTimeout = undefined;
         }
-        this.updateClientsTimeout = setTimeout(() => {
+        this.updateClientsRestart = false;
+        this.updateClientsTimeout = this.adapter.setTimeout(() => {
             this.updateClientObjects().catch(e => this.adapter.log.error(`Cannot update client objects: ${e}`));
         }, 1000);
     }
@@ -718,7 +723,7 @@ class MQTTServer {
         await this.processTopic(this.topic2id[topic].id, topic, message, qos, retain, isAck, client);
     }
     addMessageWithTopicCheck(arr, message) {
-        for (const i in arr) {
+        for (let i = 0; i < arr.length; i++) {
             if (arr[i].topic === message.topic) {
                 // if same topic we do not add a new entry, but pot. update existing of newer
                 if (message.ts > arr[i].ts) {
