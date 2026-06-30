@@ -59,7 +59,9 @@
         "io-package.json"
     ],
     "scripts": {
-        "test": "node node_modules/mocha/bin/mocha --exit",
+        "test:package": "mocha ./test/testPackageFiles.js --exit",
+        "test:integration": "mocha --exit",
+        "test": "mocha --exit",
         "release": "release-script",
         "build": "tsc -p tsconfig.build.json",
         "release-patch": "release-script patch --yes",
