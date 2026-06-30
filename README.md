@@ -192,6 +192,8 @@ Note: If you have some client that connects and disconnects very often, the list
 ### 6.0.2 (2024-08-13)
 * (bluefox) Added a space to the connection string for better readability
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 The MIT License (MIT)
