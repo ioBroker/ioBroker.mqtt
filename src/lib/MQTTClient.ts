@@ -507,8 +507,11 @@ export default class MQTTClient {
 
                 this.topic2id[topic].message = parsedMessage;
 
-                const messageType = typeof parsedMessage;
-                const stateType = Array.isArray(parsedMessage)
+                // Derive the datapoint type. For an ioBroker state object use the type of
+                // its `val` (a `val` of null is indeterminate → 'mixed'); a JSON string that
+                // is not a valid ioBroker state object → 'mixed'.
+                let messageType = typeof parsedMessage;
+                let stateType: ioBroker.CommonType = Array.isArray(parsedMessage)
                     ? 'array'
                     : messageType === 'string' ||
                         messageType === 'number' ||
@@ -516,13 +519,13 @@ export default class MQTTClient {
                         messageType === 'object'
                       ? messageType
                       : 'mixed';
-
-                if (typeWasUndefined) {
-                    stateObj.common.type = stateType;
-                    // New object which is not "file", we create it now that we know the type
-                    if (typeof parsedMessage === 'object' && parsedMessage.val !== undefined) {
-                        const messageType = typeof parsedMessage.val;
-                        stateObj.common.type = Array.isArray(parsedMessage.val)
+                if (typeof parsedMessage === 'object' && parsedMessage !== null && parsedMessage.val !== undefined) {
+                    if (parsedMessage.val === null) {
+                        // val is null: type cannot be determined, use 'mixed'
+                        stateType = 'mixed';
+                    } else {
+                        messageType = typeof parsedMessage.val;
+                        stateType = Array.isArray(parsedMessage.val)
                             ? 'array'
                             : messageType === 'string' ||
                                 messageType === 'number' ||
@@ -531,6 +534,13 @@ export default class MQTTClient {
                               ? messageType
                               : 'mixed';
                     }
+                } else if (typeof parsedMessage === 'string' && parsedMessage[0] === '{') {
+                    // JSON payload that is not a valid ioBroker state object (non-state properties)
+                    stateType = 'mixed';
+                }
+
+                if (typeWasUndefined) {
+                    stateObj.common.type = stateType;
                     this.adapter.log.debug(`Create object for topic: ${topic}[ID: ${stateObj._id}]`);
                     await this.adapter.setForeignObject(stateObj._id, stateObj);
                 } else {
@@ -677,15 +687,26 @@ export default class MQTTClient {
                     }
                 }
                 const stateObj = this.topic2id[topic].obj!;
-                const messageType = typeof value;
-                const stateType = Array.isArray(value)
-                    ? 'array'
-                    : messageType === 'string' ||
-                        messageType === 'number' ||
-                        messageType === 'boolean' ||
-                        messageType === 'object'
-                      ? messageType
-                      : 'mixed';
+                // Derive the type from the value's `val` when it is an ioBroker state object,
+                // otherwise from the value itself. Comparing against the wrapped object type
+                // ('object') would otherwise demote every typed datapoint to 'mixed' on each
+                // subsequent state-object publish.
+                const valueForType =
+                    value !== undefined && value !== null && typeof value === 'object' && value.val !== undefined
+                        ? value.val
+                        : value;
+                const messageType = typeof valueForType;
+                const stateType: ioBroker.CommonType =
+                    valueForType === null
+                        ? 'mixed'
+                        : Array.isArray(valueForType)
+                          ? 'array'
+                          : messageType === 'string' ||
+                              messageType === 'number' ||
+                              messageType === 'boolean' ||
+                              messageType === 'object'
+                            ? messageType
+                            : 'mixed';
 
                 if (
                     value !== undefined &&

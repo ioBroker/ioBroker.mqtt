@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const Adapter = require('./lib/adapterSim');
 const SimulatedServer = require('./lib/mqttServer');
 const ClientEmitter = require('./lib/mqttClient');
-const Client = require('../dist/lib/MQTTClient');
+const Client = require('../build/lib/MQTTClient').default;
 
 let port = 1883;
 
@@ -33,6 +33,53 @@ describe('MQTT client', function () {
             done();
         }, 200);
     });
+
+    it('MQTT client: New topic with {val:null} payload should get type "mixed"', done => {
+        const topic = 'clientTypetestNull';
+        // A separate MQTT client publishes to the simulated broker;
+        // the broker forwards it to the ioBroker client adapter under test.
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, JSON.stringify({ val: null }));
+                    setTimeout(async () => {
+                        const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
+                        assert.ok(obj);
+                        assert.strictEqual(obj.common.type, 'mixed');
+                        publisher.destroy();
+                        done();
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'clientTypeTestPublisher', subscribe: false },
+        );
+    }).timeout(3000);
+
+    it('MQTT client: Existing numeric topic should keep type "number" after repeated JSON state publish', done => {
+        const topic = 'clientTypetestNumber';
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    // First publish: creates topic with type 'number'
+                    publisher.publish(topic, JSON.stringify({ val: 42 }));
+                    setTimeout(() => {
+                        // Second publish: must not flip type to 'object'/'mixed'
+                        publisher.publish(topic, JSON.stringify({ val: 7 }));
+                        setTimeout(async () => {
+                            const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
+                            assert.ok(obj);
+                            assert.strictEqual(obj.common.type, 'number');
+                            publisher.destroy();
+                            done();
+                        }, 500);
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'clientTypeTestNumberPublisher', subscribe: false },
+        );
+    }).timeout(3000);
 
     after('MQTT simulatedServer: Stop MQTT simulatedServer', done => {
         simulatedServer.stop(done);

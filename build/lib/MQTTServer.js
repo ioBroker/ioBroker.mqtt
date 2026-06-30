@@ -434,8 +434,13 @@ class MQTTServer {
             return;
         }
         // expand an old version of objects
-        let messageType = typeof message;
-        let stateType = Array.isArray(message)
+        // The payload is parsed only for type detection (the value handling further down
+        // still uses the raw `message`): an ioBroker state object yields the type of its
+        // `val` (a `val` of null is indeterminate → 'mixed'), and a JSON string that is not
+        // a valid ioBroker state object yields 'mixed'.
+        const parsedForType = (0, common_1.convertMessage)(topic, message, this.adapter);
+        let messageType = typeof parsedForType;
+        let stateType = Array.isArray(parsedForType)
             ? 'array'
             : messageType === 'string' ||
                 messageType === 'number' ||
@@ -443,17 +448,27 @@ class MQTTServer {
                 messageType === 'object'
                 ? messageType
                 : 'mixed';
-        // if it is a State
-        if (typeof message === 'object' && message !== null && message.val !== undefined) {
-            messageType = typeof message.val;
-            stateType = Array.isArray(message.val)
-                ? 'array'
-                : messageType === 'string' ||
-                    messageType === 'number' ||
-                    messageType === 'boolean' ||
-                    messageType === 'object'
-                    ? messageType
-                    : 'mixed';
+        // if it is an ioBroker State object, derive the type from its `val`
+        if (typeof parsedForType === 'object' && parsedForType !== null && parsedForType.val !== undefined) {
+            if (parsedForType.val === null) {
+                // val is null: type cannot be determined, use 'mixed'
+                stateType = 'mixed';
+            }
+            else {
+                messageType = typeof parsedForType.val;
+                stateType = Array.isArray(parsedForType.val)
+                    ? 'array'
+                    : messageType === 'string' ||
+                        messageType === 'number' ||
+                        messageType === 'boolean' ||
+                        messageType === 'object'
+                        ? messageType
+                        : 'mixed';
+            }
+        }
+        else if (typeof parsedForType === 'string' && parsedForType[0] === '{') {
+            // JSON payload that is not a valid ioBroker state object (non-state properties)
+            stateType = 'mixed';
         }
         // update a type of state if necessary
         const obj = this.topic2id[topic].obj;
@@ -603,16 +618,26 @@ class MQTTServer {
                     },
                     type: 'state',
                 };
-                if (typeof parsedMessage === 'object' && parsedMessage?.val !== undefined) {
-                    const messageType = typeof parsedMessage.val;
-                    obj.common.type = Array.isArray(parsedMessage.val)
-                        ? 'array'
-                        : messageType === 'string' ||
-                            messageType === 'number' ||
-                            messageType === 'boolean' ||
-                            messageType === 'object'
-                            ? messageType
-                            : 'mixed';
+                if (typeof parsedMessage === 'object' && parsedMessage !== null && parsedMessage.val !== undefined) {
+                    if (parsedMessage.val === null) {
+                        // val is null: type cannot be determined, use 'mixed'
+                        obj.common.type = 'mixed';
+                    }
+                    else {
+                        const messageType = typeof parsedMessage.val;
+                        obj.common.type = Array.isArray(parsedMessage.val)
+                            ? 'array'
+                            : messageType === 'string' ||
+                                messageType === 'number' ||
+                                messageType === 'boolean' ||
+                                messageType === 'object'
+                                ? messageType
+                                : 'mixed';
+                    }
+                }
+                else if (typeof parsedMessage === 'string' && parsedMessage[0] === '{') {
+                    // JSON payload that is not a valid ioBroker state object (non-state properties)
+                    obj.common.type = 'mixed';
                 }
                 this.adapter.log.debug(`Create object for topic: ${topic}[ID: ${id}]`);
                 try {
