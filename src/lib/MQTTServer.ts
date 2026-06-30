@@ -1412,7 +1412,7 @@ export default class MQTTServer {
                             client.pubrel({ messageId: packet.messageId });
                         } catch (e) {
                             this.adapter.log.warn(
-                                `Client [${client.id}] Cannot send pubrel for unknown messageId ${packet.messageId}: ${e}`,
+                                `Client [${client.id}] Cannot send pubrel for unknown messageId ${packet.messageId}: ${e as Error}`,
                             );
                         }
                     }
