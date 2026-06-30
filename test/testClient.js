@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const assert = require('node:assert');
 const setup = require('@iobroker/legacy-testing');
 
 let objects = null;
@@ -38,18 +38,18 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 
     setTimeout(() => {
         objects.getObject(id, (err, obj) => {
-            expect(obj).to.be.not.null.and.not.undefined;
-            expect(obj._id).to.be.equal(id);
-            expect(obj.type).to.be.equal('state');
+            assert.ok(obj !== null && obj !== undefined);
+            assert.strictEqual(obj._id, id);
+            assert.strictEqual(obj.type, 'state');
 
             if (mqttid.includes('mqtt')) {
-                expect(obj.native.topic).to.be.equal(mqttid);
+                assert.strictEqual(obj.native.topic, mqttid);
             }
 
             states.getState(id, (err, state) => {
-                expect(state).to.be.not.null.and.not.undefined;
-                expect(state.val).to.be.equal(value);
-                expect(state.ack).to.be.true;
+                assert.ok(state !== null && state !== undefined);
+                assert.strictEqual(state.val, value);
+                assert.strictEqual(state.ack, true);
                 _done();
             });
         });
@@ -70,8 +70,8 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
         },
         () => {
             setTimeout(() => {
-                expect(lastReceivedTopic).to.be.equal(mqttid);
-                expect(lastReceivedMessage).to.be.equal(value);
+                assert.strictEqual(lastReceivedTopic, mqttid);
+                assert.strictEqual(lastReceivedMessage, value);
                 _done();
             }, 200);
         },
@@ -202,21 +202,21 @@ describe('Test MQTT client', function () {
 
     it('MQTT client: check folder objects', done => {
         objects.getObject('mqtt.0.testServer', (err, obj) => {
-            expect(err).to.be.not.ok;
-            expect(obj).to.be.ok;
-            expect(obj.type).equal('folder');
+            assert.ok(!err);
+            assert.ok(obj);
+            assert.strictEqual(obj.type, 'folder');
             objects.getObject('mqtt.0.testServer.long.test.path.into.ioBroker', (err, obj) => {
-                expect(err).to.be.not.ok;
-                expect(obj).to.be.ok;
-                expect(obj.type).equal('folder');
+                assert.ok(!err);
+                assert.ok(obj);
+                assert.strictEqual(obj.type, 'folder');
                 objects.getObject('mqtt.0.testServer.long.test.path.into.ioBroker.connected', (err, obj) => {
-                    expect(err).to.be.not.ok;
-                    expect(obj).to.be.ok;
-                    expect(obj.type).equal('state');
+                    assert.ok(!err);
+                    assert.ok(obj);
+                    assert.strictEqual(obj.type, 'state');
                     states.getState('mqtt.0.testServer.long.test.path.into.ioBroker.connected', (err, state) => {
-                        expect(err).to.be.not.ok;
-                        expect(state).to.be.ok;
-                        expect(state.val).equal(true);
+                        assert.ok(!err);
+                        assert.ok(state);
+                        assert.strictEqual(state.val, true);
                         done();
                     });
                 });
@@ -250,10 +250,10 @@ describe('Test MQTT client', function () {
         console.log(`MQTT server stop ${Date.now()}`);
 
         checkConnectionToServer(false, error => {
-            expect(error).to.be.not.ok;
+            assert.ok(!error);
             mqttServer = new MqttServer();
             checkConnectionToServer(true, error => {
-                expect(error).to.be.not.ok;
+                assert.ok(!error);
                 done();
             });
         });

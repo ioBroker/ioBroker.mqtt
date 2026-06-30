@@ -171,6 +171,9 @@ Note: If you have some client that connects and disconnects very often, the list
 ### __WORK IN PROGRESS__
 * (Apollon77) Optimized client state generation logic to prevent load issues
 * (Apollon77) Optimized detection of incoming data as ioBroker states 
+* (bluefox) Breaking change: removed binary states
+* (bluefox) Migrated to TypeScript
+* (bluefox) Breaking change: minimal supported Node.JS version is 22
 
 ### 6.1.4 (2025-05-07)
 * (bluefox) Allowed disabling the client objects creation
@@ -193,7 +196,7 @@ Note: If you have some client that connects and disconnects very often, the list
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2025, bluefox <dogafox@gmail.com>
+Copyright (c) 2014-2026, bluefox <dogafox@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
