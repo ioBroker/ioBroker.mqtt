@@ -748,3 +748,89 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
         server4.destroy(done);
     });
 });
+
+/**
+ * Regression test for the "reject unresolved topic ids with SUBACK failure" fix.
+ *
+ * When a client subscribes to a wildcard-free topic whose id cannot be resolved
+ * to an ioBroker object, the broker must:
+ *   1. reject only that subscription with the MQTT SUBACK failure code 0x80, and
+ *   2. still send a SUBACK (the previous code returned early from the subscribe
+ *      handler, so the client never received a SUBACK and would hang).
+ *
+ * The server is started with ignoreNewObjects:true so checkObject() throws for any
+ * unknown topic, reliably exercising the rejection path.
+ */
+describe('MQTT server: subscribe rejects unresolvable topic with SUBACK failure', function () {
+    let adapter5;
+    let server5;
+    const states5 = {};
+    this.timeout(5000);
+
+    before('MQTT server: suback-failure: Start server', done => {
+        adapter5 = new Adapter({
+            port: ++port,
+            defaultQoS: 1,
+            onchange: true,
+            // make checkObject() reject unknown topics so the subscription cannot be resolved
+            ignoreNewObjects: true,
+        });
+        server5 = new Server(adapter5, states5);
+        setTimeout(done, 100);
+    });
+
+    it('MQTT server: suback-failure: returns 0x80 for an unresolvable topic and still sends SUBACK', done => {
+        const net = require('net');
+        const mqttCon = require('mqtt-connection');
+        const stream = net.createConnection(port, '127.0.0.1');
+        const client = mqttCon(stream);
+
+        let finished = false;
+        const finish = err => {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            try {
+                stream.destroy();
+            } catch {
+                /* ignore */
+            }
+            done(err);
+        };
+
+        stream.on('error', finish);
+        client.on('error', finish);
+
+        client.on('connack', () => {
+            client.subscribe({
+                subscriptions: [{ topic: 'unresolvableTopic', qos: 1 }],
+                messageId: 1,
+            });
+        });
+
+        // Receiving a SUBACK at all already proves the handler no longer aborts early.
+        client.on('suback', packet => {
+            try {
+                assert.ok(Array.isArray(packet.granted));
+                assert.strictEqual(packet.granted.length, 1);
+                assert.strictEqual(packet.granted[0], 0x80);
+                finish();
+            } catch (e) {
+                finish(e);
+            }
+        });
+
+        client.connect({
+            clientId: 'subackFailureClient',
+            clean: true,
+            keepalive: 0,
+            protocolId: 'MQTT',
+            protocolVersion: 4,
+        });
+    }).timeout(4000);
+
+    after('MQTT server: suback-failure: Stop server', done => {
+        server5.destroy(done);
+    });
+});

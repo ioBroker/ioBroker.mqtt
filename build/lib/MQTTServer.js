@@ -1136,14 +1136,21 @@ class MQTTServer {
                     }
                     // if pattern without wildcards
                     if (!id.includes('*') && !id.includes('#') && !id.includes('+')) {
-                        // If state is unknown => create mqtt.X.topic
-                        if (!this.topic2id[topic]) {
+                        // Resolve the topic to a valid id (create the object if needed);
+                        // otherwise reject this subscription with a SUBACK failure code (0x80)
+                        // and keep processing the remaining subscriptions.
+                        if (!this.topic2id[topic]?.id) {
                             try {
                                 await this.checkObject(id, topic);
                             }
                             catch {
-                                return;
+                                granted[i] = 0x80;
+                                continue;
                             }
+                        }
+                        if (!this.topic2id[topic]?.id) {
+                            granted[i] = 0x80;
+                            continue;
                         }
                         client._subsID[this.topic2id[topic].id] = {
                             pattern: id,
