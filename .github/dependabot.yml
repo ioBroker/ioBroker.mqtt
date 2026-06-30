@@ -1,3 +1,4 @@
+# Dependabot will run on day 4 of each month at 02:17 (Europe/Berlin timezone)
 version: 2
 updates:
   # Maintain dependencies for GitHub Actions
@@ -7,13 +8,15 @@ updates:
       interval: monthly
       time: '04:00'
       timezone: Europe/Berlin
+    open-pull-requests-limit: 15
+
   - package-ecosystem: npm
     directory: '/'
     schedule:
       interval: monthly
       time: '04:00'
       timezone: Europe/Berlin
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 15
     versioning-strategy: increase
     ignore:
       - dependency-name: '@types/node'

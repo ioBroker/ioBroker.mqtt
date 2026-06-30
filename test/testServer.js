@@ -1,5 +1,5 @@
 'use strict';
-const expect = require('chai').expect;
+const assert = require('node:assert');
 const setup = require('@iobroker/legacy-testing');
 
 let objects = null;
@@ -98,25 +98,25 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     lastReceivedMessage2 = null;
 
     mqttClientEmitter.publish(mqttid, value, err => {
-        expect(err).to.be.undefined;
+        assert.strictEqual(err, undefined);
 
         setTimeout(() => {
-            /*expect(lastReceivedTopic2).to.be.equal(mqttid);
-             expect(lastReceivedMessage2).to.be.equal(value);*/
+            /*assert.strictEqual(lastReceivedTopic2, mqttid);
+             assert.strictEqual(lastReceivedMessage2, value);*/
 
             objects.getObject(id, (err, obj) => {
-                expect(obj).to.be.not.null.and.not.undefined;
-                expect(obj._id).to.be.equal(id);
-                expect(obj.type).to.be.equal('state');
+                assert.ok(obj !== null && obj !== undefined);
+                assert.strictEqual(obj._id, id);
+                assert.strictEqual(obj.type, 'state');
 
                 if (mqttid.includes('mqtt')) {
-                    expect(obj.native.topic).to.be.equal(mqttid);
+                    assert.strictEqual(obj.native.topic, mqttid);
                 }
 
                 states.getState(id, (err, state) => {
-                    expect(state).to.be.not.null.and.not.undefined;
-                    expect(state.val).to.be.equal(value);
-                    expect(state.ack).to.be.true;
+                    assert.ok(state !== null && state !== undefined);
+                    assert.strictEqual(state.val, value);
+                    assert.strictEqual(state.ack, true);
                     _done();
                 });
             });
@@ -145,13 +145,13 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
             setTimeout(() => {
                 if (!lastReceivedTopic1) {
                     setTimeout(() => {
-                        expect(lastReceivedTopic1).to.be.equal(mqttid);
-                        expect(lastReceivedMessage1).to.be.equal(value);
+                        assert.strictEqual(lastReceivedTopic1, mqttid);
+                        assert.strictEqual(lastReceivedMessage1, value);
                         _done();
                     }, 200);
                 } else {
-                    expect(lastReceivedTopic1).to.be.equal(mqttid);
-                    expect(lastReceivedMessage1).to.be.equal(value);
+                    assert.strictEqual(lastReceivedTopic1, mqttid);
+                    assert.strictEqual(lastReceivedMessage1, value);
                     _done();
                 }
             }, 200);
@@ -262,11 +262,11 @@ describe('MQTT server: Test mqtt server', () => {
         const mqttid = '/mqtt/0/test1';
         const value = 'AABB';
         mqttClientEmitter.publish(mqttid, JSON.stringify({ val: value, ack: false }), err => {
-            expect(err).to.be.undefined;
+            assert.strictEqual(err, undefined);
 
             setTimeout(() => {
-                expect(lastReceivedTopic2).to.be.equal(mqttid);
-                expect(lastReceivedMessage2).to.be.equal(value);
+                assert.strictEqual(lastReceivedTopic2, mqttid);
+                assert.strictEqual(lastReceivedMessage2, value);
                 done();
             }, 100);
         });
@@ -276,10 +276,10 @@ describe('MQTT server: Test mqtt server', () => {
         mqttClientEmitter.stop();
         mqttClientDetector.stop();
         checkConnection(false, error => {
-            expect(error).to.be.not.ok;
+            assert.ok(!error);
             startClients();
             checkConnection(true, error => {
-                expect(error).to.be.not.ok;
+                assert.ok(!error);
                 done();
             });
         });

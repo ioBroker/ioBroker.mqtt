@@ -6,6 +6,6 @@
         "noEmit": false,
         "declaration": false,
         "skipLibCheck": true,
-        "module": "commonjs"
+        "module": "node16"
     }
 }

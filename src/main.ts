@@ -1,31 +1,31 @@
-'use strict';
+import { Adapter, type AdapterOptions } from '@iobroker/adapter-core';
+import { connect } from 'mqtt';
+import MQTTClient from './lib/MQTTClient';
+import MQTTServer from './lib/MQTTServer';
+import type { MqttAdapterConfig, MqttPattern } from './lib/types';
+import { checkPublicIP } from './lib/securityChecker';
 
-const utils = require('@iobroker/adapter-core');
-const adapterName = require('./package.json').name.split('.').pop();
+class MQTT extends Adapter {
+    declare config: MqttAdapterConfig;
 
-class MQTT extends utils.Adapter {
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    constructor(options) {
+    private checkTimeout: NodeJS.Timeout | null = null;
+    private readonly messageboxRegex: RegExp = new RegExp('\\.messagebox$');
+    private states: Record<string, ioBroker.State> = {};
+    private server: any = null;
+    private client: MQTTClient | null = null;
+
+    constructor(options?: Partial<AdapterOptions>) {
         super({
             ...options,
-            name: adapterName,
+            name: 'mqtt',
         });
-
-        this.messageboxRegex = new RegExp('\\.messagebox$');
-
-        this.states = {};
-        this.server = null;
-        this.client = null;
-
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
 
-    async onReady() {
+    async onReady(): Promise<void> {
         this.config.maxTopicLength = this.config.maxTopicLength || 100;
 
         if (this.config.doNotCreateClientObjects) {
@@ -52,17 +52,14 @@ class MQTT extends utils.Adapter {
 
         if (this.config.ssl && this.config.type === 'server') {
             // Load certificates
-            this.getCertificates(async (err, certificates) => {
-                this.config.certificates = certificates;
-                await this.main();
-            });
-        } else {
-            // Start
-            await this.main();
+            this.config.certificates = (await this.getCertificatesAsync())[0];
         }
+
+        // Start
+        await this.main();
     }
 
-    async main() {
+    async main(): Promise<void> {
         this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
 
         // Subscribe on own variables to publish it
@@ -109,29 +106,24 @@ class MQTT extends utils.Adapter {
             );
         }
 
-        this.config.defaultQoS = parseInt(this.config.defaultQoS, 10) || 0;
-        this.config.retain = this.config.retain === 'true' || this.config.retain === true;
-        this.config.persistent = this.config.persistent === 'true' || this.config.persistent === true;
-        this.config.retransmitInterval = parseInt(this.config.retransmitInterval, 10) || 2000;
-        this.config.retransmitCount = parseInt(this.config.retransmitCount, 10) || 10;
+        this.config.defaultQoS = (parseInt(this.config.defaultQoS as unknown as string, 10) || 0) as 0 | 1 | 2;
+        this.config.retain = (this.config.retain as unknown as string) === 'true' || this.config.retain === true;
+        this.config.persistent =
+            (this.config.persistent as unknown as string) === 'true' || this.config.persistent === true;
+        this.config.retransmitInterval = parseInt(this.config.retransmitInterval as unknown as string, 10) || 2000;
+        this.config.retransmitCount = parseInt(this.config.retransmitCount as unknown as string, 10) || 10;
 
         if (this.config.retransmitInterval < this.config.sendInterval) {
             this.config.retransmitInterval = this.config.sendInterval * 5;
         }
-        this.EXIT_CODES = utils.EXIT_CODES || {
-            ADAPTER_REQUESTED_TERMINATION: 11,
-        };
-
         // If no subscription, start client or server
         if (this.config.type === 'client') {
-            this.config.clientId = this.config.clientId || `${this.host || adapterName}.${this.namespace}`;
-            this.client = new require('./lib/client')(this, this.states);
+            this.config.clientId = this.config.clientId || `${this.host || 'mqtt'}.${this.namespace}`;
+            this.client = new MQTTClient(this, this.states);
         } else {
-            this.server = new require('./lib/server')(this, this.states);
+            this.server = new MQTTServer(this, this.states);
 
             if (!this.config.doNotCheckPublicIP && (!this.config.user || !this.config.pass)) {
-                const { checkPublicIP } = require('./lib/securityChecker');
-
                 this.checkTimeout = setTimeout(async () => {
                     this.checkTimeout = null;
                     try {
@@ -154,18 +146,18 @@ class MQTT extends utils.Adapter {
                             },
                         );
 
-                        this.log.error(e.toString());
+                        this.log.error((e as Error).toString());
                     }
                 }, 1000);
             }
         }
     }
 
-    async readStatesForPattern(pattern) {
+    async readStatesForPattern(pattern: MqttPattern): Promise<void> {
         try {
             const res = await this.getForeignStatesAsync(pattern);
             if (res) {
-                this.states = this.states || {};
+                this.states ||= {};
 
                 Object.keys(res)
                     .filter(id => !this.messageboxRegex.test(id))
@@ -176,15 +168,12 @@ class MQTT extends utils.Adapter {
                     });
             }
         } catch (error) {
-            this.log.error(`Cannot read states "${pattern}": ${error}`);
+            this.log.error(`Cannot read states "${pattern}": ${error as Error}`);
         }
     }
 
-    /**
-     * @param {ioBroker.Message} obj
-     */
-    onMessage(obj) {
-        if (!obj || !obj.command) {
+    onMessage(obj: ioBroker.Message): void {
+        if (!obj?.command) {
             return;
         }
 
@@ -200,7 +189,9 @@ class MQTT extends utils.Adapter {
                         obj.message?.retain,
                         obj.message?.binary,
                     );
-                    obj.callback && this.sendTo(obj.from, obj.command, { result: true }, obj.callback);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: true }, obj.callback);
+                    }
                 } else if (this.client) {
                     this.log.debug(
                         `Sending message from client to server via topic ${obj.message.topic}: ${obj.message.message} ...`,
@@ -211,18 +202,21 @@ class MQTT extends utils.Adapter {
                         obj.message?.retain,
                         obj.message?.binary,
                     );
-                    obj.callback && this.sendTo(obj.from, obj.command, { result: true }, obj.callback);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: true }, obj.callback);
+                    }
                 } else {
                     this.log.debug(
                         `Neither MQTT server nor client not started, thus not sending message via topic ${obj.message.topic} (${obj.message.message}).`,
                     );
-                    obj.callback &&
+                    if (obj.callback) {
                         this.sendTo(
                             obj.from,
                             obj.command,
                             { error: 'Neither MQTT server nor client not started' },
                             obj.callback,
                         );
+                    }
                 }
                 break;
 
@@ -232,37 +226,40 @@ class MQTT extends utils.Adapter {
                         `Sending message from server to clients ${obj.message.id}: ${obj.message.state} ...`,
                     );
                     this.server.onStateChange(obj.message.id, obj.message.state);
-                    obj.callback && this.sendTo(obj.from, obj.command, { result: true }, obj.callback);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { result: true }, obj.callback);
+                    }
                 } else if (this.client) {
                     this.log.debug(`Sending message from client to server ${obj.message.id}: ${obj.message.state} ...`);
                     this.client.onStateChange(obj.message.id, obj.message.state);
-                    obj.callback &&
+                    if (obj.callback) {
                         this.sendTo(
                             obj.from,
                             obj.command,
                             { result: 'Sending message from client to server.' },
                             obj.callback,
                         );
+                    }
                 } else {
                     this.log.debug(
                         `Neither MQTT server nor client not started, thus not sending message to client ${obj.message.id} (${obj.message.state}).`,
                     );
-                    obj.callback &&
+                    if (obj.callback) {
                         this.sendTo(
                             obj.from,
                             obj.command,
                             { error: 'Neither MQTT server nor client not started' },
                             obj.callback,
                         );
+                    }
                 }
                 break;
 
             case 'test': {
                 // Try to connect to mqtt broker
                 if (obj.callback && obj.message) {
-                    const mqtt = require('mqtt');
-                    const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.user ? `${obj.message.user}:${obj.message.pass}@` : ''}${obj.message.url}${obj.message.port ? ':' + obj.message.port : ''}?clientId=ioBroker.${this.namespace}`;
-                    const _client = mqtt.connect(_url);
+                    const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.user ? `${obj.message.user}:${obj.message.pass}@` : ''}${obj.message.url}${obj.message.port ? `:${obj.message.port}` : ''}?clientId=ioBroker.${this.namespace}`;
+                    const _client = connect(_url);
                     // Set timeout for connection
                     const timeout = setTimeout(() => {
                         _client.end();
@@ -276,7 +273,7 @@ class MQTT extends utils.Adapter {
                         this.sendTo(obj.from, obj.command, 'connected', obj.callback);
                     });
                     // If connected, return success
-                    _client.on('error', err => {
+                    _client.on('error', (err: Error): void => {
                         _client.end();
                         clearTimeout(timeout);
                         this.log.warn(`Error on mqtt test: ${err}`);
@@ -287,19 +284,15 @@ class MQTT extends utils.Adapter {
         }
     }
 
-    /**
-     * @param {string} id
-     * @param {ioBroker.State | null | undefined} state
-     */
-    async onStateChange(id, state) {
+    onStateChange(id: string, state: ioBroker.State | null | undefined): void {
         this.log.debug(`stateChange ${id}: ${JSON.stringify(state)}`);
         // State deleted
         if (!state) {
             delete this.states[id];
             // If SERVER
-            this.server && this.server.onStateChange(id);
+            this.server?.onStateChange(id, undefined);
             // if CLIENT
-            this.client && this.client.onStateChange(id);
+            this.client?.onStateChange(id, undefined);
         } else if ((this.config.sendAckToo || !state.ack) && !this.messageboxRegex.test(id)) {
             // you can use the ack flag to detect if state is desired or acknowledged
             const oldVal = this.states[id] ? this.states[id].val : null;
@@ -307,25 +300,24 @@ class MQTT extends utils.Adapter {
             this.states[id] = state;
 
             // If value really changed
-            if (!this.config.onchange || oldVal !== state.val || oldAck !== state.ack || state.binary) {
+            if (!this.config.onchange || oldVal !== state.val || oldAck !== state.ack) {
                 // If SERVER
-                this.server && this.server.onStateChange(id, state);
+                this.server?.onStateChange(id, state);
                 // if CLIENT
-                this.client && this.client.onStateChange(id, state);
+                this.client?.onStateChange(id, state);
             }
         }
     }
 
-    /**
-     * @param {() => void} callback
-     */
-    async onUnload(callback) {
-        this.checkTimeout && clearTimeout(this.checkTimeout);
-        this.checkTimeout = null;
+    onUnload(callback: () => void): void {
+        if (this.checkTimeout) {
+            clearTimeout(this.checkTimeout);
+            this.checkTimeout = null;
+        }
 
         try {
-            this.client && this.client.destroy();
-            this.server && this.server.destroy();
+            this.client?.destroy();
+            this.server?.destroy();
 
             callback();
         } catch {
@@ -336,11 +328,8 @@ class MQTT extends utils.Adapter {
 
 if (require.main !== module) {
     // Export the constructor in compact mode
-    /**
-     * @param {Partial<utils.AdapterOptions>} [options={}]
-     */
-    module.exports = options => new MQTT(options);
+    module.exports = (options: Partial<AdapterOptions> | undefined) => new MQTT(options);
 } else {
     // otherwise start the instance directly
-    new MQTT();
+    (() => new MQTT())();
 }

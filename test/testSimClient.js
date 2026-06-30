@@ -1,9 +1,9 @@
 'use strict';
-const expect = require('chai').expect;
+const assert = require('node:assert');
 const Adapter = require('./lib/adapterSim');
 const SimulatedServer = require('./lib/mqttServer');
 const ClientEmitter = require('./lib/mqttClient');
-const Client = require('../lib/client');
+const Client = require('../dist/lib/MQTTClient');
 
 let port = 1883;
 
@@ -29,7 +29,7 @@ describe('MQTT client', function () {
     it('MQTT client: Check if connected to MQTT broker', done => {
         setTimeout(async () => {
             const data = await adapter.getStateAsync('info.connection');
-            expect(data.val).to.be.equal(true);
+            assert.strictEqual(data.val, true);
             done();
         }, 200);
     });

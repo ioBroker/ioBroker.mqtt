@@ -1,7 +1,7 @@
 'use strict';
-const expect = require('chai').expect;
+const assert = require('node:assert');
 const Adapter = require('./lib/adapterSim');
-const Server = require('../lib/server');
+const Server = require('../dist/lib/server');
 const Client = require('./lib/mqttClient');
 
 let port = 1883;
@@ -26,7 +26,7 @@ describe('MQTT server', function () {
         const client = new Client(
             isConnected => {
                 if (done) {
-                    expect(isConnected).to.be.true;
+                    assert.strictEqual(isConnected, true);
                     client.destroy();
                     done();
                     done = null;
@@ -69,8 +69,8 @@ describe('MQTT server', function () {
                     () => {},
                     (topic, message) => {
                         if (topic === 'aaa') {
-                            expect(topic).to.be.equal('aaa');
-                            expect(message.toString()).to.be.equal(data.toString());
+                            assert.strictEqual(topic, 'aaa');
+                            assert.strictEqual(message.toString(), data.toString());
                             client.destroy();
                             resolve();
                         }
@@ -137,7 +137,7 @@ describe('MQTT server', function () {
             })
             .then(() => {
                 console.log(`[${new Date().toISOString()} continue tests`);
-                expect(count).to.be.equal(1);
+                assert.strictEqual(count, 1);
                 allowPuback = true;
                 receiveFunc = () => {
                     client.destroy();
@@ -196,7 +196,7 @@ describe('MQTT server', function () {
                 });
             })
             .then(() => {
-                expect(count).to.be.equal(1);
+                assert.strictEqual(count, 1);
                 allowPubrec = true;
                 receiveFunc = () => {
                     receiverClient.destroy();
@@ -237,9 +237,9 @@ describe('MQTT server', function () {
         }).then(() => {
             return new Promise(resolve => {
                 receiveFunc = (topic, data, packet) => {
-                    expect(data).to.be.ok;
-                    expect(topic).to.be.ok;
-                    expect(packet.qos).to.be.equal(1);
+                    assert.ok(data);
+                    assert.ok(topic);
+                    assert.strictEqual(packet.qos, 1);
                     receiverClient.destroy();
                     emitterClient.destroy();
                     done();
@@ -270,7 +270,7 @@ describe('MQTT server', function () {
                     if (id.includes('aaa6')) {
                         console.log(`Received ${topic.toString()}`);
                         count++;
-                        expect(count).to.be.equal(1);
+                        assert.strictEqual(count, 1);
                         setTimeout(() => resolve(), 100);
                     }
                 },
