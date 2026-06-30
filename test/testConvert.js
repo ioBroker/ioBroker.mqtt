@@ -1,8 +1,8 @@
-const expect = require('chai').expect;
-const convertMessage = require('../dist/lib/common').convertMessage;
+const assert = require('node:assert');
+const convertMessage = require('../build/lib/common').convertMessage;
 
 describe('Test convert version', function () {
     it('Number', async () => {
-        expect(convertMessage('data', '233.57')).to.be.equal(233.57);
+        assert.strictEqual(convertMessage('data', '233.57'), 233.57);
     });
 });
