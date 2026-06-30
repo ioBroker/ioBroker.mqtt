@@ -1373,9 +1373,20 @@ export default class MQTTServer {
                     if (frame) {
                         client.pubrel({ messageId: packet.messageId });
                     } else {
+                        // The message is not in our queue anymore (e.g. purged after exceeding the
+                        // retransmit limit, or a late/duplicate pubrec). Some devices use a hardcoded
+                        // QoS 2 and keep resending pubrec forever until they get a pubrel, which blocks
+                        // the whole session. Send pubrel anyway to let the client complete the handshake.
                         this.adapter.log.info(
-                            `Client [${client.id}] Received pubrec on ${client.id} for unknown messageId ${packet.messageId}`,
+                            `Client [${client.id}] Received pubrec on ${client.id} for unknown messageId ${packet.messageId} - sending pubrel anyway to complete the QoS 2 handshake`,
                         );
+                        try {
+                            client.pubrel({ messageId: packet.messageId });
+                        } catch (e) {
+                            this.adapter.log.warn(
+                                `Client [${client.id}] Cannot send pubrel for unknown messageId ${packet.messageId}: ${e}`,
+                            );
+                        }
                     }
                 },
             );
@@ -1746,9 +1757,9 @@ export default class MQTTServer {
                         }
 
                         if (this.config.sendInterval) {
-                            setTimeout(this.checkResends, this.config.sendInterval);
+                            setTimeout(() => this.checkResends(), this.config.sendInterval);
                         } else {
-                            setImmediate(this.checkResends);
+                            setImmediate(() => this.checkResends());
                         }
                         return;
                     }

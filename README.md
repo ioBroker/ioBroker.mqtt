@@ -174,6 +174,7 @@ Note: If you have some client that connects and disconnects very often, the list
 * (bluefox) Breaking change: removed binary states
 * (bluefox) Migrated to TypeScript
 * (bluefox) Breaking change: minimal supported Node.JS version is 22
+* (Marc-Berg) Fixed: send PUBREL for unknown messageId to resolve QoS 2 session lockup
 
 ### 6.1.4 (2025-05-07)
 * (bluefox) Allowed disabling the client objects creation
