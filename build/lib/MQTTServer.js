@@ -384,8 +384,7 @@ class MQTTServer {
         if (messages && i < messages.length) {
             try {
                 messages[i].ts = Date.now();
-                messages[i].count ||= 0;
-                messages[i].count++;
+                messages[i].count = 0; // keep at 0 in case checkResends fires between resend steps
                 this.adapter.log.debug(`Client [${client.id}] Resend messages on connect: ${messages[i].topic} and id ${messages[i].messageId} (${messages[i].cmd}) = ${messages[i].payload}`);
                 if (messages[i].cmd === 'publish') {
                     messages[i].messageId = this.getNextMessageId();
@@ -917,6 +916,14 @@ class MQTTServer {
                     client._subsID = this.persistentSessions[client.id]._subsID;
                     client._subs = this.persistentSessions[client.id]._subs;
                     if (this.persistentSessions[client.id]._messages.length) {
+                        // Reset retry counters immediately so that checkResends() does not
+                        // see stale counts and disconnect the freshly-reconnected client
+                        // during the 100 ms window before resendMessages2Client() runs.
+                        const now = Date.now();
+                        for (const msg of this.persistentSessions[client.id]._messages) {
+                            msg.count = 0;
+                            msg.ts = now;
+                        }
                         // give to the client a little bit time
                         client._resendonStart = setTimeout((clientId) => {
                             client._resendonStart = null;
@@ -1264,9 +1271,20 @@ class MQTTServer {
                     const message = this.clients[clientId]._messages[m];
                     if (now - message.ts >= this.config.retransmitInterval) {
                         if (message.count > this.config.retransmitCount) {
-                            this.adapter.log.warn(`Client [${clientId}] Message ${message.messageId} deleted after ${message.count} retries`);
-                            this.clients[clientId]._messages.splice(m, 1);
-                            continue;
+                            if (this.clients[clientId]._keepalive === 0) {
+                                // keepalive=0 means the client disabled the keepalive mechanism,
+                                // so the broker has no other way to detect a dead connection.
+                                // Disconnect now to preserve the QoS guarantee: clientClose()
+                                // keeps the persistent session intact so all queued messages
+                                // are resent on the next reconnect.
+                                this.adapter.log.warn(`Client [${clientId}] Message ${message.messageId} not acknowledged after ${message.count} retries - disconnecting client (keepalive=0)`);
+                                this.clientClose(this.clients[clientId], 'unresponsive - too many retransmissions');
+                                break; // _messages of this client are no longer valid after close
+                            }
+                            // keepalive > 0: the stream timeout (1.5 × keepalive) will close the
+                            // connection if the client is truly dead, as required by MQTT §3.1.2.10.
+                            // Keep retransmitting until that happens.
+                            this.adapter.log.debug(`Client [${clientId}] Message ${message.messageId} not acknowledged after ${message.count} retries - waiting for keepalive timeout (keepalive=${this.clients[clientId]._keepalive}s)`);
                         }
                         // resend this message
                         message.count++;
