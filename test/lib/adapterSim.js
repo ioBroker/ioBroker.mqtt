@@ -20,7 +20,7 @@ module.exports = function (config) {
     let objects = {};
     let states = {};
 
-    this.config = Object.assign(this.config, config || {});
+    this.config = { ...this.config, ...(config || {}) };
 
     this.log = {
         debug: text => console.log(`[${new Date().toISOString()} ${text}`),
@@ -53,7 +53,7 @@ module.exports = function (config) {
         state.ack = !!state.ack;
 
         states[id] = state;
-        cb && cb(null);
+        cb?.(null);
     };
 
     this.getState = (id, cb) => {
@@ -65,7 +65,7 @@ module.exports = function (config) {
     };
 
     this.getForeignState = (id, cb) => {
-        cb && cb(null, states[id]);
+        cb?.(null, states[id]);
     };
 
     this.getStatesAsync = pattern => {
@@ -151,7 +151,7 @@ module.exports = function (config) {
         obj = JSON.parse(JSON.stringify(obj));
         obj._id = id;
         objects[id] = obj;
-        cb && cb();
+        cb?.();
     };
 
     this.setForeignObjectAsync = (id, obj) => {

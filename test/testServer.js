@@ -89,7 +89,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     }
 
     if (!id.includes('.')) {
-        id = 'mqtt.0.' + id;
+        id = `mqtt.0.${id}`;
     }
 
     lastReceivedMessage1 = null;
@@ -105,7 +105,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
              assert.strictEqual(lastReceivedMessage2, value);*/
 
             objects.getObject(id, (err, obj) => {
-                assert.ok(obj !== null && obj !== undefined);
+                assert.ok(obj != null);
                 assert.strictEqual(obj._id, id);
                 assert.strictEqual(obj.type, 'state');
 
@@ -114,7 +114,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
                 }
 
                 states.getState(id, (err, state) => {
-                    assert.ok(state !== null && state !== undefined);
+                    assert.ok(state != null);
                     assert.strictEqual(state.val, value);
                     assert.strictEqual(state.ack, true);
                     _done();
@@ -167,7 +167,9 @@ function checkConnection(value, done, counter) {
     }
 
     states.getState('mqtt.0.info.connection', (err, state) => {
-        if (err) console.error(err);
+        if (err) {
+            console.error(err);
+        }
         if (
             state &&
             typeof state.val === 'string' &&
@@ -250,7 +252,7 @@ describe('MQTT server: Test mqtt server', () => {
     for (const r in rules) {
         (function (id, topic) {
             if (topic.includes('mqtt')) {
-                it('MQTT server: Check send ' + topic, function (done) {
+                it(`MQTT server: Check send ${topic}`, function (done) {
                     // let FUNCTION here
                     checkAdapter2Mqtt(topic, id, this, done);
                 });

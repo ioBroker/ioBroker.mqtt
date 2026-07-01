@@ -6,7 +6,7 @@ export default [
         languageOptions: {
             parserOptions: {
                 projectService: {
-                    allowDefaultProject: ['*.js', '*.mjs'],
+                    allowDefaultProject: ['*.js', '*.mjs', 'test/*.js', 'test/lib/*.js'],
                 },
                 tsconfigRootDir: import.meta.dirname,
             },
@@ -20,6 +20,10 @@ export default [
         },
     },
     {
-        ignores: ['*.mjs', 'test/**/*.*', 'admin/**/*.*', 'build/**/*.*'],
+        ignores: ['*.mjs', 'admin/**/*.*', 'build/**/*.*', 'tmp/**/*'],
     },
+    {
+        files: ['test/**/*.js']
+    },
+
 ];

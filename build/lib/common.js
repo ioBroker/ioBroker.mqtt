@@ -220,23 +220,23 @@ function convertMessage(topic, message, adapter, clientID) {
         // Try to convert value
         const _val = message.replace(',', '.');
         if (isFinite(_val)) {
-            return parseFloat(_val);
+            return { message: parseFloat(_val), isStateObject: false };
         }
         if (message === 'true') {
-            return true;
+            return { message: true, isStateObject: false };
         }
         if (message === 'false') {
-            return false;
+            return { message: false, isStateObject: false };
         }
     }
     if (type === 'string' && message[0] === '{') {
         try {
-            const _message = JSON.parse(message);
-            if (_message.val !== undefined) {
+            const stateObj = JSON.parse(message);
+            if (stateObj.val !== undefined) {
                 // When object has a "val" attribute, then we check if only valid ioBroker
                 // state attributes are included before we handle it as an iobroker state object
                 let valid = true;
-                for (const attr of Object.keys(_message)) {
+                for (const attr of Object.keys(stateObj)) {
                     // Just check the known attributes by name, ignore type for now
                     if (!IOBROKER_STATE_PROPERTIES.includes(attr)) {
                         valid = false;
@@ -244,7 +244,7 @@ function convertMessage(topic, message, adapter, clientID) {
                     }
                 }
                 if (valid) {
-                    message = _message;
+                    return { message: stateObj, isStateObject: true };
                 }
             }
         }
@@ -257,6 +257,6 @@ function convertMessage(topic, message, adapter, clientID) {
             }
         }
     }
-    return message;
+    return { message, isStateObject: false };
 }
 //# sourceMappingURL=common.js.map

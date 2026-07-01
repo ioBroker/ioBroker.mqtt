@@ -1,4 +1,3 @@
-import { EXIT_CODES } from '@iobroker/adapter-core';
 import type { MqttAdapterConfig, MqttPattern, MqttTopic } from './types';
 // @ts-expect-error no types
 import mqtt from 'mqtt-connection';
@@ -17,6 +16,11 @@ import { createServer as createTlsServer, type Server as TlsServer } from 'tls';
 import { createServer as createNetServer, type Server as NetServer } from 'net';
 import { Server as WsServer } from 'ws';
 import wsStream from 'websocket-stream';
+
+// We cannot export it from @iobroker/adapter-core as this file is used in tests
+enum EXIT_CODES {
+    ADAPTER_REQUESTED_TERMINATION = 11, // planned stop
+}
 
 // todo delete from persistentSessions the sessions and messages after some time
 type HttpHttpsServer = HttpsServer | HttpServer;
@@ -131,7 +135,9 @@ export default class MQTTServer {
             obj: ioBroker.StateObject | null;
             id: string;
             isAck?: boolean;
-            message?: ioBroker.StateValue | ioBroker.State;
+            message?:
+                | { message: string | number | boolean | Record<string, any>; isStateObject: false }
+                | { message: ioBroker.State; isStateObject: true };
         }
     > = {};
     private readonly id2topic: Record<string, MqttTopic> = {};
@@ -694,9 +700,9 @@ export default class MQTTServer {
         // still uses the raw `message`): an ioBroker state object yields the type of its
         // `val` (a `val` of null is indeterminate → 'mixed'), and a JSON string that is not
         // a valid ioBroker state object yields 'mixed'.
-        const parsedForType = convertMessage(topic, message as any, this.adapter);
-        let messageType = typeof parsedForType;
-        let stateType: ioBroker.CommonType = Array.isArray(parsedForType)
+        const parsedForType = convertMessage(topic, message, this.adapter);
+        let messageType = typeof parsedForType.message;
+        let stateType: ioBroker.CommonType = Array.isArray(parsedForType.message)
             ? 'array'
             : messageType === 'string' ||
                 messageType === 'number' ||
@@ -706,13 +712,13 @@ export default class MQTTServer {
               : 'mixed';
 
         // if it is an ioBroker State object, derive the type from its `val`
-        if (typeof parsedForType === 'object' && parsedForType !== null && parsedForType.val !== undefined) {
-            if (parsedForType.val === null) {
+        if (parsedForType.isStateObject) {
+            if (parsedForType.message.val === null) {
                 // val is null: type cannot be determined, use 'mixed'
                 stateType = 'mixed';
             } else {
-                messageType = typeof parsedForType.val;
-                stateType = Array.isArray(parsedForType.val)
+                messageType = typeof parsedForType.message.val;
+                stateType = Array.isArray(parsedForType.message.val)
                     ? 'array'
                     : messageType === 'string' ||
                         messageType === 'number' ||
@@ -721,7 +727,7 @@ export default class MQTTServer {
                       ? messageType
                       : 'mixed';
             }
-        } else if (typeof parsedForType === 'string' && parsedForType[0] === '{') {
+        } else if (typeof parsedForType.message === 'string' && parsedForType.message[0] === '{') {
             // JSON payload that is not a valid ioBroker state object (non-state properties)
             stateType = 'mixed';
         }
@@ -752,12 +758,16 @@ export default class MQTTServer {
             this.adapter.log.debug(`Server received "${topic}" (${typeof message}): ${JSON.stringify(message)}`);
         }
 
-        if (message !== undefined && message !== null) {
+        if (parsedForType.message != null) {
             let value: ioBroker.State;
-            if (typeof message === 'object') {
-                value = message;
+            if (typeof parsedForType.message === 'object') {
+                if (parsedForType.isStateObject) {
+                    value = parsedForType.message;
+                } else {
+                    value = { val: JSON.stringify(parsedForType.message), ack: isAck } as ioBroker.State;
+                }
             } else {
-                value = { val: message, ack: isAck } as ioBroker.State;
+                value = { val: parsedForType.message, ack: isAck } as ioBroker.State;
             }
             if (
                 value.val !== undefined &&
@@ -791,13 +801,17 @@ export default class MQTTServer {
         }
 
         // send a message to all other clients
-        if (this.config.onchange && this.server && message !== undefined && message !== null) {
+        if (this.config.onchange && this.server && parsedForType.message != null) {
             setImmediate(() => {
                 let state: ioBroker.State;
-                if (typeof message !== 'object') {
-                    state = { val: message } as ioBroker.State;
+                if (typeof parsedForType.message === 'object') {
+                    if (parsedForType.isStateObject) {
+                        state = parsedForType.message;
+                    } else {
+                        state = { val: JSON.stringify(parsedForType.message) } as ioBroker.State;
+                    }
                 } else {
-                    state = message;
+                    state = { val: parsedForType.message, ack: isAck } as ioBroker.State;
                 }
 
                 Object.keys(this.clients).forEach(k => {
@@ -809,7 +823,7 @@ export default class MQTTServer {
             });
         }
         // ELSE
-        // this will be done indirect. The message will be sent to js-controller, and if adapter is subscribed, it gets this message over stateChange
+        // this will be done indirectly. The message will be sent to js-controller, and if the adapter is subscribed, it gets this message over stateChange
     }
 
     private async checkObject(id: string, topic: MqttTopic, message?: string | null): Promise<void> {
@@ -834,7 +848,8 @@ export default class MQTTServer {
         }
 
         if (
-            obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+            obj &&
+            obj._id?.startsWith(`${this.adapter.namespace}.`) &&
             obj.type === 'folder' &&
             obj.native?.autocreated === 'by automatic ensure logic'
         ) {
@@ -849,7 +864,8 @@ export default class MQTTServer {
                 // ignore
             }
             if (
-                obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+                obj &&
+                obj._id?.startsWith(`${this.adapter.namespace}.`) &&
                 obj.type === 'folder' &&
                 obj.native?.autocreated === 'by automatic ensure logic'
             ) {
@@ -867,15 +883,30 @@ export default class MQTTServer {
 
                 // only for type detection
                 const parsedMessage = convertMessage(topic, message, this.adapter);
-                const messageType = typeof parsedMessage;
-                const stateType = Array.isArray(parsedMessage)
-                    ? 'array'
-                    : messageType === 'string' ||
-                        messageType === 'number' ||
-                        messageType === 'boolean' ||
-                        messageType === 'object'
-                      ? messageType
-                      : 'mixed';
+                let stateType: ioBroker.CommonType;
+                if (parsedMessage.isStateObject) {
+                    stateType = typeof parsedMessage.message.val as ioBroker.CommonType;
+                    stateType = Array.isArray(parsedMessage.message.val)
+                        ? 'array'
+                        : parsedMessage.message.val !== null &&
+                            (stateType === 'string' ||
+                                stateType === 'number' ||
+                                stateType === 'boolean' ||
+                                stateType === 'object')
+                          ? stateType
+                          : 'mixed';
+                } else {
+                    const messageType = typeof parsedMessage.message;
+                    stateType = Array.isArray(parsedMessage.message)
+                        ? 'array'
+                        : parsedMessage.message !== null &&
+                            (messageType === 'string' ||
+                                messageType === 'number' ||
+                                messageType === 'boolean' ||
+                                messageType === 'object')
+                          ? messageType
+                          : 'mixed';
+                }
 
                 // create state
                 obj = {
@@ -893,22 +924,7 @@ export default class MQTTServer {
                     },
                     type: 'state',
                 };
-                if (typeof parsedMessage === 'object' && parsedMessage !== null && parsedMessage.val !== undefined) {
-                    if (parsedMessage.val === null) {
-                        // val is null: type cannot be determined, use 'mixed'
-                        obj.common.type = 'mixed';
-                    } else {
-                        const messageType = typeof parsedMessage.val;
-                        obj.common.type = Array.isArray(parsedMessage.val)
-                            ? 'array'
-                            : messageType === 'string' ||
-                                messageType === 'number' ||
-                                messageType === 'boolean' ||
-                                messageType === 'object'
-                              ? messageType
-                              : 'mixed';
-                    }
-                } else if (typeof parsedMessage === 'string' && parsedMessage[0] === '{') {
+                if (typeof parsedMessage.message === 'string' && parsedMessage.message[0] === '{') {
                     // JSON payload that is not a valid ioBroker state object (non-state properties)
                     obj.common.type = 'mixed';
                 }
@@ -936,7 +952,7 @@ export default class MQTTServer {
         this.topic2id[topic].obj = stateObj;
         this.topic2id[topic].processing = false;
 
-        // do not wait the finish of the function
+        // do not wait for the finish of the function
         ensureObjectStructure(this.adapter, stateObj._id, this.verifiedObjects).catch(e => this.adapter.log.error(e));
     }
 
@@ -982,35 +998,40 @@ export default class MQTTServer {
                 return;
             }
         } else if (this.topic2id[topic].processing) {
-            // still looking for id
-            this.topic2id[topic].message = convertMessage(topic, message, this.adapter) as
-                ioBroker.StateValue | ioBroker.State;
+            // still looking for ID
+            this.topic2id[topic].message = convertMessage(topic, message, this.adapter);
             if (this.config.debug) {
                 this.adapter.log.debug(
-                    `Client [${client.id}] Server received (but in process) "${topic}" (${typeof message}): ${message}`,
+                    `Client [${client.id}] Server received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`,
                 );
             }
             return;
         }
 
-        let parsedMessage: ioBroker.StateValue | ioBroker.State;
+        let parsedMessage:
+            | { message: string | number | boolean | Record<string, any>; isStateObject: false }
+            | { message: ioBroker.State; isStateObject: true };
 
         if (this.topic2id[topic].message) {
             // get last received message
             parsedMessage = this.topic2id[topic].message!;
             delete this.topic2id[topic].message;
         } else if (this.topic2id[topic].obj) {
-            parsedMessage = convertMessage(topic, message, this.adapter, client.id) as
-                ioBroker.StateValue | ioBroker.State;
+            parsedMessage = convertMessage(topic, message, this.adapter, client.id);
         }
 
         if (qos) {
             Object.keys(this.persistentSessions).forEach(clientId => {
                 if (clientId !== client.id && !this.persistentSessions[clientId].connected) {
-                    const state =
-                        parsedMessage !== null && typeof parsedMessage === 'object'
-                            ? parsedMessage
-                            : ({ val: parsedMessage, ack: isAck } as ioBroker.State);
+                    const state = parsedMessage.isStateObject
+                        ? parsedMessage.message
+                        : ({
+                              val:
+                                  typeof parsedMessage.message === 'object'
+                                      ? JSON.stringify(parsedMessage.message)
+                                      : parsedMessage.message,
+                              ack: isAck,
+                          } as ioBroker.State);
 
                     // try to collect this message if a client subscribed
                     this.getMqttMessage<PersistentSession>(
@@ -1044,7 +1065,7 @@ export default class MQTTServer {
     private addMessageWithTopicCheck(arr: MqttMessage[], message: MqttMessage): void {
         for (let i = 0; i < arr.length; i++) {
             if (arr[i].topic === message.topic) {
-                // if same topic we do not add a new entry, but pot. update existing of newer
+                // if same topic we do not add a new entry but pot. update existing of newer
                 if (message.ts! > arr[i].ts!) {
                     arr[i] = message;
                 }
@@ -1209,7 +1230,7 @@ export default class MQTTServer {
 
                         if (client.__secret !== this.clients[client.id].__secret) {
                             // it is another socket!!
-                            // It was following situation:
+                            // It was the following situation:
                             // - old connection was active
                             // - new connection is on the same TCP
                             // Just forget him
@@ -1250,7 +1271,7 @@ export default class MQTTServer {
                         // topic:   the will topic. string
                         // payload: the will payload. string
                         // qos:     will qos level. number
-                        // retain:  will retain flag. boolean
+                        // retain:  will retain a flag. boolean
                         client._will = JSON.parse(JSON.stringify(options.will));
                         let id;
                         if (this.topic2id[client._will.topic]) {
@@ -1262,7 +1283,7 @@ export default class MQTTServer {
                         }
                         this.checkObject(id, client._will.topic, options.will.payload)
                             .then(() => {
-                                // something went wrong while JSON.parse, so the payload of last will not be handled correct as buffer
+                                // something went wrong while JSON.parse, so the payload of last will not be handled correctly as buffer
                                 client._will.payload = options.will!.payload;
                                 this.adapter.log.debug(
                                     `Client [${client.id}] with last will ${JSON.stringify(client._will)}`,
@@ -1285,7 +1306,7 @@ export default class MQTTServer {
                         client._subs = this.persistentSessions[client.id]._subs;
                         if (this.persistentSessions[client.id]._messages.length) {
                             // Reset retry counters immediately so that checkResends() does not
-                            // see stale counts and disconnect the freshly-reconnected client
+                            // see stale counts and disconnect the freshly reconnected client
                             // during the 100 ms window before resendMessages2Client() runs.
                             const now = Date.now();
                             for (const msg of this.persistentSessions[client.id]._messages) {
@@ -1402,7 +1423,7 @@ export default class MQTTServer {
                         client.pubrel({ messageId: packet.messageId });
                     } else {
                         // The message is not in our queue anymore (e.g. purged after exceeding the
-                        // retransmit limit, or a late/duplicate pubrec). Some devices use a hardcoded
+                        // retransmitted limit, or a late/duplicate pubrec). Some devices use a hardcoded
                         // QoS 2 and keep resending pubrec forever until they get a pubrel, which blocks
                         // the whole session. Send pubrel anyway to let the client complete the handshake.
                         this.adapter.log.info(
@@ -1771,7 +1792,7 @@ export default class MQTTServer {
                                 // so the broker has no other way to detect a dead connection.
                                 // Disconnect now to preserve the QoS guarantee: clientClose()
                                 // keeps the persistent session intact so all queued messages
-                                // are resent on the next reconnect.
+                                // are resent on the next reconnection.
                                 this.adapter.log.warn(
                                     `Client [${clientId}] Message ${message.messageId} not acknowledged after ${message.count} retries - disconnecting client (keepalive=0)`,
                                 );

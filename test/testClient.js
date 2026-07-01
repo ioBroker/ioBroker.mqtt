@@ -26,7 +26,9 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     const mqttid = id;
     if (!_expectedId) {
         id = id.replace(/\//g, '.').replace(/\s/g, '_');
-        if (id[0] === '.') id = id.substring(1);
+        if (id[0] === '.') {
+            id = id.substring(1);
+        }
     } else {
         id = _expectedId;
     }
@@ -86,7 +88,9 @@ function checkConnectionOfAdapter(cb, counter) {
     }
 
     states.getState('system.adapter.mqtt.0.connected', (err, state) => {
-        if (err) console.error(err);
+        if (err) {
+            console.error(err);
+        }
         if (state && state.val) {
             connected = state.val;
             cb && cb();
@@ -104,7 +108,9 @@ function checkConnectionToServer(value, cb, counter) {
     }
 
     states.getState('mqtt.0.info.connection', (err, state) => {
-        if (err) console.error(err);
+        if (err) {
+            console.error(err);
+        }
         if (state && state.val == value) {
             connected = state.val;
             cb && cb();

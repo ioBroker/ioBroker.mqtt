@@ -34,7 +34,7 @@ describe('MQTT server', function () {
             },
             null,
             {
-                url: '127.0.0.1:' + port,
+                url: `127.0.0.1:${port}`,
                 clientId: 'testClient1',
             },
         );
@@ -633,7 +633,7 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
 
 /**
  * Tests that when keepalive > 0 the broker does NOT disconnect the client when
- * retransmitCount is exceeded.  Instead it defers to the stream timeout
+ * retransmitCount is exceeded.  Instead, it defers to the stream timeout
  * (1.5 × keepalive) as required by MQTT §3.1.2.10 and keeps retransmitting.
  *
  * Sequence:

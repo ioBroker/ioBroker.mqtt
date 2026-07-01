@@ -393,8 +393,8 @@ class MQTTClient {
                 // Derive the datapoint type. For an ioBroker state object use the type of
                 // its `val` (a `val` of null is indeterminate → 'mixed'); a JSON string that
                 // is not a valid ioBroker state object → 'mixed'.
-                let messageType = typeof parsedMessage;
-                let stateType = Array.isArray(parsedMessage)
+                let messageType = typeof parsedMessage.message;
+                let stateType = Array.isArray(parsedMessage.message)
                     ? 'array'
                     : messageType === 'string' ||
                         messageType === 'number' ||
@@ -402,14 +402,14 @@ class MQTTClient {
                         messageType === 'object'
                         ? messageType
                         : 'mixed';
-                if (typeof parsedMessage === 'object' && parsedMessage !== null && parsedMessage.val !== undefined) {
-                    if (parsedMessage.val === null) {
+                if (parsedMessage.isStateObject) {
+                    if (parsedMessage.message.val === null) {
                         // val is null: type cannot be determined, use 'mixed'
                         stateType = 'mixed';
                     }
                     else {
-                        messageType = typeof parsedMessage.val;
-                        stateType = Array.isArray(parsedMessage.val)
+                        messageType = typeof parsedMessage.message.val;
+                        stateType = Array.isArray(parsedMessage.message.val)
                             ? 'array'
                             : messageType === 'string' ||
                                 messageType === 'number' ||
@@ -419,7 +419,7 @@ class MQTTClient {
                                 : 'mixed';
                     }
                 }
-                else if (typeof parsedMessage === 'string' && parsedMessage[0] === '{') {
+                else if (typeof parsedMessage.message === 'string' && parsedMessage.message[0] === '{') {
                     // JSON payload that is not a valid ioBroker state object (non-state properties)
                     stateType = 'mixed';
                 }
@@ -437,7 +437,7 @@ class MQTTClient {
                                 stateObj.common.type !== messageType))) {
                         if (stateObj.common && stateObj.common.type !== 'mixed' && stateObj.common.type !== stateType) {
                             // mqtt topics could change types, but log it to communicate to the user if a type is frequently fluctuating
-                            this.adapter.log.info(`Client: Changed type of "${stateObj._id}" from "${stateObj.common.type}"(${message.toString()}) to "${stateType}"(${JSON.stringify(parsedMessage)})`);
+                            this.adapter.log.info(`Client: Changed type of "${stateObj._id}" from "${stateObj.common.type}"(${message.toString()}) to "${stateType}"(${JSON.stringify(parsedMessage.message)})`);
                             stateObj.common.type = stateType;
                         }
                         stateObj.native ||= {};
@@ -456,30 +456,24 @@ class MQTTClient {
                 this.topic2id[topic].obj = stateObj;
                 this.id2topic[stateObj._id] = topic;
                 if (this.config.debug) {
-                    this.adapter.log.debug(`Client received "${topic}" (${typeof this.topic2id[topic].message}): ${JSON.stringify(this.topic2id[topic].message)}`);
+                    this.adapter.log.debug(`Client received "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`);
                 }
                 try {
-                    if (typeof parsedMessage === 'object') {
-                        const validProperties = ['val', 'ack', 'ts', 'q', 'from', 'c', 'expire', 'lc', 'user'];
-                        // Are there any forbidden properties?
-                        const forbiddenProperties = Object.keys(parsedMessage).filter(k => !validProperties.includes(k));
+                    if (typeof parsedMessage.message === 'object') {
                         // If there are forbidden properties, we save the message as JSON
-                        if (forbiddenProperties.length) {
-                            if (this.config.debug) {
-                                this.adapter.log.debug(`The message object contains forbidden state properties ${forbiddenProperties.join(', ')}: Saving as JSON`);
-                            }
+                        if (!parsedMessage.isStateObject) {
                             await this.adapter.setForeignStateAsync(stateObj._id, {
-                                val: JSON.stringify(parsedMessage),
+                                val: JSON.stringify(parsedMessage.message),
                                 ack: this.topic2id[topic].isAck,
                             });
                         }
                         else {
-                            await this.adapter.setForeignStateAsync(stateObj._id, JSON.stringify(parsedMessage));
+                            await this.adapter.setForeignStateAsync(stateObj._id, JSON.stringify(parsedMessage.message));
                         }
                     }
                     else {
                         await this.adapter.setForeignStateAsync(stateObj._id, {
-                            val: parsedMessage,
+                            val: parsedMessage.message,
                             ack: this.topic2id[topic].isAck,
                         });
                     }
@@ -493,18 +487,18 @@ class MQTTClient {
                     delete this.topic2id[topic].isAck;
                 }
                 delete this.topic2id[topic].processing;
-                // do not wait the end of this function
+                // do not wait for the end of this function
                 (0, common_1.ensureObjectStructure)(this.adapter, stateObj._id, this.verifiedObjects).catch(e => this.adapter.log.error(`Cannot ensure object structure: ${e}`));
             }
             else if (this.topic2id[topic].processing) {
                 if (this.config.debug) {
-                    this.adapter.log.debug(`Client received (but in process) "${topic}" (${typeof this.topic2id[topic].message}): ${JSON.stringify(this.topic2id[topic].message)}`);
+                    this.adapter.log.debug(`Client received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`);
                 }
                 this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter);
             }
             else {
                 if (!this.config.onchange) {
-                    if (this.topic2id[topic].message !== undefined) {
+                    if (this.topic2id[topic].message) {
                         delete this.topic2id[topic].message;
                     }
                     if (this.topic2id[topic].isAck !== undefined) {
@@ -513,33 +507,34 @@ class MQTTClient {
                 }
                 let value;
                 const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter);
-                if (typeof parsedMessage === 'object') {
+                if (typeof parsedMessage.message === 'object') {
                     if (!this.config.onchange ||
-                        JSON.stringify(this.topic2id[topic].message) !== JSON.stringify(parsedMessage)) {
+                        JSON.stringify(this.topic2id[topic].message?.message) !== JSON.stringify(parsedMessage.message)) {
                         if (this.config.debug) {
-                            this.adapter.log.debug(`Client received "${topic}" (${typeof parsedMessage}): ${JSON.stringify(parsedMessage)}`);
+                            this.adapter.log.debug(`Client received "${topic}" (${typeof parsedMessage.message}): ${JSON.stringify(parsedMessage.message)}`);
                         }
-                        value = parsedMessage;
+                        value = parsedMessage.message;
                     }
                     else if (this.config.debug) {
-                        this.adapter.log.debug(`Client received (but ignored) "${topic}" (${typeof parsedMessage}): ${JSON.stringify(parsedMessage)}`);
+                        this.adapter.log.debug(`Client received (but ignored) "${topic}" (${typeof parsedMessage.message}): ${JSON.stringify(parsedMessage.message)}`);
                     }
                 }
                 else {
+                    const storedMessage = parsedMessage;
                     if (!this.config.onchange ||
-                        this.topic2id[topic].message !== parsedMessage ||
+                        storedMessage.message !== parsedMessage.message ||
                         this.topic2id[topic].isAck !== isAck) {
                         if (this.config.onchange) {
                             this.topic2id[topic].message = parsedMessage;
                             this.topic2id[topic].isAck = isAck;
                         }
                         if (this.config.debug) {
-                            this.adapter.log.debug(`Client received "${topic}" (${typeof parsedMessage}): ${parsedMessage}`);
+                            this.adapter.log.debug(`Client received "${topic}" (${typeof parsedMessage.message}): ${parsedMessage.message}`);
                         }
-                        value = { val: parsedMessage, ack: isAck };
+                        value = { val: parsedMessage.message, ack: isAck };
                     }
                     else if (this.config.debug) {
-                        this.adapter.log.debug(`Client received (but ignored) "${topic}" (${typeof this.topic2id[topic].message}): ${this.topic2id[topic].message}`);
+                        this.adapter.log.debug(`Client received (but ignored) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${storedMessage.message}`);
                     }
                 }
                 const stateObj = this.topic2id[topic].obj;

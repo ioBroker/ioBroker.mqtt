@@ -65,18 +65,20 @@ function Server(config) {
                 client.suback({ granted, messageId: packet.messageId });
             });
 
-            client.on('pingreq', packet => {
+            client.on('pingreq', () => {
                 console.log(`Client [${client.id}] pingreq`);
                 client.pingresp();
             });
 
-            client.on('disconnect', packet => {
-                if (clients[client.id]) delete clients[client.id];
+            client.on('disconnect', () => {
+                if (clients[client.id]) {
+                    delete clients[client.id];
+                }
                 console.log(`Client [${client.id}] disconnected`);
                 client.stream.end();
             });
 
-            client.on('close', err => {
+            client.on('close', () => {
                 if (clients[client.id]) {
                     delete clients[client.id];
                 }

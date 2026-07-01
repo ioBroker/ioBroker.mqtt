@@ -2,8 +2,10 @@
 const mqtt = require('mqtt');
 
 function Client(cbConnected, cbChanged, config) {
-    if (typeof config === 'string') config = { name: config };
-    config = config || {};
+    if (typeof config === 'string') {
+        config = { name: config };
+    }
+    config ||= {};
     config.url = config.url || '127.0.0.1';
     if (config.user) {
         config.username = config.user;
@@ -26,10 +28,10 @@ function Client(cbConnected, cbChanged, config) {
          client.publish('test/in/testMessage3',  'Roger3');
          client.publish('test/in/testMessage4',  'Roger4');*/
 
-        /*client.publish('arduino/kitchen/out/temperature',  '10.1');
-         client.publish('arduino/kitchen/out/humidity',  '56');
+        /*client.publish('arduino/kitchen/out/temperature', '10.1');
+         client.publish('arduino/kitchen/out/humidity', '56');
          // Current light state
-         client.publish('arduino/kitchen/in/lightActor',  'false');
+         client.publish('arduino/kitchen/in/lightActor', 'false');
 
          client.subscribe('arduino/kitchen/in/#');*/
         //client.subscribe('arduino/kitchen/in/updateInterval');

@@ -1,8 +1,6 @@
 'use strict';
 const path = require('node:path');
 const rootDir = path.normalize(`${__dirname}/../../`);
-let adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
-adapterName = adapterName[adapterName.length - 2];
 
 const logger = {
     info: function (msg) {
@@ -18,19 +16,28 @@ const logger = {
         console.error(msg);
     },
 };
+const USER_ADMIN = 'system.user.admin';
+
+function ts2day(ts) {
+    const date = new Date(ts);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).padStart(2, '0')}-${date.getDate().padStart(2, '0')}`;
+}
+
+function checkStates(id, options, command, cb) {
+    cb?.();
+}
 
 function States(cb, stateChange) {
-    const that = this;
     const _States = require(`${rootDir}tmp/node_modules/iobroker.js-controller/lib/states`);
     let callbackId = 0;
 
     const options = {
-        stateChange: (id, state) => stateChange && stateChange(id, state),
+        stateChange: (id, state) => stateChange?.(id, state),
     };
 
-    that.namespace = 'test';
+    this.namespace = 'test';
 
-    that.states = new _States({
+    this.states = new _States({
         connection: {
             type: 'file',
             host: '127.0.0.1',
@@ -40,7 +47,7 @@ function States(cb, stateChange) {
                 retry_max_delay: 15000,
             },
         },
-        logger: logger,
+        logger,
         change: (id, state) => {
             if (!id || typeof id !== 'string') {
                 console.log(`Something is wrong! ${JSON.stringify(id)}`);
@@ -49,89 +56,98 @@ function States(cb, stateChange) {
 
             // Clear cache if accidentally got the message about change (Will work for admin and javascript)
             if (id.match(/^system\.user\./) || id.match(/^system\.group\./)) {
-                that.users = [];
+                this.users = [];
             }
 
-            // If someone want to have log messages
-            if (that.logList && id.match(/\.logging$/)) {
-                that.logRedirect(state ? state.val : false, id.substring(0, id.length - '.logging'.length));
-            } else if (id === `log.system.adapter.${that.namespace}`) {
-                that.processLog(state);
-            } else if (id === `messagebox.system.adapter.${that.namespace}` && state) {
+            // If someone wants to have log messages
+            if (this.logList && id.match(/\.logging$/)) {
+                this.logRedirect(state ? state.val : false, id.substring(0, id.length - '.logging'.length));
+            } else if (id === `log.system.adapter.${this.namespace}`) {
+                this.processLog(state);
+            } else if (id === `messagebox.system.adapter.${this.namespace}` && state) {
                 // Read it from fifo list
-                that.states.delMessage(`system.adapter.${that.namespace}`, state._id);
+                this.states.delMessage(`system.adapter.${this.namespace}`, state._id);
                 const obj = state;
                 if (obj) {
                     // If callback stored for this request
-                    if (obj.callback?.ack && obj.callback.id && that.callbacks?.[`_${obj.callback.id}`]) {
+                    if (obj.callback?.ack && obj.callback.id && this.callbacks?.[`_${obj.callback.id}`]) {
                         // Call callback function
-                        if (that.callbacks[`_${obj.callback.id}`].cb) {
-                            that.callbacks[`_${obj.callback.id}`].cb(obj.message);
-                            delete that.callbacks[`_${obj.callback.id}`];
+                        if (this.callbacks[`_${obj.callback.id}`].cb) {
+                            this.callbacks[`_${obj.callback.id}`].cb(obj.message);
+                            delete this.callbacks[`_${obj.callback.id}`];
                         }
                         // delete too old callbacks IDs, like garbage collector
                         const now = Date.now();
-                        for (const _id in that.callbacks) {
-                            if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000)
-                                delete that.callbacks[_id];
+                        for (const _id in this.callbacks) {
+                            if (
+                                Object.prototype.hasOwnProperty.call(this.callbacks, _id) &&
+                                now - this.callbacks[_id].time > 3600000
+                            ) {
+                                delete this.callbacks[_id];
+                            }
                         }
                     } else {
                         if (options.message) {
                             // Else inform about a new message the adapter
                             options.message(obj);
                         }
-                        that.emit('message', obj);
+                        this.emit('message', obj);
                     }
                 }
             } else {
-                if (id.slice(that.namespace.length) === that.namespace) {
-                    if (typeof options.stateChange === 'function')
-                        options.stateChange(id.slice(that.namespace.length + 1), state);
+                if (id.slice(this.namespace.length) === this.namespace) {
+                    if (typeof options.stateChange === 'function') {
+                        options.stateChange(id.slice(this.namespace.length + 1), state);
+                    }
                     // emit 'stateChange' event instantly
-                    setImmediate(() => that.emit('stateChange', id.slice(that.namespace.length + 1), state));
+                    setImmediate(() => this.emit('stateChange', id.slice(this.namespace.length + 1), state));
                 } else {
-                    if (typeof options.stateChange === 'function') options.stateChange(id, state);
+                    if (typeof options.stateChange === 'function') {
+                        options.stateChange(id, state);
+                    }
                     if (id.substring(0, 4) === 'log.') {
                         console.log('LOG');
                     }
-                    if (that.emit) {
+                    if (this.emit) {
                         // emit 'stateChange' event instantly
-                        setImmediate(() => that.emit('stateChange', id, state));
+                        setImmediate(() => this.emit('stateChange', id, state));
                     }
                 }
             }
         },
-        connectTimeout: error => {
-            if (logger) logger.error(that.namespace + ' no connection to states DB');
-            if (cb) cb('Timeout');
+        connectTimeout: () => {
+            logger?.error(`${this.namespace} no connection to states DB`);
+            cb?.('Timeout');
         },
     });
 
     // Send a message to another adapter instance or all instances of adapter
-    that.sendTo = function sendTo(objName, command, message, callback) {
+    this.sendTo = function sendTo(objName, command, message, callback) {
         if (typeof message === 'undefined') {
             message = command;
             command = 'send';
         }
-        const obj = { command: command, message: message, from: `system.adapter.${that.namespace}` };
+        const obj = { command, message, from: `system.adapter.${this.namespace}` };
 
-        if (!objName.match(/^system\.adapter\./)) objName = `system.adapter.${objName}`;
+        if (!objName.match(/^system\.adapter\./)) {
+            objName = `system.adapter.${objName}`;
+        }
 
-        that.log.info(
-            `sendTo "${command}" to ${objName} from system.adapter.${that.namespace}: ${JSON.stringify(message)}`,
+        this.log.info(
+            `sendTo "${command}" to ${objName} from system.adapter.${this.namespace}: ${JSON.stringify(message)}`,
         );
 
         // If not specific instance
         if (!objName.match(/\.[0-9]+$/)) {
             // Send it to all instances of adapter
-            that.objects.getObjectView(
+            this.objects.getObjectView(
                 'system',
                 'instance',
                 { startkey: `${objName}.`, endkey: `${objName}.\u9999` },
                 (err, _obj) => {
                     if (_obj) {
                         for (let i = 0; i < _obj.rows.length; i++) {
-                            that.states.pushMessage(_obj.rows[i].id, obj);
+                            this.states.pushMessage(_obj.rows[i].id, obj);
                         }
                     }
                 },
@@ -140,9 +156,77 @@ function States(cb, stateChange) {
             if (callback) {
                 if (typeof callback === 'function') {
                     // force subscribe even no messagebox enabled
-                    if (!that.common.messagebox && !that.mboxSubscribed) {
-                        that.mboxSubscribed = true;
-                        that.states.subscribeMessage(`system.adapter.${that.namespace}`);
+                    if (!this.common.messagebox && !this.mboxSubscribed) {
+                        this.mboxSubscribed = true;
+                        this.states.subscribeMessage(`system.adapter.${this.namespace}`);
+                    }
+
+                    obj.callback = {
+                        message,
+                        id: callbackId++,
+                        ack: false,
+                        time: Date.now(),
+                    };
+                    if (callbackId >= 0xffffffff) {
+                        callbackId = 1;
+                    }
+                    if (!this.callbacks) {
+                        this.callbacks = {};
+                    }
+                    this.callbacks[`_${obj.callback.id}`] = { cb: callback };
+
+                    // delete too old callbacks IDs
+                    const now = Date.now();
+                    for (const _id in this.callbacks) {
+                        if (
+                            Object.prototype.hasOwnProperty.call(this.callbacks, _id) &&
+                            now - this.callbacks[_id].time > 3600000
+                        ) {
+                            delete this.callbacks[_id];
+                        }
+                    }
+                } else {
+                    obj.callback = callback;
+                    obj.callback.ack = true;
+                }
+            }
+
+            this.states.pushMessage(objName, obj);
+        }
+    };
+
+    // Send message to specific host or to all hosts
+    this.sendToHost = function sendToHost(objName, command, message, callback) {
+        if (typeof message === 'undefined') {
+            message = command;
+            command = 'send';
+        }
+        const obj = { command, message, from: `system.adapter.${this.namespace}` };
+
+        if (objName && objName.substring(0, 'system.host.'.length) !== 'system.host.') {
+            objName = `system.host.${objName}`;
+        }
+
+        if (!objName) {
+            // Send it to all hosts
+            this.objects.getObjectList({ startkey: 'system.host.', endkey: `system.host.\u9999` }, null, (err, res) => {
+                if (!err && res.rows.length) {
+                    for (let i = 0; i < res.rows.length; i++) {
+                        const parts = res.rows[i].id.split('.');
+                        // ignore system.host.name.alive and so on
+                        if (parts.length === 3) {
+                            this.states.pushMessage(res.rows[i].id, obj);
+                        }
+                    }
+                }
+            });
+        } else {
+            if (callback) {
+                if (typeof callback === 'function') {
+                    // force subscribe even no messagebox enabled
+                    if (!this.common.messagebox && !this.mboxSubscribed) {
+                        this.mboxSubscribed = true;
+                        this.states.subscribeMessage(`system.adapter.${this.namespace}`);
                     }
 
                     obj.callback = {
@@ -154,79 +238,21 @@ function States(cb, stateChange) {
                     if (callbackId >= 0xffffffff) {
                         callbackId = 1;
                     }
-                    if (!that.callbacks) that.callbacks = {};
-                    that.callbacks[`_${obj.callback.id}`] = { cb: callback };
-
-                    // delete too old callbacks IDs
-                    const now = Date.now();
-                    for (const _id in that.callbacks) {
-                        if (that.callbacks.hasOwnProperty(_id) && now - that.callbacks[_id].time > 3600000) {
-                            delete that.callbacks[_id];
-                        }
+                    if (!this.callbacks) {
+                        this.callbacks = {};
                     }
+                    this.callbacks[`_${obj.callback.id}`] = { cb: callback };
                 } else {
                     obj.callback = callback;
                     obj.callback.ack = true;
                 }
             }
 
-            that.states.pushMessage(objName, obj);
+            this.states.pushMessage(objName, obj);
         }
     };
 
-    // Send message to specific host or to all hosts
-    that.sendToHost = function sendToHost(objName, command, message, callback) {
-        if (typeof message === 'undefined') {
-            message = command;
-            command = 'send';
-        }
-        const obj = { command: command, message: message, from: `system.adapter.${that.namespace}` };
-
-        if (objName && objName.substring(0, 'system.host.'.length) !== 'system.host.')
-            objName = `system.host.${objName}`;
-
-        if (!objName) {
-            // Send to all hosts
-            that.objects.getObjectList({ startkey: 'system.host.', endkey: `system.host.\u9999` }, null, (err, res) => {
-                if (!err && res.rows.length) {
-                    for (let i = 0; i < res.rows.length; i++) {
-                        const parts = res.rows[i].id.split('.');
-                        // ignore system.host.name.alive and so on
-                        if (parts.length === 3) {
-                            that.states.pushMessage(res.rows[i].id, obj);
-                        }
-                    }
-                }
-            });
-        } else {
-            if (callback) {
-                if (typeof callback === 'function') {
-                    // force subscribe even no messagebox enabled
-                    if (!that.common.messagebox && !that.mboxSubscribed) {
-                        that.mboxSubscribed = true;
-                        that.states.subscribeMessage('system.adapter.' + that.namespace);
-                    }
-
-                    obj.callback = {
-                        message: message,
-                        id: callbackId++,
-                        ack: false,
-                        time: Date.now(),
-                    };
-                    if (callbackId >= 0xffffffff) callbackId = 1;
-                    if (!that.callbacks) that.callbacks = {};
-                    that.callbacks[`_${obj.callback.id}`] = { cb: callback };
-                } else {
-                    obj.callback = callback;
-                    obj.callback.ack = true;
-                }
-            }
-
-            that.states.pushMessage(objName, obj);
-        }
-    };
-
-    that.setState = function setState(id, state, ack, options, callback) {
+    this.setState = function setState(id, state, ack, options, callback) {
         if (typeof state === 'object' && typeof ack !== 'boolean') {
             callback = options;
             options = ack;
@@ -236,34 +262,38 @@ function States(cb, stateChange) {
             callback = options;
             options = {};
         }
-        id = that._fixId(id, 'state');
+        id = this._fixId(id, 'state');
 
         if (typeof ack === 'function') {
             callback = ack;
             ack = undefined;
         }
 
-        if (typeof state !== 'object' || state === null || state === undefined) state = { val: state };
+        if (typeof state !== 'object' || state === null || state === undefined) {
+            state = { val: state };
+        }
 
         if (ack !== undefined) {
             state.ack = ack;
         }
 
-        state.from = `system.adapter.${that.namespace}`;
-        if (options && options.user && options.user !== 'system.user.admin') {
+        state.from = `system.adapter.${this.namespace}`;
+        if (options?.user && options.user !== USER_ADMIN) {
             checkStates(id, options, 'setState', err => {
                 if (err) {
-                    if (typeof callback === 'function') callback(err);
+                    if (typeof callback === 'function') {
+                        callback(err);
+                    }
                 } else {
-                    that.states.setState(id, state, callback);
+                    this.states.setState(id, state, callback);
                 }
             });
         } else {
-            that.states.setState(id, state, callback);
+            this.states.setState(id, state, callback);
         }
     };
 
-    that.setForeignState = function setForeignState(id, state, ack, options, callback) {
+    this.setForeignState = function setForeignState(id, state, ack, options, callback) {
         if (typeof state === 'object' && typeof ack !== 'boolean') {
             callback = options;
             options = ack;
@@ -280,56 +310,62 @@ function States(cb, stateChange) {
             ack = undefined;
         }
 
-        if (typeof state !== 'object' || state === null || state === undefined) state = { val: state };
+        if (typeof state !== 'object' || state === null || state === undefined) {
+            state = { val: state };
+        }
 
         if (ack !== undefined) {
             state.ack = ack;
         }
 
-        state.from = 'system.adapter.' + that.namespace;
+        state.from = `system.adapter.${this.namespace}`;
 
-        if (options && options.user && options.user !== 'system.user.admin') {
+        if (options?.user && options.user !== USER_ADMIN) {
             checkStates(id, options, 'setState', err => {
                 if (err) {
-                    if (typeof callback === 'function') callback(err);
+                    if (typeof callback === 'function') {
+                        callback(err);
+                    }
                 } else {
-                    that.states.setState(id, state, callback);
+                    this.states.setState(id, state, callback);
                 }
             });
         } else {
-            that.states.setState(id, state, callback);
+            this.states.setState(id, state, callback);
         }
     };
 
-    that.getState = function getState(id, options, callback) {
+    this.getState = function getState(id, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        id = that._fixId(id, 'state');
-        if (options && options.user && options.user !== 'system.user.admin') {
+        id = this._fixId(id, 'state');
+        if (options?.user && options.user !== USER_ADMIN) {
             checkStates(id, options, 'getState', err => {
                 if (err) {
-                    if (typeof callback === 'function') callback(err);
+                    if (typeof callback === 'function') {
+                        callback(err);
+                    }
                 } else {
-                    that.states.getState(id, callback);
+                    this.states.getState(id, callback);
                 }
             });
         } else {
-            that.states.getState(id, callback);
+            this.states.getState(id, callback);
         }
     };
 
-    that.getStateHistory = function getStateHistory(id, start, end, options, callback) {
+    this.getStateHistory = function getStateHistory(id, start, end, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        id = that._fixId(id, 'state');
-        that.getForeignStateHistory(id, start, end, options, callback);
+        id = this._fixId(id, 'state');
+        this.getForeignStateHistory(id, start, end, options, callback);
     };
 
-    that.getForeignStateHistory = function getForeignStateHistory(id, start, end, options, callback) {
+    this.getForeignStateHistory = function getForeignStateHistory(id, start, end, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
@@ -344,15 +380,15 @@ function States(cb, stateChange) {
             end = undefined;
         }
 
-        start = start || Math.round(new Date().getTime() / 1000) - 31536000; // - 1 year
-        end = end || Math.round(new Date().getTime() / 1000) + 5000;
+        start ||= Math.round(new Date().getTime() / 1000) - 31536000; // - 1 year
+        end ||= Math.round(new Date().getTime() / 1000) + 5000;
 
         const history = [];
         const docs = [];
 
         // get data from states
-        that.log.debug(`get states history ${id} ${start} ${end}`);
-        that.getFifo(id, (err, res) => {
+        this.log.debug(`get states history ${id} ${start} ${end}`);
+        this.getFifo(id, (err, res) => {
             if (!err && res) {
                 let iProblemCount = 0;
                 for (let i = 0; i < res.length; i++) {
@@ -367,21 +403,23 @@ function States(cb, stateChange) {
                     }
                     history.push(res[i]);
                 }
-                if (iProblemCount) that.log.warn(`got null states ${iProblemCount} times for ${id}`);
+                if (iProblemCount) {
+                    this.log.warn(`got null states ${iProblemCount} times for ${id}`);
+                }
 
-                that.log.debug(`got ${res.length} datapoints for ${id}`);
+                this.log.debug(`got ${res.length} datapoints for ${id}`);
             } else {
                 if (err !== 'Not exists') {
-                    that.log.error(err);
+                    this.log.error(err);
                 } else {
-                    that.log.debug(`datapoints for ${id} do not yet exist`);
+                    this.log.debug(`datapoints for ${id} do not yet exist`);
                 }
             }
 
             // fetch a history document from objectDB
             function getObjectsLog(cid, callback) {
-                that.log.info(`getObjectLog ${cid}`);
-                that.getForeignObject(cid, options, (err, res) => {
+                this.log.info(`getObjectLog ${cid}`);
+                this.getForeignObject(cid, options, (err, res) => {
                     if (!err && res.common.data) {
                         for (let i = 0; i < res.common.data.length; i++) {
                             if (res.common.data[i].ts < start) {
@@ -392,7 +430,7 @@ function States(cb, stateChange) {
                             history.push(res.common.data[i]);
                         }
                     } else {
-                        that.log.warn(`${cid} not found`);
+                        this.log.warn(`${cid} not found`);
                     }
                     callback(err);
                 });
@@ -405,15 +443,15 @@ function States(cb, stateChange) {
                     return;
                 }
                 const cid = `history.${id}.${ts2day(ts)}`;
-                if (docs.indexOf(cid) !== -1) {
-                    getObjectsLog(cid, err => queue(ts - 86400)); // - 1 day
+                if (docs.includes(cid)) {
+                    getObjectsLog(cid, () => queue(ts - 86400)); // - 1 day
                 } else {
                     queue(ts - 86400); // - 1 day
                 }
             }
 
             // get a list of available history documents
-            that.objects.getObjectList(
+            this.objects.getObjectList(
                 { startkey: `history.${id}`, endkey: `history.${id}\u9999` },
                 options,
                 (err, res) => {
@@ -431,105 +469,112 @@ function States(cb, stateChange) {
     };
 
     // normally only foreign history has interest, so there is no getHistory and getForeignHistory
-    that.getHistory = function getHistory(id, options, callback) {
-        options = options || {};
-        options.end = options.end || Math.round(new Date().getTime() / 1000) + 5000;
+    this.getHistory = function getHistory(id, options, callback) {
+        options ||= {};
+        options.end ||= Math.round(new Date().getTime() / 1000) + 5000;
         if (!options.count && !options.start) {
-            options.start = options.start || Math.round(new Date().getTime() / 1000) - 604800; // - 1 week
+            options.start ||= Math.round(new Date().getTime() / 1000) - 604800; // - 1 week
         }
 
         if (!options.instance) {
-            if (!that.defaultHistory) {
+            if (!this.defaultHistory) {
                 // read default history instance from system.config
-                return getDefaultHistory(() => that.getHistory(id, options, callback));
-            } else {
-                options.instance = that.defaultHistory;
+                throw new Error('No default history');
             }
+            options.instance = this.defaultHistory;
         }
 
-        that.sendTo(options.instance || 'history.0', 'getHistory', { id: id, options: options }, res => {
+        this.sendTo(options.instance || 'history.0', 'getHistory', { id, options }, res => {
             setImmediate(() => callback(res.error, res.result, res.step));
         });
     };
 
     // Convert ID adapter.instance.device.channel.state
     // Convert ID to {device: D, channel: C, state: S}
-    that.idToDCS = function idToDCS(id) {
-        if (!id) return null;
+    this.idToDCS = function idToDCS(id) {
+        if (!id) {
+            return null;
+        }
         const parts = id.split('.');
-        if (`${parts[0]}.${parts[1]}` !== that.namespace) {
-            that.log.warn('Try to decode id not from this adapter');
+        if (`${parts[0]}.${parts[1]}` !== this.namespace) {
+            this.log.warn('Try to decode id not from this adapter');
             return null;
         }
         return { device: parts[2], channel: parts[3], state: parts[4] };
     };
 
-    that.getForeignState = function getForeignState(id, options, callback) {
+    this.getForeignState = function getForeignState(id, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        if (options && options.user && options.user !== 'system.user.admin') {
+        if (options?.user && options.user !== USER_ADMIN) {
             checkStates(id, options, 'getState', err => {
                 if (err) {
-                    if (typeof callback === 'function') callback(err);
+                    if (typeof callback === 'function') {
+                        callback(err);
+                    }
                 } else {
-                    that.states.getState(id, callback);
+                    this.states.getState(id, callback);
                 }
             });
         } else {
-            that.states.getState(id, callback);
+            this.states.getState(id, callback);
         }
     };
 
-    that.delForeignState = function delForeignState(id, options, callback) {
+    this.delForeignState = function delForeignState(id, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
         }
 
-        if (options && options.user && options.user !== 'system.user.admin') {
+        if (options?.user && options.user !== USER_ADMIN) {
             checkStates(id, options, 'delState', err => {
                 if (err) {
-                    if (typeof callback === 'function') callback(err);
+                    if (typeof callback === 'function') {
+                        callback(err);
+                    }
                 } else {
-                    that.states.delState(id, callback);
+                    this.states.delState(id, callback);
                 }
             });
         } else {
-            that.states.delState(id, callback);
+            this.states.delState(id, callback);
         }
     };
 
-    that.delState = function delState(id, options, callback) {
+    this.delState = function delState(id, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        id = that._fixId(id);
-        if (options && options.user && options.user !== 'system.user.admin') {
+        id = this._fixId(id);
+        if (options?.user && options.user !== USER_ADMIN) {
             checkStates(id, options, 'delState', err => {
                 if (err) {
-                    if (typeof callback === 'function') callback(err);
+                    if (typeof callback === 'function') {
+                        callback(err);
+                    }
                 } else {
-                    that.states.delState(id, callback);
+                    this.states.delState(id, callback);
                 }
             });
         } else {
-            that.states.delState(id, callback);
+            this.states.delState(id, callback);
         }
     };
 
-    that.getStates = function getStates(pattern, options, callback) {
+    this.getStates = function getStates(pattern, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
         }
-        pattern = that._fixId(pattern, 'state');
-        that.getForeignStates(pattern, options, callback);
+        pattern = this._fixId(pattern, 'state');
+        this.getForeignStates(pattern, options, callback);
     };
 
-    that.getForeignStates = function getForeignStates(pattern, options, callback) {
+    this.getForeignStates = function getForeignStates(pattern, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = {};
@@ -546,13 +591,15 @@ function States(cb, stateChange) {
         }
 
         if (typeof pattern === 'object') {
-            that.states.getStates(pattern, (err, arr) => {
+            this.states.getStates(pattern, (err, arr) => {
                 if (err) {
                     callback(err);
                     return;
                 }
                 for (let i = 0; i < pattern.length; i++) {
-                    if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
+                    if (typeof arr[i] === 'string') {
+                        arr[i] = JSON.parse(arr[i]);
+                    }
                     list[pattern[i]] = arr[i] || {};
                 }
                 callback(null, list);
@@ -567,9 +614,11 @@ function States(cb, stateChange) {
                 endkey: pattern.replace('*', '\u9999'),
             };
         }
-        that.objects.getObjectView('system', 'state', params, options, (err, res) => {
+        this.objects.getObjectView('system', 'state', params, options, (err, res) => {
             if (err) {
-                if (typeof callback === 'function') callback(err);
+                if (typeof callback === 'function') {
+                    callback(err);
+                }
                 return;
             }
 
@@ -577,13 +626,15 @@ function States(cb, stateChange) {
                 keys.push(res.rows[i].id);
             }
 
-            if (options && options.user && options.user !== 'system.user.admin') {
+            if (options?.user && options.user !== USER_ADMIN) {
                 checkStates(keys, options, 'getState', (err, keys) => {
                     if (err) {
-                        if (typeof callback === 'function') callback(err);
+                        if (typeof callback === 'function') {
+                            callback(err);
+                        }
                         return;
                     }
-                    that.states.getStates(keys, function (err, arr) {
+                    this.states.getStates(keys, (err, arr) => {
                         if (err) {
                             callback(err);
                             return;
@@ -594,17 +645,21 @@ function States(cb, stateChange) {
                             }
                             list[keys[i]] = arr[i] || {};
                         }
-                        if (typeof callback === 'function') callback(null, list);
+                        if (typeof callback === 'function') {
+                            callback(null, list);
+                        }
                     });
                 });
             } else {
-                that.states.getStates(keys, (err, arr) => {
+                this.states.getStates(keys, (err, arr) => {
                     if (err) {
                         callback(err);
                         return;
                     }
                     for (let i = 0; i < res.rows.length; i++) {
-                        if (typeof arr[i] === 'string') arr[i] = JSON.parse(arr[i]);
+                        if (typeof arr[i] === 'string') {
+                            arr[i] = JSON.parse(arr[i]);
+                        }
                         list[keys[i]] = arr[i] || {};
                     }
                     if (typeof callback === 'function') {
@@ -615,78 +670,78 @@ function States(cb, stateChange) {
         });
     };
 
-    that.subscribeForeignStates = function subscribeForeignStates(pattern, options) {
+    this.subscribeForeignStates = function subscribeForeignStates(pattern, options) {
         pattern ||= '*';
-        that.states.subscribe(pattern, options);
+        this.states.subscribe(pattern, options);
     };
 
-    that.unsubscribeForeignStates = function unsubscribeForeignStates(pattern, options) {
+    this.unsubscribeForeignStates = function unsubscribeForeignStates(pattern, options) {
         pattern ||= '*';
-        that.states.unsubscribe(pattern, options);
+        this.states.unsubscribe(pattern, options);
     };
 
-    that.subscribeStates = function subscribeStates(pattern, options) {
+    this.subscribeStates = function subscribeStates(pattern, options) {
         // Exception. Threat the '*' case automatically
         if (!pattern || pattern === '*') {
-            that.states.subscribe(that.namespace + '.*', options);
+            this.states.subscribe(`${this.namespace}.*`, options);
         } else {
-            pattern = that._fixId(pattern, 'state');
-            that.states.subscribe(pattern, options);
+            pattern = this._fixId(pattern, 'state');
+            this.states.subscribe(pattern, options);
         }
     };
 
-    that.unsubscribeStates = function unsubscribeStates(pattern, options) {
+    this.unsubscribeStates = function unsubscribeStates(pattern, options) {
         if (!pattern || pattern === '*') {
-            that.states.unsubscribe(`${that.namespace}.*`, options);
+            this.states.unsubscribe(`${this.namespace}.*`, options);
         } else {
-            pattern = that._fixId(pattern, 'state');
-            that.states.unsubscribe(pattern, options);
+            pattern = this._fixId(pattern, 'state');
+            this.states.unsubscribe(pattern, options);
         }
     };
 
-    that.pushFifo = function pushFifo(id, state, callback) {
-        that.states.pushFifo(id, state, callback);
+    this.pushFifo = function pushFifo(id, state, callback) {
+        this.states.pushFifo(id, state, callback);
     };
 
-    that.trimFifo = function trimFifo(id, start, end, callback) {
-        that.states.trimFifo(id, start, end, callback);
+    this.trimFifo = function trimFifo(id, start, end, callback) {
+        this.states.trimFifo(id, start, end, callback);
     };
 
-    that.getFifoRange = function getFifoRange(id, start, end, callback) {
-        that.states.getFifoRange(id, start, end, callback);
+    this.getFifoRange = function getFifoRange(id, start, end, callback) {
+        this.states.getFifoRange(id, start, end, callback);
     };
 
-    that.getFifo = function getFifo(id, callback) {
-        that.states.getFifo(id, callback);
+    this.getFifo = function getFifo(id, callback) {
+        this.states.getFifo(id, callback);
     };
 
-    that.lenFifo = function lenFifo(id, callback) {
-        that.states.lenFifo(id, callback);
+    this.lenFifo = function lenFifo(id, callback) {
+        this.states.lenFifo(id, callback);
     };
 
-    that.subscribeFifo = function subscribeFifo(pattern) {
-        that.states.subscribeFifo(pattern);
+    this.subscribeFifo = function subscribeFifo(pattern) {
+        this.states.subscribeFifo(pattern);
     };
 
-    that.getSession = function getSession(id, callback) {
-        that.states.getSession(id, callback);
+    this.getSession = function getSession(id, callback) {
+        this.states.getSession(id, callback);
     };
-    that.setSession = function setSession(id, ttl, data, callback) {
-        that.states.setSession(id, ttl, data, callback);
+    this.setSession = function setSession(id, ttl, data, callback) {
+        this.states.setSession(id, ttl, data, callback);
     };
-    that.destroySession = function destroySession(id, callback) {
-        that.states.destroySession(id, callback);
-    };
-
-    that.getMessage = function getMessage(callback) {
-        that.states.getMessage(`system.adapter.${that.namespace}`, callback);
+    this.destroySession = function destroySession(id, callback) {
+        this.states.destroySession(id, callback);
     };
 
-    that.lenMessage = function lenMessage(callback) {
-        that.states.lenMessage(`system.adapter.${that.namespace}`, callback);
+    this.getMessage = function getMessage(callback) {
+        this.states.getMessage(`system.adapter.${this.namespace}`, callback);
     };
 
-    logger.debug(`${that.namespace} statesDB connected`);
+    this.lenMessage = function lenMessage(callback) {
+        this.states.lenMessage(`system.adapter.${this.namespace}`, callback);
+    };
+
+    logger.debug(`${this.namespace} statesDB connected`);
 
     if (typeof cb === 'function') {
         setImmediate(() => cb(), 0);
