@@ -61,8 +61,8 @@
     ],
     "scripts": {
         "test:package": "mocha ./test/testPackageFiles.js --exit",
-        "test:integration": "mocha ./test/testServer.js --exit",
-        "test": "mocha --exit",
+        "test:integration": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/test*.js --exit",
+        "test": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/test*.js --exit",
         "release": "release-script",
         "build": "tsc -p tsconfig.build.json",
         "release-patch": "release-script patch --yes",

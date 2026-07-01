@@ -1,0 +1,12 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "allowJs": true,
+        "checkJs": false,
+        "skipLibCheck": true,
+        "rootDir": "."
+    },
+    "include": ["**/*.ts", "**/*.js"],
+    "exclude": ["lib/*.js"]
+}

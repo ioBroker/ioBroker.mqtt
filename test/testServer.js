@@ -27,7 +27,7 @@ const rules = {
 
 function startClients(_done) {
     // start mqtt client
-    const MqttClient = require('./lib/mqttClient');
+    const MqttClient = require('./lib/mqttClient').default;
 
     // Start a client to emit topics
     mqttClientEmitter = new MqttClient(
@@ -44,7 +44,7 @@ function startClients(_done) {
         },
         (topic, message) => {
             console.log(`${Date.now()} emitter received ${topic}: ${message.toString()}`);
-            // on receive
+            // on receiving
             lastReceivedTopic1 = topic;
             lastReceivedMessage1 = message ? message.toString() : null;
         },
@@ -66,7 +66,7 @@ function startClients(_done) {
         },
         (topic, message) => {
             console.log(`${Date.now()} detector received ${topic}: ${message.toString()}`);
-            // on receive
+            // on receiving
             lastReceivedTopic2 = topic;
             lastReceivedMessage2 = message ? message.toString() : null;
             console.log(JSON.stringify(lastReceivedMessage2));
@@ -160,9 +160,9 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
 }
 
 function checkConnection(value, done, counter) {
-    counter = counter || 0;
+    counter ||= 0;
     if (counter > 60) {
-        done && done(`Cannot check ${value}`);
+        done?.(`Cannot check ${value}`);
         return;
     }
 
@@ -171,8 +171,7 @@ function checkConnection(value, done, counter) {
             console.error(err);
         }
         if (
-            state &&
-            typeof state.val === 'string' &&
+            typeof state?.val === 'string' &&
             ((value && state.val.includes(',')) || (!value && !state.val.includes(',')))
         ) {
             connected = value;

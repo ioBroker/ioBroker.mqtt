@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": false,
+        "allowJs": true,
+        "declaration": false,
+        "sourceMap": false,
+        "inlineSources": false,
+        "skipLibCheck": true,
+        "module": "node16",
+        "rootDir": ".",
+        "outDir": "."
+    },
+    "include": ["**/*.ts"]
+}

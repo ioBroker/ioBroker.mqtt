@@ -541,10 +541,8 @@ class MQTTClient {
                 // Derive the type from the value's `val` when it is an ioBroker state object,
                 // otherwise from the value itself. Comparing against the wrapped object type
                 // ('object') would otherwise demote every typed datapoint to 'mixed' on each
-                // subsequent state-object publish.
-                const valueForType = value !== undefined && value !== null && typeof value === 'object' && value.val !== undefined
-                    ? value.val
-                    : value;
+                // subsequent state-object publication.
+                const valueForType = value != null && typeof value === 'object' && value.val !== undefined ? value.val : value;
                 const messageType = typeof valueForType;
                 const stateType = valueForType === null
                     ? 'mixed'

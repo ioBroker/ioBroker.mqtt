@@ -1,8 +1,8 @@
 'use strict';
 const assert = require('node:assert');
-const Adapter = require('./lib/adapterSim');
-const SimulatedServer = require('./lib/mqttServer');
-const ClientEmitter = require('./lib/mqttClient');
+const Adapter = require('./lib/adapterSim').default;
+const SimulatedServer = require('./lib/mqttServer').default;
+const ClientEmitter = require('./lib/mqttClient').default;
 const Client = require('../build/lib/MQTTClient').default;
 
 let port = 1883;

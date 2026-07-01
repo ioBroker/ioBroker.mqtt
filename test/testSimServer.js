@@ -1,8 +1,8 @@
 'use strict';
 const assert = require('node:assert');
-const Adapter = require('./lib/adapterSim');
+const Adapter = require('./lib/adapterSim').default;
 const Server = require('../build/lib/MQTTServer').default;
-const Client = require('./lib/mqttClient');
+const Client = require('./lib/mqttClient').default;
 
 let port = 1883;
 
@@ -179,7 +179,7 @@ describe('MQTT server', function () {
             const sendPacket = receiverClient.client._sendPacket;
 
             // do not change "function (...)" to "=>"
-            receiverClient.client._sendPacket = function (packet, cb, cbStorePut) {
+            receiverClient.client._sendPacket = function (packet, cb, _cbStorePut) {
                 // ignore pubrec
                 if (packet.cmd === 'pubrec' && !allowPubrec) {
                     count++;
@@ -531,8 +531,8 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
         const mqttCon = require('mqtt-connection');
 
         const CLIENT_ID = 'retryExhaustionTest';
-        const TOPIC     = 'retryDisconnectTopic';
-        const PAYLOAD   = 'retryPayload42';
+        const TOPIC = 'retryDisconnectTopic';
+        const PAYLOAD = 'retryPayload42';
 
         let phase2Started = false;
 
@@ -615,7 +615,9 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
         });
 
         // Receive the PUBLISH but deliberately never send PUBACK
-        client1.on('publish', () => { /* intentionally empty – no PUBACK */ });
+        client1.on('publish', () => {
+            /* intentionally empty – no PUBACK */
+        });
 
         client1.connect({
             clientId: CLIENT_ID,
@@ -672,8 +674,8 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
         const mqttCon = require('mqtt-connection');
 
         const CLIENT_ID = 'keepaliveRetryTest';
-        const TOPIC     = 'keepaliveRetryTopic';
-        const PAYLOAD   = 'keepalivePayload99';
+        const TOPIC = 'keepaliveRetryTopic';
+        const PAYLOAD = 'keepalivePayload99';
 
         // We need to receive at least retransmitCount+2 publish packets to be
         // certain the broker did NOT disconnect after exceeding retransmitCount.
@@ -684,13 +686,25 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
         const stream = net.createConnection(port, '127.0.0.1');
         const client = mqttCon(stream);
 
-        stream.on('error', err => { if (!testDone) done(err); });
-        client.on('error', err => { if (!testDone) done(err); });
+        stream.on('error', err => {
+            if (!testDone) {
+                done(err);
+            }
+        });
+        client.on('error', err => {
+            if (!testDone) {
+                done(err);
+            }
+        });
 
         // If the broker disconnects us the stream closes – that would be a failure.
         stream.on('close', () => {
             if (!testDone) {
-                done(new Error(`Broker disconnected client after only ${publishCount} publish(es) – expected no disconnect with keepalive>0`));
+                done(
+                    new Error(
+                        `Broker disconnected client after only ${publishCount} publish(es) – expected no disconnect with keepalive>0`,
+                    ),
+                );
             }
         });
 
@@ -713,7 +727,9 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
         });
 
         client.on('publish', packet => {
-            if (packet.qos !== 1) { return; }
+            if (packet.qos !== 1) {
+                return;
+            }
 
             publishCount++;
 

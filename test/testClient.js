@@ -40,7 +40,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
 
     setTimeout(() => {
         objects.getObject(id, (err, obj) => {
-            assert.ok(obj !== null && obj !== undefined);
+            assert.ok(obj != null);
             assert.strictEqual(obj._id, id);
             assert.strictEqual(obj.type, 'state');
 
@@ -49,7 +49,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
             }
 
             states.getState(id, (err, state) => {
-                assert.ok(state !== null && state !== undefined);
+                assert.ok(state != null);
                 assert.strictEqual(state.val, value);
                 assert.strictEqual(state.ack, true);
                 _done();
@@ -81,9 +81,9 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
 }
 
 function checkConnectionOfAdapter(cb, counter) {
-    counter = counter || 0;
+    counter ||= 0;
     if (counter > 20) {
-        cb && cb('Cannot check connection');
+        cb?.('Cannot check connection');
         return;
     }
 
@@ -91,9 +91,9 @@ function checkConnectionOfAdapter(cb, counter) {
         if (err) {
             console.error(err);
         }
-        if (state && state.val) {
+        if (state?.val) {
             connected = state.val;
-            cb && cb();
+            cb?.();
         } else {
             setTimeout(() => checkConnectionOfAdapter(cb, counter + 1), 500);
         }
@@ -101,9 +101,9 @@ function checkConnectionOfAdapter(cb, counter) {
 }
 
 function checkConnectionToServer(value, cb, counter) {
-    counter = counter || 0;
+    counter ||= 0;
     if (counter > 60) {
-        cb && cb(`Cannot check connection to server for ${value}`);
+        cb?.(`Cannot check connection to server for ${value}`);
         return;
     }
 
@@ -111,13 +111,11 @@ function checkConnectionToServer(value, cb, counter) {
         if (err) {
             console.error(err);
         }
-        if (state && state.val == value) {
+        if (state?.val == value) {
             connected = state.val;
-            cb && cb();
+            cb?.();
         } else {
-            setTimeout(function () {
-                checkConnectionToServer(value, cb, counter + 1);
-            }, 1000);
+            setTimeout(() => checkConnectionToServer(value, cb, counter + 1), 1000);
         }
     });
 }
@@ -167,8 +165,8 @@ describe('Test MQTT client', function () {
         });
 
         // start mqtt server
-        MqttServer = require('./lib/mqttServer.js');
-        const MqttClient = require('./lib/mqttClient.js');
+        MqttServer = require('./lib/mqttServer').default;
+        const MqttClient = require('./lib/mqttClient').default;
 
         mqttServer = new MqttServer({ user: 'user', pass: 'pass!?#1' });
 
@@ -185,8 +183,8 @@ describe('Test MQTT client', function () {
             },
             (topic, message) => {
                 console.log(`${new Date().getTime()} emitter received ${topic}: ${message.toString()}`);
-                //console.log('Test MQTT Client received "' + topic + '": ' + message);
-                // on receive
+                // console.log('Test MQTT Client received "' + topic + '": ' + message);
+                // on receiving
                 lastReceivedTopic = topic;
                 lastReceivedMessage = message ? message.toString() : null;
             },
@@ -271,7 +269,7 @@ describe('Test MQTT client', function () {
         mqttServer.stop();
         mqttClient.stop();
 
-        setup.stopController(function (normalTerminated) {
+        setup.stopController(normalTerminated => {
             console.log(`Adapter normal terminated: ${normalTerminated}`);
             setTimeout(_done, 4000);
         });
