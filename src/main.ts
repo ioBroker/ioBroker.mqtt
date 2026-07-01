@@ -19,13 +19,13 @@ class MQTT extends Adapter {
             ...options,
             name: 'mqtt',
         });
-        this.on('ready', this.onReady.bind(this));
-        this.on('stateChange', this.onStateChange.bind(this));
-        this.on('message', this.onMessage.bind(this));
-        this.on('unload', this.onUnload.bind(this));
+        this.on('ready', this.onReady);
+        this.on('stateChange', this.onStateChange);
+        this.on('message', this.onMessage);
+        this.on('unload', this.onUnload);
     }
 
-    async onReady(): Promise<void> {
+    onReady = async (): Promise<void> => {
         this.config.maxTopicLength = this.config.maxTopicLength || 100;
 
         if (this.config.doNotCreateClientObjects) {
@@ -57,7 +57,7 @@ class MQTT extends Adapter {
 
         // Start
         await this.main();
-    }
+    };
 
     async main(): Promise<void> {
         this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
@@ -172,7 +172,7 @@ class MQTT extends Adapter {
         }
     }
 
-    onMessage(obj: ioBroker.Message): void {
+    onMessage = (obj: ioBroker.Message): void => {
         if (!obj?.command) {
             return;
         }
@@ -282,9 +282,9 @@ class MQTT extends Adapter {
                 }
             }
         }
-    }
+    };
 
-    onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+    onStateChange = (id: string, state: ioBroker.State | null | undefined): void => {
         this.log.debug(`stateChange ${id}: ${JSON.stringify(state)}`);
         // State deleted
         if (!state) {
@@ -307,9 +307,9 @@ class MQTT extends Adapter {
                 this.client?.onStateChange(id, state);
             }
         }
-    }
+    };
 
-    onUnload(callback: () => void): void {
+    onUnload = (callback: () => void): void => {
         if (this.checkTimeout) {
             clearTimeout(this.checkTimeout);
             this.checkTimeout = null;
@@ -323,7 +323,7 @@ class MQTT extends Adapter {
         } catch {
             callback();
         }
-    }
+    };
 }
 
 if (require.main !== module) {
