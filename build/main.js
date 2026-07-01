@@ -19,12 +19,12 @@ class MQTT extends adapter_core_1.Adapter {
             ...options,
             name: 'mqtt',
         });
-        this.on('ready', this.onReady.bind(this));
-        this.on('stateChange', this.onStateChange.bind(this));
-        this.on('message', this.onMessage.bind(this));
-        this.on('unload', this.onUnload.bind(this));
+        this.on('ready', this.onReady);
+        this.on('stateChange', this.onStateChange);
+        this.on('message', this.onMessage);
+        this.on('unload', this.onUnload);
     }
-    async onReady() {
+    onReady = async () => {
         this.config.maxTopicLength = this.config.maxTopicLength || 100;
         if (this.config.doNotCreateClientObjects) {
             // delete all server connection information
@@ -53,7 +53,7 @@ class MQTT extends adapter_core_1.Adapter {
         }
         // Start
         await this.main();
-    }
+    };
     async main() {
         this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
         // Subscribe on own variables to publish it
@@ -151,7 +151,7 @@ class MQTT extends adapter_core_1.Adapter {
             this.log.error(`Cannot read states "${pattern}": ${error}`);
         }
     }
-    onMessage(obj) {
+    onMessage = (obj) => {
         if (!obj?.command) {
             return;
         }
@@ -226,8 +226,8 @@ class MQTT extends adapter_core_1.Adapter {
                 }
             }
         }
-    }
-    onStateChange(id, state) {
+    };
+    onStateChange = (id, state) => {
         this.log.debug(`stateChange ${id}: ${JSON.stringify(state)}`);
         // State deleted
         if (!state) {
@@ -250,8 +250,8 @@ class MQTT extends adapter_core_1.Adapter {
                 this.client?.onStateChange(id, state);
             }
         }
-    }
-    onUnload(callback) {
+    };
+    onUnload = (callback) => {
         if (this.checkTimeout) {
             clearTimeout(this.checkTimeout);
             this.checkTimeout = null;
@@ -264,7 +264,7 @@ class MQTT extends adapter_core_1.Adapter {
         catch {
             callback();
         }
-    }
+    };
 }
 if (require.main !== module) {
     // Export the constructor in compact mode
