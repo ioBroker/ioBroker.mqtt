@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "7.0.1",
+    "version": "7.0.2",
     "news": {
+      "7.0.2": {
+        "en": "Added an optional \"Parse comma-separated numbers as character codes\" setting (disabled by default) to prevent garbled values from devices like NUKI locks\nMigrated the test suite to TypeScript",
+        "de": "Es wurde eine optionale Einstellung „Kommagetrennte Zahlen als Zeichencodes interpretieren“ hinzugefügt (standardmäßig deaktiviert), um fehlerhafte Werte von Geräten wie NUKI-Schlössern zu verhindern.\nDie Testsuite wurde nach TypeScript migriert.",
+        "ru": "Добавлена необязательная настройка «Преобразовывать числа, разделенные запятыми, в коды символов» (по умолчанию отключена) для предотвращения искажения значений на таких устройствах, как замки NUKI.\nПеревел набор тестов на TypeScript.",
+        "pt": "Adicionada uma configuração opcional \"Analisar números separados por vírgula como códigos de caracteres\" (desativada por padrão) para evitar valores corrompidos provenientes de dispositivos como as fechaduras NUKI.\nMigrei o conjunto de testes para TypeScript.",
+        "nl": "Er is een optionele instelling \"Door komma's gescheiden getallen parseren als tekenreeksen\" toegevoegd (standaard uitgeschakeld) om te voorkomen dat apparaten zoals NUKI-sloten vervormde waarden doorgeven.\nDe testsuite is gemigreerd naar TypeScript.",
+        "fr": "Ajout d'une option « Analyser les nombres séparés par des virgules comme des codes de caractères » (désactivée par défaut) afin d'éviter les valeurs erronées provenant de périphériques tels que les serrures NUKI.\nMigration de la suite de tests vers TypeScript",
+        "it": "È stata aggiunta un'impostazione opzionale \"Converti i numeri separati da virgole come codici carattere\" (disabilitata per impostazione predefinita) per evitare valori illeggibili da dispositivi come le serrature NUKI.\nMigrazione della suite di test a TypeScript",
+        "es": "Se agregó una configuración opcional \"Analizar números separados por comas como códigos de caracteres\" (deshabilitada por defecto) para evitar valores ilegibles provenientes de dispositivos como las cerraduras NUKI.\nSe migró el conjunto de pruebas a TypeScript.",
+        "pl": "Dodano opcjonalne ustawienie „Analizuj liczby rozdzielone przecinkami jako kody znaków” (domyślnie wyłączone), aby zapobiec zniekształcaniu wartości z urządzeń, takich jak zamki NUKI\nPrzeniesiono zestaw testów do TypeScript",
+        "uk": "Додано додатковий параметр «Розбирати числа, розділені комами, як коди символів» (за замовчуванням вимкнено), щоб запобігти спотворенню значень від пристроїв, таких як замки NUKI.\nПеренесено набір тестів на TypeScript",
+        "zh-cn": "新增了可选的“将逗号分隔的数字解析为字符代码”设置（默认禁用），以防止从 NUKI 锁等设备获取乱码值。\n将测试套件迁移到 TypeScript"
+      },
       "7.0.1": {
         "en": "Optimized client state generation logic to prevent load issues\nOptimized detection of incoming data as ioBroker states \nBreaking change: removed binary states\nMigrated to TypeScript\nBreaking change: minimal supported Node.js version is 22\nFixed some errors\nFixed the reject unresolved topic ids with SUBACK failure",
         "de": "Optimierte Client-Statusgenerierungslogik zur Vermeidung von Lastproblemen\nOptimierte Erkennung eingehender Daten als ioBroker-Zustände\nWichtige Änderung: Binärzustände entfernt\nMigration zu TypeScript\nWichtige Änderung: Die minimal unterstützte Node.js-Version ist 22.\nEinige Fehler behoben\nDas Problem mit den abgelehnten, nicht aufgelösten Themen-IDs bei SUBACK-Fehler wurde behoben.",
@@ -80,19 +93,6 @@
         "pl": "Dodano przestrzeń do łańcucha połączeń dla lepszej czytelności",
         "uk": "Додано простір на рядок з'єднання для кращого зчитування",
         "zh-cn": "添加到连接字符串中的空格以更好地读取"
-      },
-      "6.0.1": {
-        "en": "remove binary state handling as these are no longer existing\nhandle the messages as a state object if properties are valid",
-        "de": "entfernen der binären zustandsbehandlung, da diese nicht mehr vorhanden sind\ndie nachrichten als zustandsobjekt verwalten, wenn eigenschaften gültig sind",
-        "ru": "удалить управление бинарным состоянием, поскольку они больше не существуют\nобрабатывать сообщения как объект состояния, если свойства действительны",
-        "pt": "remover o manuseio de estado binário como estes não são mais existentes\nlidar com as mensagens como um objeto de estado se as propriedades são válidas",
-        "nl": "binaire statusbehandeling verwijderen omdat deze niet meer bestaan\nde berichten als een statusobject behandelen als eigenschappen geldig zijn",
-        "fr": "supprimer la manipulation de l'état binaire car celles-ci ne sont plus existantes\ngérer les messages comme un objet d'état si les propriétés sont valides",
-        "it": "rimuovere la gestione dello stato binario come questi non sono più esistenti\ngestire i messaggi come oggetto di stato se le proprietà sono valide",
-        "es": "eliminar el manejo de estado binario ya que estos ya no existen\nmanejar los mensajes como objeto de estado si las propiedades son válidas",
-        "pl": "usuń obsługę stanu binarnego, ponieważ nie istnieją\nobsługi wiadomości jako obiektu stanu, jeśli właściwości są prawidłowe",
-        "uk": "видаліть бінарну державну обробку, оскільки це більше не існує\nобробляти повідомлення як державний об'єкт, якщо властивості дійсні",
-        "zh-cn": "删除已不存在的二进制状态处理\n如果属性有效, 将信件作为状态对象处理"
       }
     },
     "titleLang": {

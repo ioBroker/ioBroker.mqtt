@@ -167,7 +167,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 7.0.2 (2026-07-02)
 * (Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
 * (bluefox) Migrated the test suite to TypeScript
 
@@ -190,9 +190,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 6.1.2 (2024-09-04)
 * (bluefox) Corrected error if the client has no ID
-
-### 6.1.1 (2024-08-29)
-* (bluefox) Added information about connected clients in the server mode
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
