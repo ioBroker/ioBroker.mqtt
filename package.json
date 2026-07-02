@@ -44,6 +44,8 @@
     "@iobroker/eslint-config": "^2.3.4",
     "@iobroker/legacy-testing": "^2.0.2",
     "@iobroker/testing": "^5.2.2",
+    "@types/mocha": "^10.0.10",
+    "mocha": "^11.7.6",
     "node.extend": "^2.0.3",
     "globals": "^17.7.0",
     "typescript": "^6.0.3"
@@ -60,9 +62,10 @@
     "io-package.json"
   ],
   "scripts": {
-    "test:package": "mocha ./test/testPackageFiles.js --exit",
-    "test:integration": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/test*.js --exit",
-    "test": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/test*.js --exit",
+    "test:package": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/package.js --exit",
+    "test:unit": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/test*.js --exit",
+    "test:integration": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/integration.js --exit",
+    "test": "npm run test:package && npm run test:unit && npm run test:integration",
     "release": "release-script",
     "build": "tsc -p tsconfig.build.json",
     "release-patch": "release-script patch --yes",

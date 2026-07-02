@@ -1,15 +1,16 @@
-'use strict';
-const assert = require('node:assert');
-const Adapter = require('./lib/adapterSim').default;
+import assert from 'node:assert';
+import Adapter from './lib/adapterSim';
+import Client from './lib/mqttClient';
+
+// The compiled adapter under test (build/) ships no type declarations, so load it untyped.
 const Server = require('../build/lib/MQTTServer').default;
-const Client = require('./lib/mqttClient').default;
 
 let port = 1883;
 
 describe('MQTT server', function () {
-    let adapter;
-    let server;
-    const states = {};
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
     this.timeout(3000);
 
     before('MQTT server: Start MQTT server', done => {
@@ -22,7 +23,8 @@ describe('MQTT server', function () {
         done();
     });
 
-    it('MQTT server: Check if connected to MQTT broker', done => {
+    it('MQTT server: Check if connected to MQTT broker', doneCb => {
+        let done: Mocha.Done | null = doneCb;
         const client = new Client(
             isConnected => {
                 if (done) {
@@ -41,9 +43,9 @@ describe('MQTT server', function () {
     });
 
     it('MQTT server: Check if subscribes stored', () => {
-        let client;
+        let client: any;
         const data = 1;
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             client = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -64,7 +66,7 @@ describe('MQTT server', function () {
                 },
             );
         }).then(() => {
-            new Promise(resolve => {
+            void new Promise<void>(resolve => {
                 client = new Client(
                     () => {},
                     (topic, message) => {
@@ -87,13 +89,13 @@ describe('MQTT server', function () {
     });
 
     it('MQTT server: Check if QoS1 retransmitted', done => {
-        let client;
+        let client: any;
         const data = 1;
         let count = 0;
         const id = 'aaa2';
         let allowPuback = false;
-        let receiveFunc;
-        new Promise(resolve => {
+        let receiveFunc: ((topic: string, data: Buffer) => void) | undefined;
+        void new Promise<void>(resolve => {
             client = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -111,7 +113,7 @@ describe('MQTT server', function () {
             );
             const sendPacket = client.client._sendPacket;
             // do not change "function (...)" to "=>"
-            client.client._sendPacket = function (packet, cb, cbStorePut) {
+            client.client._sendPacket = function (this: any, packet: any, cb: any, cbStorePut: any) {
                 // ignore one puback
                 if (packet.cmd === 'puback' && !allowPuback) {
                     count++;
@@ -124,14 +126,14 @@ describe('MQTT server', function () {
             .then(async () => {
                 await adapter.setForeignObjectAsync(`mqtt.0.${id}`, {
                     _id: `mqtt.0.${id}`,
-                    common: { type: 'number' },
+                    common: { type: 'number', name: id, role: 'variable', read: true, write: true },
                     native: {},
                     type: 'state',
                 });
                 await adapter.setForeignStateAsync(`mqtt.0.${id}`, data);
                 server.onStateChange(`mqtt.0.${id}`, { val: data, ack: false });
 
-                return new Promise(resolve => {
+                return new Promise<void>(resolve => {
                     setTimeout(() => resolve(), 1000);
                 });
             })
@@ -147,14 +149,14 @@ describe('MQTT server', function () {
     }).timeout(5000);
 
     it('MQTT server: Check if QoS2 retransmitted', done => {
-        let receiverClient;
-        let emitterClient;
+        let receiverClient: any;
+        let emitterClient: any;
         const data = 1;
         const id = 'aaa3';
         let count = 0;
         let allowPubrec = false;
-        let receiveFunc;
-        new Promise(resolve => {
+        let receiveFunc: ((topic: string, data: Buffer) => void) | undefined;
+        void new Promise<void>(resolve => {
             receiverClient = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -179,7 +181,7 @@ describe('MQTT server', function () {
             const sendPacket = receiverClient.client._sendPacket;
 
             // do not change "function (...)" to "=>"
-            receiverClient.client._sendPacket = function (packet, cb, _cbStorePut) {
+            receiverClient.client._sendPacket = function (this: any, packet: any, cb: any, _cbStorePut: any) {
                 // ignore pubrec
                 if (packet.cmd === 'pubrec' && !allowPubrec) {
                     count++;
@@ -190,7 +192,7 @@ describe('MQTT server', function () {
             };
         })
             .then(() => {
-                return new Promise(resolve => {
+                return new Promise<void>(resolve => {
                     emitterClient.publish(id, data.toString(), 2, () => {}); // Send QoS 2
                     setTimeout(() => resolve(), 100);
                 });
@@ -207,12 +209,12 @@ describe('MQTT server', function () {
     }).timeout(5000);
 
     it('MQTT server: Check if message with QoS1 received', done => {
-        let receiverClient;
-        let emitterClient;
+        let receiverClient: any;
+        let emitterClient: any;
         const data = 1;
         const id = 'aaa4';
-        let receiveFunc;
-        new Promise(resolve => {
+        let receiveFunc: ((topic: string, data: Buffer, packet: any) => void) | undefined;
+        void new Promise<void>(resolve => {
             receiverClient = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -235,7 +237,7 @@ describe('MQTT server', function () {
                 resubscribe: false,
             });
         }).then(() => {
-            return new Promise(resolve => {
+            return new Promise<void>(resolve => {
                 receiveFunc = (topic, data, packet) => {
                     assert.ok(data);
                     assert.ok(topic);
@@ -252,10 +254,10 @@ describe('MQTT server', function () {
 
     // check unsubscribe
     it('MQTT server: Check if unsubscribes works', () => {
-        let client;
+        let client: any;
         const data = 1;
         let count = 0;
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             client = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -282,7 +284,7 @@ describe('MQTT server', function () {
                 },
             );
         }).then(() => {
-            return new Promise(resolve => {
+            return new Promise<void>(resolve => {
                 client.unsubscribe('aaa6');
                 client.unsubscribe('#');
                 setTimeout(() => {
@@ -301,9 +303,9 @@ describe('MQTT server', function () {
     }).timeout(3000);
 
     it('MQTT server: New topic with {val:null} payload should get type "mixed"', () => {
-        let emitterClient;
+        let emitterClient: any;
         const topic = 'typetestNull';
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             emitterClient = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -317,15 +319,15 @@ describe('MQTT server', function () {
         }).then(async () => {
             const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
             assert.ok(obj);
-            assert.strictEqual(obj.common.type, 'mixed');
+            assert.strictEqual((obj as ioBroker.StateObject).common.type, 'mixed');
             emitterClient.destroy();
         });
     }).timeout(2000);
 
     it('MQTT server: Existing numeric topic should keep type "number" after repeated JSON state publish', () => {
-        let emitterClient;
+        let emitterClient: any;
         const topic = 'typetestNumber';
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             emitterClient = new Client(
                 isConnected => {
                     if (isConnected) {
@@ -344,7 +346,7 @@ describe('MQTT server', function () {
         }).then(async () => {
             const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
             assert.ok(obj);
-            assert.strictEqual(obj.common.type, 'number');
+            assert.strictEqual((obj as ioBroker.StateObject).common.type, 'number');
             emitterClient.destroy();
         });
     }).timeout(3000);
@@ -372,9 +374,9 @@ describe('MQTT server', function () {
  * kept only to exercise the retransmit path, not to trigger exhaustion.
  */
 describe('MQTT server: QoS2 session lockup regression', function () {
-    let adapter2;
-    let server2;
-    const states2 = {};
+    let adapter2: Adapter;
+    let server2: any;
+    const states2: Record<string, any> = {};
     this.timeout(5000); // applies to all tests and hooks in this describe
 
     before('MQTT server: QoS2 lockup: Start server', done => {
@@ -400,11 +402,11 @@ describe('MQTT server: QoS2 session lockup regression', function () {
         const stream = net.createConnection(port, '127.0.0.1');
         const client = mqttCon(stream);
 
-        let capturedMessageId = null;
+        let capturedMessageId: number | null = null;
         let firstPublishSeen = false;
         let finished = false;
 
-        const finish = err => {
+        const finish = (err?: any): void => {
             if (finished) {
                 return;
             }
@@ -439,7 +441,7 @@ describe('MQTT server: QoS2 session lockup regression', function () {
 
         // Step 3 – PUBLISH received: capture messageId but intentionally withhold PUBREC
         //          for 400 ms to simulate a slow / delayed client response.
-        client.on('publish', packet => {
+        client.on('publish', (packet: any) => {
             if (!firstPublishSeen && packet.qos === 2) {
                 firstPublishSeen = true;
                 capturedMessageId = packet.messageId;
@@ -458,7 +460,7 @@ describe('MQTT server: QoS2 session lockup regression', function () {
         // Step 4 – PUBREL received: the broker must reply to every PUBREC with PUBREL,
         //          regardless of whether the messageId is still in the outgoing queue
         //          (this is the behaviour introduced by the fix)
-        client.on('pubrel', packet => {
+        client.on('pubrel', (packet: any) => {
             if (packet.messageId === capturedMessageId) {
                 // Complete the handshake from the client side
                 client.pubcomp({ messageId: packet.messageId });
@@ -508,9 +510,9 @@ describe('MQTT server: QoS2 session lockup regression', function () {
  * so the whole scenario runs within ~600 ms.
  */
 describe('MQTT server: retry exhaustion – disconnect and reconnect', function () {
-    let adapter3;
-    let server3;
-    const states3 = {};
+    let adapter3: Adapter;
+    let server3: any;
+    const states3: Record<string, any> = {};
 
     before('MQTT server: retry/disconnect: Start server', done => {
         adapter3 = new Adapter({
@@ -535,9 +537,12 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
         const PAYLOAD = 'retryPayload42';
 
         let phase2Started = false;
+        // Fallback timer: retransmitInterval(100) × (retransmitCount(2)+2) ticks = ~400ms,
+        // plus generous margin so the timer fires only if the close event is missed
+        let fallbackTimer: NodeJS.Timeout | undefined;
 
         // ── Phase 2: reconnect and expect message resend ──────────────────────
-        function phase2() {
+        function phase2(): void {
             if (phase2Started) {
                 return;
             }
@@ -548,10 +553,10 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
                 const stream2 = net.createConnection(port, '127.0.0.1');
                 const client2 = mqttCon(stream2);
 
-                stream2.on('error', err => done(err));
-                client2.on('error', err => done(err));
+                stream2.on('error', (err: any) => done(err));
+                client2.on('error', (err: any) => done(err));
 
-                client2.on('publish', packet => {
+                client2.on('publish', (packet: any) => {
                     if (packet.qos === 1) {
                         // The broker must resend exactly the same payload
                         assert.strictEqual(packet.payload.toString(), PAYLOAD);
@@ -588,9 +593,6 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
             clearTimeout(fallbackTimer);
             phase2();
         });
-        // Fallback timer: retransmitInterval(100) × (retransmitCount(2)+2) ticks = ~400ms,
-        // plus generous margin so the timer fires only if the close event is missed
-        let fallbackTimer;
 
         client1.on('connack', () => {
             client1.subscribe({
@@ -652,9 +654,9 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
  * so the scenario runs in ~500 ms.
  */
 describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', function () {
-    let adapter4;
-    let server4;
-    const states4 = {};
+    let adapter4: Adapter;
+    let server4: any;
+    const states4: Record<string, any> = {};
     const RETRANSMIT_COUNT = 2;
 
     before('MQTT server: retry/keepalive: Start server', done => {
@@ -686,12 +688,12 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
         const stream = net.createConnection(port, '127.0.0.1');
         const client = mqttCon(stream);
 
-        stream.on('error', err => {
+        stream.on('error', (err: any) => {
             if (!testDone) {
                 done(err);
             }
         });
-        client.on('error', err => {
+        client.on('error', (err: any) => {
             if (!testDone) {
                 done(err);
             }
@@ -726,7 +728,7 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
             server4.onStateChange(`mqtt.0.${TOPIC}`, { val: PAYLOAD, ack: false });
         });
 
-        client.on('publish', packet => {
+        client.on('publish', (packet: any) => {
             if (packet.qos !== 1) {
                 return;
             }
@@ -778,9 +780,9 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
  * unknown topic, reliably exercising the rejection path.
  */
 describe('MQTT server: subscribe rejects unresolvable topic with SUBACK failure', function () {
-    let adapter5;
-    let server5;
-    const states5 = {};
+    let adapter5: Adapter;
+    let server5: any;
+    const states5: Record<string, any> = {};
     this.timeout(5000);
 
     before('MQTT server: suback-failure: Start server', done => {
@@ -802,7 +804,7 @@ describe('MQTT server: subscribe rejects unresolvable topic with SUBACK failure'
         const client = mqttCon(stream);
 
         let finished = false;
-        const finish = err => {
+        const finish = (err?: any): void => {
             if (finished) {
                 return;
             }
@@ -826,7 +828,7 @@ describe('MQTT server: subscribe rejects unresolvable topic with SUBACK failure'
         });
 
         // Receiving a SUBACK at all already proves the handler no longer aborts early.
-        client.on('suback', packet => {
+        client.on('suback', (packet: any) => {
             try {
                 assert.ok(Array.isArray(packet.granted));
                 assert.strictEqual(packet.granted.length, 1);

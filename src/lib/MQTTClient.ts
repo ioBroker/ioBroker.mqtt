@@ -61,8 +61,9 @@ export default class MQTTClient {
             const ignoredTopicRegexWithNameSpace = pattern2RegEx(
                 `${this.adapter.namespace}.${ignoredTopicPattern}`,
                 this.adapter,
+                this.config.prefix,
             );
-            const ignoredTopicRegex = pattern2RegEx(ignoredTopicPattern, this.adapter);
+            const ignoredTopicRegex = pattern2RegEx(ignoredTopicPattern, this.adapter, this.config.prefix);
             this.adapter.log.info(
                 `Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`,
             );
@@ -93,7 +94,7 @@ export default class MQTTClient {
         const topic = this.id2topic[id];
 
         if (!topic) {
-            void this.adapter.getForeignObject(id, (err, obj) => {
+            void this.adapter.getForeignObject(id, (_err, obj) => {
                 if (!this.client) {
                     return;
                 }
@@ -144,7 +145,7 @@ export default class MQTTClient {
             }
         } else {
             message =
-                // @ts-expect-error binary states are deprecated, but could happen
+                // @ts-expect-error binary states are deprecated but could happen
                 this.topic2id[topic].obj?.common && this.topic2id[topic].obj.common.type === 'file'
                     ? message
                     : state2string(message, this.config.sendStateObject);
@@ -170,7 +171,7 @@ export default class MQTTClient {
 
         const id = toPublish[0];
         if (!this.id2topic[id]) {
-            void this.adapter.getForeignObject(id, (err, obj) => {
+            void this.adapter.getForeignObject(id, (_err, obj) => {
                 if (!this.client) {
                     return;
                 }
@@ -308,7 +309,7 @@ export default class MQTTClient {
         });
 
         // create a connected object and state
-        this.adapter.getObject('info.connection', (err, obj) => {
+        this.adapter.getObject('info.connection', (_err, obj) => {
             if (!obj || !obj.common || obj.common.type !== 'boolean') {
                 obj = {
                     _id: 'info.connection',
@@ -345,7 +346,7 @@ export default class MQTTClient {
         // create last Session object and state to store previous
         // topics in case of persisted sessions
         if (this.config.persistent) {
-            this.adapter.getObject('info.lastSession', (err, obj) => {
+            this.adapter.getObject('info.lastSession', (_err, obj) => {
                 if (!obj || !obj.common || obj.common.type !== 'string') {
                     obj = {
                         _id: 'info.lastSession',
@@ -430,7 +431,8 @@ export default class MQTTClient {
                 }
 
                 if (
-                    obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+                    obj &&
+                    obj._id?.startsWith(`${this.adapter.namespace}.`) &&
                     obj.type === 'folder' &&
                     obj.native?.autocreated === 'by automatic ensure logic'
                 ) {
@@ -447,7 +449,8 @@ export default class MQTTClient {
                     }
 
                     if (
-                        obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+                        obj &&
+                        obj._id?.startsWith(`${this.adapter.namespace}.`) &&
                         obj.type === 'folder' &&
                         obj.native?.autocreated === 'by automatic ensure logic'
                     ) {
@@ -505,7 +508,7 @@ export default class MQTTClient {
                     this.adapter.log.warn('"file" type is deprecated. Please use "mixed" or "string" instead.');
                     return;
                 }
-                const parsedMessage = convertMessage(topic, message, this.adapter);
+                const parsedMessage = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
 
                 this.topic2id[topic].message = parsedMessage;
 
@@ -627,7 +630,7 @@ export default class MQTTClient {
                         `Client received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`,
                     );
                 }
-                this.topic2id[topic].message = convertMessage(topic, message, this.adapter);
+                this.topic2id[topic].message = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
             } else {
                 if (!this.config.onchange) {
                     if (this.topic2id[topic].message) {
@@ -639,7 +642,7 @@ export default class MQTTClient {
                 }
 
                 let value: undefined | string | number | boolean | Record<string, any>;
-                const parsedMessage = convertMessage(topic, message, this.adapter);
+                const parsedMessage = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
                 if (typeof parsedMessage.message === 'object') {
                     if (
                         !this.config.onchange ||
@@ -758,7 +761,7 @@ export default class MQTTClient {
 
             // unsubscribe old topics in persisted session
             if (this.config.persistent) {
-                this.adapter.getState('info.lastSession', (err, state) => {
+                this.adapter.getState('info.lastSession', (_err, state) => {
                     const patternsPrevious: string[] = state?.val ? JSON.parse(state.val as string) || [] : [];
 
                     const patternsDiff = patternsPrevious.filter(x => !this.patterns.includes(x));

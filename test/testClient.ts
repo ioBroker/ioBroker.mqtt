@@ -1,17 +1,19 @@
-'use strict';
-const assert = require('node:assert');
+import assert from 'node:assert';
+import MqttServer from './lib/mqttServer';
+import MqttClient from './lib/mqttClient';
+
+// @iobroker/legacy-testing ships no type declarations, so it is loaded untyped.
 const setup = require('@iobroker/legacy-testing');
 
-let objects = null;
-let states = null;
-let MqttServer;
-let mqttClient = null;
-let mqttServer = null;
-let connected = false;
-let lastReceivedTopic;
-let lastReceivedMessage;
+let objects: any = null;
+let states: any = null;
+let mqttClient: MqttClient;
+let mqttServer: MqttServer;
+let connected: boolean | string = false;
+let lastReceivedTopic: string | null = null;
+let lastReceivedMessage: string | null = null;
 
-const rules = {
+const rules: Record<string, string> = {
     '/mqtt/0/test1': 'mqtt.0.test1',
     'mqtt/0/test2': 'mqtt.0.test2',
     test3: 'mqtt.0.test3',
@@ -20,7 +22,7 @@ const rules = {
     '/testAdapter/0/testChannel/testState': 'testAdapter.0.testChannel.testState',
 };
 
-function checkMqtt2Adapter(id, _expectedId, _it, _done) {
+function checkMqtt2Adapter(id: string, _expectedId: string, _it: Mocha.Context, _done: Mocha.Done): void {
     _it.timeout(1000);
     const value = `Roger${Math.round(Math.random() * 100)}`;
     const mqttid = id;
@@ -39,7 +41,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     mqttClient.publish(mqttid, value);
 
     setTimeout(() => {
-        objects.getObject(id, (err, obj) => {
+        objects.getObject(id, (err: Error | null, obj: ioBroker.Object | null) => {
             assert.ok(obj != null);
             assert.strictEqual(obj._id, id);
             assert.strictEqual(obj.type, 'state');
@@ -48,7 +50,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
                 assert.strictEqual(obj.native.topic, mqttid);
             }
 
-            states.getState(id, (err, state) => {
+            states.getState(id, (err: Error | null, state: ioBroker.State | null) => {
                 assert.ok(state != null);
                 assert.strictEqual(state.val, value);
                 assert.strictEqual(state.ack, true);
@@ -58,7 +60,7 @@ function checkMqtt2Adapter(id, _expectedId, _it, _done) {
     }, 500);
 }
 
-function checkAdapter2Mqtt(id, mqttid, _it, _done) {
+function checkAdapter2Mqtt(id: string, mqttid: string, _it: Mocha.Context, _done: Mocha.Done): void {
     const value = `NewRoger${Math.round(Math.random() * 100)}`;
     _it.timeout(5000);
 
@@ -80,19 +82,19 @@ function checkAdapter2Mqtt(id, mqttid, _it, _done) {
     );
 }
 
-function checkConnectionOfAdapter(cb, counter) {
+function checkConnectionOfAdapter(cb?: (error?: string) => void, counter?: number): void {
     counter ||= 0;
     if (counter > 20) {
         cb?.('Cannot check connection');
         return;
     }
 
-    states.getState('system.adapter.mqtt.0.connected', (err, state) => {
+    states.getState('system.adapter.mqtt.0.connected', (err: Error | null, state: ioBroker.State | null) => {
         if (err) {
             console.error(err);
         }
         if (state?.val) {
-            connected = state.val;
+            connected = state.val as boolean | string;
             cb?.();
         } else {
             setTimeout(() => checkConnectionOfAdapter(cb, counter + 1), 500);
@@ -100,19 +102,19 @@ function checkConnectionOfAdapter(cb, counter) {
     });
 }
 
-function checkConnectionToServer(value, cb, counter) {
+function checkConnectionToServer(value: boolean, cb?: (error?: string) => void, counter?: number): void {
     counter ||= 0;
     if (counter > 60) {
         cb?.(`Cannot check connection to server for ${value}`);
         return;
     }
 
-    states.getState('mqtt.0.info.connection', (err, state) => {
+    states.getState('mqtt.0.info.connection', (err: Error | null, state: ioBroker.State | null) => {
         if (err) {
             console.error(err);
         }
         if (state?.val == value) {
-            connected = state.val;
+            connected = state.val as boolean | string;
             cb?.();
         } else {
             setTimeout(() => checkConnectionToServer(value, cb, counter + 1), 1000);
@@ -120,7 +122,7 @@ function checkConnectionToServer(value, cb, counter) {
     });
 }
 
-function encrypt(key, value) {
+function encrypt(key: string, value: string): string {
     let result = '';
     for (let i = 0; i < value.length; ++i) {
         result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
@@ -129,14 +131,15 @@ function encrypt(key, value) {
 }
 
 describe('Test MQTT client', function () {
-    before('MQTT client: Start js-controller', function (_done) {
+    before('MQTT client: Start js-controller', function (done) {
         // let FUNCTION and not => here
         this.timeout(600000); // because of the first installation from npm
+        let _done: Mocha.Done | null = done;
         let clientConnected = false;
         let brokerStarted = false;
         setup.adapterStarted = false;
 
-        setup.setupController(async systemConfig => {
+        setup.setupController(async (systemConfig: { native: { secret: string } }) => {
             const config = await setup.getAdapterConfig();
             // enable adapter
             config.common.enabled = true;
@@ -147,7 +150,7 @@ describe('Test MQTT client', function () {
             config.native.debug = true;
             await setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController((_objects, _states) => {
+            setup.startController((_objects: any, _states: any) => {
                 objects = _objects;
                 states = _states;
                 brokerStarted = true;
@@ -165,9 +168,6 @@ describe('Test MQTT client', function () {
         });
 
         // start mqtt server
-        MqttServer = require('./lib/mqttServer').default;
-        const MqttClient = require('./lib/mqttClient').default;
-
         mqttServer = new MqttServer({ user: 'user', pass: 'pass!?#1' });
 
         // Start a client to emit topics
@@ -198,38 +198,48 @@ describe('Test MQTT client', function () {
         } else {
             done();
         }
-    }).timeout(3000);
+        // checkConnectionOfAdapter polls up to 20 × 500 ms = 10 s, so the mocha timeout must exceed that.
+    }).timeout(12000);
 
     it('MQTT client: wait', done => {
         setTimeout(() => done(), 1000);
     }).timeout(4000);
 
     it('MQTT client: check folder objects', done => {
-        objects.getObject('mqtt.0.testServer', (err, obj) => {
+        objects.getObject('mqtt.0.testServer', (err: Error | null, obj: ioBroker.Object | null) => {
             assert.ok(!err);
             assert.ok(obj);
             assert.strictEqual(obj.type, 'folder');
-            objects.getObject('mqtt.0.testServer.long.test.path.into.ioBroker', (err, obj) => {
-                assert.ok(!err);
-                assert.ok(obj);
-                assert.strictEqual(obj.type, 'folder');
-                objects.getObject('mqtt.0.testServer.long.test.path.into.ioBroker.connected', (err, obj) => {
+            objects.getObject(
+                'mqtt.0.testServer.long.test.path.into.ioBroker',
+                (err: Error | null, obj: ioBroker.Object | null) => {
                     assert.ok(!err);
                     assert.ok(obj);
-                    assert.strictEqual(obj.type, 'state');
-                    states.getState('mqtt.0.testServer.long.test.path.into.ioBroker.connected', (err, state) => {
-                        assert.ok(!err);
-                        assert.ok(state);
-                        assert.strictEqual(state.val, true);
-                        done();
-                    });
-                });
-            });
+                    assert.strictEqual(obj.type, 'folder');
+                    objects.getObject(
+                        'mqtt.0.testServer.long.test.path.into.ioBroker.connected',
+                        (err: Error | null, obj: ioBroker.Object | null) => {
+                            assert.ok(!err);
+                            assert.ok(obj);
+                            assert.strictEqual(obj.type, 'state');
+                            states.getState(
+                                'mqtt.0.testServer.long.test.path.into.ioBroker.connected',
+                                (err: Error | null, state: ioBroker.State | null) => {
+                                    assert.ok(!err);
+                                    assert.ok(state);
+                                    assert.strictEqual(state.val, true);
+                                    done();
+                                },
+                            );
+                        },
+                    );
+                },
+            );
         });
     }).timeout(4000);
 
     for (const rr in rules) {
-        (function (id, topic) {
+        (function (id: string, topic: string) {
             it(`MQTT client: Check receive ${id}`, function (done) {
                 // let FUNCTION here
                 checkMqtt2Adapter(id, topic, this, done);
@@ -238,7 +248,7 @@ describe('Test MQTT client', function () {
     }
 
     for (const r in rules) {
-        (function (id, topic) {
+        (function (id: string, topic: string) {
             if (topic.indexOf('mqtt') !== -1) {
                 it(`MQTT client: Check send ${topic}`, function (done) {
                     // let FUNCTION here
@@ -269,7 +279,7 @@ describe('Test MQTT client', function () {
         mqttServer.stop();
         mqttClient.stop();
 
-        setup.stopController(normalTerminated => {
+        setup.stopController((normalTerminated: boolean) => {
             console.log(`Adapter normal terminated: ${normalTerminated}`);
             setTimeout(_done, 4000);
         });

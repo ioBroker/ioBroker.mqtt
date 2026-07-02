@@ -39,7 +39,7 @@ function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
 
  The single-level wildcard can be used at any level in the Topic Filter, including first and last levels. Where it is used it MUST occupy an entire level of the filter [MQTT-4.7.1-3]. It can be used at more than one level in the Topic Filter and can be used in conjunction with the multilevel wildcard.
 
- Non-normative comment
+ Non-normative comment.
  For example, “sport/tennis/+” matches “sport/tennis/player1” and “sport/tennis/player2”, but not “sport/tennis/player1/ranking”. Also, because the single-level wildcard matches only a single level, “sport/+” does not match “sport” but it does match “sport/”.
 
  Non-normative comment
@@ -49,8 +49,8 @@ function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
  ·         “sport/+/player1” is valid
  ·         “/finance” matches “+/+” and “/+”, but not “+”
  */
-function pattern2RegEx(pattern, adapter) {
-    pattern = convertTopic2id(pattern, true, adapter.config.prefix, adapter.namespace);
+function pattern2RegEx(pattern, adapter, prefix) {
+    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace);
     pattern = pattern.replace(/#/g, '*');
     pattern = pattern.replace(/\$/g, '\\$');
     pattern = pattern.replace(/\^/g, '\\^');
@@ -196,24 +196,32 @@ async function ensureObjectStructure(adapter, id, verifiedObjects) {
         verifiedObjects[idToCheck] = true;
     }
 }
-function convertMessage(topic, message, adapter, clientID) {
+function convertMessage(topic, message, adapter, parseCharCodes, clientID) {
     let type = typeof message;
     if (type !== 'string' && type !== 'number' && type !== 'boolean') {
         message = message ? message.toString('utf8') : 'null';
         type = 'string';
     }
-    // try to convert 101,124,444,... To utf8 string
-    if (type === 'string' && message.match(/^(\d)+,\s?(\d)+,\s?(\d)+/)) {
+    // Optionally convert "101,124,444,..." to a utf8 string. Off by default: devices like NUKI
+    // locks send comma-separated numbers (e.g. "3,0,442236930,1,2") that are not character codes,
+    // so interpreting them as such produced garbled values (see issue #550 / PR #551).
+    if (type === 'string' && parseCharCodes && message.match(/^\d+,\s?\d+,\s?\d+/)) {
         const parts = message.split(',');
-        try {
-            let str = '';
-            for (let p = 0; p < parts.length; p++) {
-                str += String.fromCharCode(parseInt(parts[p].trim(), 10));
+        let str = '';
+        let allValidCharCodes = true;
+        for (let p = 0; p < parts.length; p++) {
+            const charCode = parseInt(parts[p].trim(), 10);
+            // Only values that map reliably via String.fromCharCode (0-255, extended ASCII) are accepted.
+            if (Number.isNaN(charCode) || charCode < 0 || charCode > 255) {
+                allValidCharCodes = false;
+                break;
             }
-            message = str;
+            str += String.fromCharCode(charCode);
         }
-        catch {
-            // cannot convert and ignore it
+        // Only use the converted string if every part was a valid character code; otherwise keep the
+        // original message so it can still be parsed as a number / JSON / raw string below.
+        if (allValidCharCodes) {
+            return { message: str, isStateObject: false };
         }
     }
     if (type === 'string') {
