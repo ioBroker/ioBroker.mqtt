@@ -148,7 +148,6 @@ export default class MQTTServer {
     private resending = false;
     private resendTimer: NodeJS.Timeout | null = null;
     private readonly verifiedObjects = {};
-    private channelChecked = false;
     private updateClientsTimeout: ioBroker.Timeout | undefined;
     private updateClientsRunning = false;
     private updateClientsRestart = false;
@@ -173,8 +172,9 @@ export default class MQTTServer {
             const ignoredTopicRegexWithNameSpace = pattern2RegEx(
                 `${this.adapter.namespace}.${ignoredTopicPattern}`,
                 adapter,
+                this.config.prefix,
             );
-            const ignoredTopicRegex = pattern2RegEx(ignoredTopicPattern, adapter);
+            const ignoredTopicRegex = pattern2RegEx(ignoredTopicPattern, adapter, this.config.prefix);
             this.adapter.log.info(
                 `Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`,
             );
@@ -290,7 +290,7 @@ export default class MQTTServer {
                         state,
                         this.config.defaultQoS,
                         !this.config.noRetain,
-                        (err, message, persistentClient) =>
+                        (_err, message, persistentClient) =>
                             message &&
                             persistentClient &&
                             this.addMessageWithTopicCheck(persistentClient._messages, message),
@@ -585,7 +585,7 @@ export default class MQTTServer {
             return;
         }
 
-        this.getMqttMessage<MqttConnection>(client, id, state, qos, retain, (err, message, client) => {
+        this.getMqttMessage<MqttConnection>(client, id, state, qos, retain, (_err, message, client) => {
             if (message) {
                 if (this.config.debug) {
                     this.adapter.log.debug(
@@ -700,7 +700,7 @@ export default class MQTTServer {
         // still uses the raw `message`): an ioBroker state object yields the type of its
         // `val` (a `val` of null is indeterminate → 'mixed'), and a JSON string that is not
         // a valid ioBroker state object yields 'mixed'.
-        const parsedForType = convertMessage(topic, message, this.adapter);
+        const parsedForType = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
         let messageType = typeof parsedForType.message;
         let stateType: ioBroker.CommonType = Array.isArray(parsedForType.message)
             ? 'array'
@@ -882,7 +882,7 @@ export default class MQTTServer {
                 }
 
                 // only for type detection
-                const parsedMessage = convertMessage(topic, message, this.adapter);
+                const parsedMessage = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
                 let stateType: ioBroker.CommonType;
                 if (parsedMessage.isStateObject) {
                     stateType = typeof parsedMessage.message.val as ioBroker.CommonType;
@@ -999,7 +999,7 @@ export default class MQTTServer {
             }
         } else if (this.topic2id[topic].processing) {
             // still looking for ID
-            this.topic2id[topic].message = convertMessage(topic, message, this.adapter);
+            this.topic2id[topic].message = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
             if (this.config.debug) {
                 this.adapter.log.debug(
                     `Client [${client.id}] Server received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`,
@@ -1017,7 +1017,7 @@ export default class MQTTServer {
             parsedMessage = this.topic2id[topic].message!;
             delete this.topic2id[topic].message;
         } else if (this.topic2id[topic].obj) {
-            parsedMessage = convertMessage(topic, message, this.adapter, client.id);
+            parsedMessage = convertMessage(topic, message, this.adapter, this.config.parseCharCodes, client.id);
         }
 
         if (qos) {
@@ -1040,7 +1040,7 @@ export default class MQTTServer {
                         state,
                         this.config.defaultQoS,
                         true,
-                        (err, sendMessage, persistentClient) =>
+                        (_err, sendMessage, persistentClient) =>
                             // if sendMessage is defined, then the message should be delivered because subscribed, but we deliver the original message
                             sendMessage &&
                             persistentClient &&
@@ -1600,7 +1600,7 @@ export default class MQTTServer {
 
                             client._subsID[this.topic2id[topic].id] = {
                                 pattern: id,
-                                regex: new RegExp(pattern2RegEx(id, this.adapter)),
+                                regex: new RegExp(pattern2RegEx(id, this.adapter, this.config.prefix)),
                                 qos: packet.subscriptions[i].qos,
                             };
 
@@ -1628,7 +1628,7 @@ export default class MQTTServer {
                             }
 
                             // add a simple pattern
-                            let regText = pattern2RegEx(pattern, this.adapter);
+                            let regText = pattern2RegEx(pattern, this.adapter, this.config.prefix);
                             client._subs[topic] = {
                                 regex: new RegExp(regText),
                                 qos: packet.subscriptions[i].qos,
@@ -1640,7 +1640,7 @@ export default class MQTTServer {
 
                             // add simple mqtt.0.pattern
                             pattern = `${this.adapter.namespace}/${pattern}`;
-                            regText = pattern2RegEx(pattern, this.adapter);
+                            regText = pattern2RegEx(pattern, this.adapter, this.config.prefix);
                             client._subs[`${this.adapter.namespace}/${topic}`] = {
                                 regex: new RegExp(regText),
                                 qos: packet.subscriptions[i].qos,
@@ -1854,7 +1854,7 @@ export default class MQTTServer {
 
     private init(): void {
         // create a connected object and state
-        this.adapter.getObject('info.connection', (err, obj) => {
+        this.adapter.getObject('info.connection', (_err, obj) => {
             if (!obj?.common || obj.common.type !== 'string') {
                 obj = {
                     _id: 'info.connection',

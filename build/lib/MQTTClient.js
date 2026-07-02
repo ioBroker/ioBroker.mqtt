@@ -34,8 +34,8 @@ class MQTTClient {
                 }
                 continue;
             }
-            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, this.adapter);
-            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, this.adapter);
+            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, this.adapter, this.config.prefix);
+            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, this.adapter, this.config.prefix);
             this.adapter.log.info(`Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`);
             this.ignoredTopicsRegexes.push(new RegExp(ignoredTopicRegex), new RegExp(ignoredTopicRegexWithNameSpace));
         }
@@ -60,7 +60,7 @@ class MQTTClient {
         }
         const topic = this.id2topic[id];
         if (!topic) {
-            void this.adapter.getForeignObject(id, (err, obj) => {
+            void this.adapter.getForeignObject(id, (_err, obj) => {
                 if (!this.client) {
                     return;
                 }
@@ -102,7 +102,7 @@ class MQTTClient {
         }
         else {
             message =
-                // @ts-expect-error binary states are deprecated, but could happen
+                // @ts-expect-error binary states are deprecated but could happen
                 this.topic2id[topic].obj?.common && this.topic2id[topic].obj.common.type === 'file'
                     ? message
                     : (0, common_1.state2string)(message, this.config.sendStateObject);
@@ -119,7 +119,7 @@ class MQTTClient {
         }
         const id = toPublish[0];
         if (!this.id2topic[id]) {
-            void this.adapter.getForeignObject(id, (err, obj) => {
+            void this.adapter.getForeignObject(id, (_err, obj) => {
                 if (!this.client) {
                     return;
                 }
@@ -225,7 +225,7 @@ class MQTTClient {
             }
         });
         // create a connected object and state
-        this.adapter.getObject('info.connection', (err, obj) => {
+        this.adapter.getObject('info.connection', (_err, obj) => {
             if (!obj || !obj.common || obj.common.type !== 'boolean') {
                 obj = {
                     _id: 'info.connection',
@@ -258,7 +258,7 @@ class MQTTClient {
         // create last Session object and state to store previous
         // topics in case of persisted sessions
         if (this.config.persistent) {
-            this.adapter.getObject('info.lastSession', (err, obj) => {
+            this.adapter.getObject('info.lastSession', (_err, obj) => {
                 if (!obj || !obj.common || obj.common.type !== 'string') {
                     obj = {
                         _id: 'info.lastSession',
@@ -326,7 +326,8 @@ class MQTTClient {
                 catch {
                     // ignore
                 }
-                if (obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+                if (obj &&
+                    obj._id?.startsWith(`${this.adapter.namespace}.`) &&
                     obj.type === 'folder' &&
                     obj.native?.autocreated === 'by automatic ensure logic') {
                     // ignore a default created object because we now have a more defined one
@@ -340,7 +341,8 @@ class MQTTClient {
                     catch {
                         // ignore
                     }
-                    if (obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+                    if (obj &&
+                        obj._id?.startsWith(`${this.adapter.namespace}.`) &&
                         obj.type === 'folder' &&
                         obj.native?.autocreated === 'by automatic ensure logic') {
                         // ignore a default created object because we now have a more defined one
@@ -388,7 +390,7 @@ class MQTTClient {
                     this.adapter.log.warn('"file" type is deprecated. Please use "mixed" or "string" instead.');
                     return;
                 }
-                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter);
+                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
                 this.topic2id[topic].message = parsedMessage;
                 // Derive the datapoint type. For an ioBroker state object use the type of
                 // its `val` (a `val` of null is indeterminate → 'mixed'); a JSON string that
@@ -494,7 +496,7 @@ class MQTTClient {
                 if (this.config.debug) {
                     this.adapter.log.debug(`Client received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`);
                 }
-                this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter);
+                this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
             }
             else {
                 if (!this.config.onchange) {
@@ -506,7 +508,7 @@ class MQTTClient {
                     }
                 }
                 let value;
-                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter);
+                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
                 if (typeof parsedMessage.message === 'object') {
                     if (!this.config.onchange ||
                         JSON.stringify(this.topic2id[topic].message?.message) !== JSON.stringify(parsedMessage.message)) {
@@ -595,7 +597,7 @@ class MQTTClient {
             void this.adapter.setState('info.connection', this.connected, true);
             // unsubscribe old topics in persisted session
             if (this.config.persistent) {
-                this.adapter.getState('info.lastSession', (err, state) => {
+                this.adapter.getState('info.lastSession', (_err, state) => {
                     const patternsPrevious = state?.val ? JSON.parse(state.val) || [] : [];
                     const patternsDiff = patternsPrevious.filter(x => !this.patterns.includes(x));
                     for (let i = 0; i < patternsDiff.length; i++) {
