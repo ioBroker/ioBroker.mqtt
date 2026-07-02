@@ -167,12 +167,16 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (bluefox) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
+* (bluefox) Migrated the test suite to TypeScript
+
 ### 7.0.1 (2026-07-01)
 * (Apollon77) Optimized client state generation logic to prevent load issues
 * (Apollon77) Optimized detection of incoming data as ioBroker states 
 * (bluefox) Breaking change: removed binary states
 * (bluefox) Migrated to TypeScript
-* (bluefox) Breaking change: minimal supported Node.js version is 22
+* (bluefox) Breaking change: a minimal supported Node.js version is 22
 * (Marc-Berg) Fixed some errors
 * (driemekasten) Fixed the reject unresolved topic ids with SUBACK failure
 
