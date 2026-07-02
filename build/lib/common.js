@@ -202,18 +202,28 @@ function convertMessage(topic, message, adapter, clientID) {
         message = message ? message.toString('utf8') : 'null';
         type = 'string';
     }
-    // try to convert 101,124,444,... To utf8 string
-    if (type === 'string' && message.match(/^(\d)+,\s?(\d)+,\s?(\d)+/)) {
+    // Optionally convert "101,124,444,..." to a utf8 string. Off by default: devices like NUKI
+    // locks send comma-separated numbers (e.g. "3,0,442236930,1,2") that are not character codes,
+    // so interpreting them as such produced garbled values (see issue #550 / PR #551).
+    if (type === 'string' &&
+        adapter.config.parseCharCodes &&
+        message.match(/^\d+,\s?\d+,\s?\d+/)) {
         const parts = message.split(',');
-        try {
-            let str = '';
-            for (let p = 0; p < parts.length; p++) {
-                str += String.fromCharCode(parseInt(parts[p].trim(), 10));
+        let str = '';
+        let allValidCharCodes = true;
+        for (let p = 0; p < parts.length; p++) {
+            const charCode = parseInt(parts[p].trim(), 10);
+            // Only values that map reliably via String.fromCharCode (0-255, extended ASCII) are accepted.
+            if (Number.isNaN(charCode) || charCode < 0 || charCode > 255) {
+                allValidCharCodes = false;
+                break;
             }
-            message = str;
+            str += String.fromCharCode(charCode);
         }
-        catch {
-            // cannot convert and ignore it
+        // Only use the converted string if every part was a valid character code; otherwise keep the
+        // original message so it can still be parsed as a number / JSON / raw string below.
+        if (allValidCharCodes) {
+            return { message: str, isStateObject: false };
         }
     }
     if (type === 'string') {

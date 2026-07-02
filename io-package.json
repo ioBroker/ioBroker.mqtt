@@ -298,7 +298,8 @@
     "allBinaries": false,
     "doNotCheckPublicIP": false,
     "ignoredTopics": "",
-    "doNotCreateClientObjects": false
+    "doNotCreateClientObjects": false,
+    "parseCharCodes": false
   },
   "objects": [],
   "instanceObjects": [
