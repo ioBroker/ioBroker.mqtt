@@ -246,6 +246,44 @@
           "agree",
           "cancel"
         ]
+      },
+      {
+        "condition": {
+          "operand": "and",
+          "rules": [
+            "oldVersion<7.0.2",
+            "newVersion>=7.0.2"
+          ]
+        },
+        "title": {
+          "en": "Character-code parsing is now off by default",
+          "de": "Zeichencode-Interpretation ist jetzt standardmäßig deaktiviert",
+          "ru": "Разбор кодов символов теперь отключён по умолчанию",
+          "pt": "A interpretação de códigos de caracteres agora está desativada por padrão",
+          "nl": "Interpretatie van tekencodes staat nu standaard uit",
+          "fr": "L'interprétation des codes de caractères est désormais désactivée par défaut",
+          "it": "L'interpretazione dei codici carattere è ora disattivata per impostazione predefinita",
+          "es": "El análisis de códigos de caracteres ahora está desactivado de forma predeterminada",
+          "pl": "Interpretacja kodów znaków jest teraz domyślnie wyłączona",
+          "zh-cn": "字符代码解析现在默认关闭"
+        },
+        "text": {
+          "en": "Comma-separated numbers such as \"72,101,108,108,111\" are no longer converted to text as character codes by default. If a device relied on this, enable \"Parse comma-separated numbers as character codes\" in the instance settings.",
+          "de": "Kommagetrennte Zahlen wie \"72,101,108,108,111\" werden standardmäßig nicht mehr als Zeichencodes in Text umgewandelt. Falls ein Gerät dies benötigt, aktivieren Sie \"Kommagetrennte Zahlen als Zeichencodes interpretieren\" in den Instanz-Einstellungen.",
+          "ru": "Числа, разделённые запятыми (например, \"72,101,108,108,111\"), больше не преобразуются в текст как коды символов по умолчанию. Если это нужно вашему устройству, включите соответствующую опцию разбора кодов символов в настройках экземпляра.",
+          "pt": "Números separados por vírgula, como \"72,101,108,108,111\", não são mais convertidos em texto como códigos de caracteres por padrão. Se um dispositivo depender disso, ative a opção correspondente de análise de códigos de caracteres nas configurações da instância.",
+          "nl": "Door komma's gescheiden getallen zoals \"72,101,108,108,111\" worden standaard niet langer als tekencodes naar tekst omgezet. Als een apparaat hiervan afhankelijk is, schakel dan de betreffende optie voor tekencodeverwerking in de instantie-instellingen in.",
+          "fr": "Les nombres séparés par des virgules comme \"72,101,108,108,111\" ne sont plus convertis en texte comme codes de caractères par défaut. Si un appareil en dépend, activez l'option correspondante d'analyse des codes de caractères dans les paramètres de l'instance.",
+          "it": "I numeri separati da virgola come \"72,101,108,108,111\" non vengono più convertiti in testo come codici carattere per impostazione predefinita. Se un dispositivo ne dipende, abilita la relativa opzione di analisi dei codici carattere nelle impostazioni dell'istanza.",
+          "es": "Los números separados por comas como \"72,101,108,108,111\" ya no se convierten en texto como códigos de caracteres de forma predeterminada. Si un dispositivo depende de esto, active la opción correspondiente de análisis de códigos de caracteres en la configuración de la instancia.",
+          "pl": "Liczby oddzielone przecinkami, takie jak \"72,101,108,108,111\", nie są już domyślnie konwertowane na tekst jako kody znaków. Jeśli urządzenie tego wymaga, włącz odpowiednią opcję analizy kodów znaków w ustawieniach instancji.",
+          "zh-cn": "默认情况下，诸如 \"72,101,108,108,111\" 之类的逗号分隔数字不再作为字符代码转换为文本。如果设备依赖此功能，请在实例设置中启用相应的字符代码解析选项。"
+        },
+        "level": "warn",
+        "buttons": [
+          "agree",
+          "cancel"
+        ]
       }
     ]
   },

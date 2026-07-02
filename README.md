@@ -168,7 +168,7 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ## Changelog
 ### **WORK IN PROGRESS**
-* (bluefox) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
+* (Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
 * (bluefox) Migrated the test suite to TypeScript
 
 ### 7.0.1 (2026-07-01)
