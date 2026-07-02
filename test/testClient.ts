@@ -198,7 +198,8 @@ describe('Test MQTT client', function () {
         } else {
             done();
         }
-    }).timeout(3000);
+        // checkConnectionOfAdapter polls up to 20 × 500 ms = 10 s, so the mocha timeout must exceed that.
+    }).timeout(12000);
 
     it('MQTT client: wait', done => {
         setTimeout(() => done(), 1000);
