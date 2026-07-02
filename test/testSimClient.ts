@@ -1,17 +1,18 @@
-'use strict';
-const assert = require('node:assert');
-const Adapter = require('./lib/adapterSim').default;
-const SimulatedServer = require('./lib/mqttServer').default;
-const ClientEmitter = require('./lib/mqttClient').default;
+import assert from 'node:assert';
+import Adapter from './lib/adapterSim';
+import SimulatedServer from './lib/mqttServer';
+import ClientEmitter from './lib/mqttClient';
+
+// The compiled adapter under test (build/) ships no type declarations, so load it untyped.
 const Client = require('../build/lib/MQTTClient').default;
 
 let port = 1883;
 
 describe('MQTT client', function () {
-    let adapter;
-    let simulatedServer;
-    let client;
-    const states = {};
+    let adapter: Adapter;
+    let simulatedServer: SimulatedServer;
+    let client: any;
+    const states: Record<string, ioBroker.State> = {};
     this.timeout(3000);
 
     before('MQTT client: Start MQTT simulatedServer', done => {
@@ -29,6 +30,7 @@ describe('MQTT client', function () {
     it('MQTT client: Check if connected to MQTT broker', done => {
         setTimeout(async () => {
             const data = await adapter.getStateAsync('info.connection');
+            assert.ok(data);
             assert.strictEqual(data.val, true);
             done();
         }, 200);
@@ -45,7 +47,7 @@ describe('MQTT client', function () {
                     setTimeout(async () => {
                         const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
                         assert.ok(obj);
-                        assert.strictEqual(obj.common.type, 'mixed');
+                        assert.strictEqual((obj as ioBroker.StateObject).common.type, 'mixed');
                         publisher.destroy();
                         done();
                     }, 500);
@@ -69,7 +71,7 @@ describe('MQTT client', function () {
                         setTimeout(async () => {
                             const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
                             assert.ok(obj);
-                            assert.strictEqual(obj.common.type, 'number');
+                            assert.strictEqual((obj as ioBroker.StateObject).common.type, 'number');
                             publisher.destroy();
                             done();
                         }, 500);

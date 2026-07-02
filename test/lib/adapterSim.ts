@@ -11,6 +11,12 @@ export interface AdapterConfig {
     ssl?: boolean;
     webSocket?: boolean;
     certificates?: null;
+    // Additional fields consumed by the adapter-under-test (MQTTClient / MQTTServer)
+    url?: string;
+    clientId?: string;
+    retransmitInterval?: number;
+    retransmitCount?: number;
+    ignoreNewObjects?: boolean;
 }
 
 export default class AdapterSimulator {

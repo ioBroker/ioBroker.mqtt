@@ -15,5 +15,6 @@ iob_npm.done
 #ignore .commitinfo created by ioBroker release script
 .commitinfo
 
-# compiled test mocks (emitted next to their .ts sources by test/tsconfig.build.json)
+# compiled tests + mocks (emitted next to their .ts sources by test/tsconfig.build.json)
+test/*.js
 test/lib/*.js

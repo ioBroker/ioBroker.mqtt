@@ -5,8 +5,9 @@
         "allowJs": true,
         "checkJs": false,
         "skipLibCheck": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "types": ["@types/node", "@iobroker/types", "@types/mocha"]
     },
-    "include": ["**/*.ts", "**/*.js"],
-    "exclude": ["lib/*.js"]
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules"]
 }
