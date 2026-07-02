@@ -1,4 +1,4 @@
-import type { MqttAdapterConfig, MqttClientID, MqttPattern, MqttTopic } from './types';
+import type { MqttClientID, MqttPattern, MqttTopic } from './types';
 
 const IOBROKER_STATE_PROPERTIES = ['val', 'ack', 'ts', 'q', 'lc', 'from', 'expire', 'user', 'c'];
 
