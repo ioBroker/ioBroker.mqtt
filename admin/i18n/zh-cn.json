@@ -66,7 +66,7 @@
   "Use client settings": "使用客户端设置",
   "Use different topic names for set and get:": "为set和get使用不同的主题名称",
   "User:": "用户",
-  "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "启用 WebSocket 后，将运行两个 MQTT 服务器，WebSocket 端口号会加一。例如，如果端口设置为 8883，则支持 WebSocket 的服务器运行在 8884 端口；如果端口设置为 1883（不支持 SSL），则支持 WebSocket 的服务器运行在 1884 端口。",
+  "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "启用 WebSocket 后，将运行两个 MQTT 服务器，WebSocket 端口号会加一。例如，如果端口设置为 8883，则支持 WebSocket 的服务器运行在 8884 端口；如果端口设置为 1883（不支持 SSL），则支持 WebSocket 的服务器运行在 1884 端口。",
   "chars": "字符",
   "connected": "连接的",
   "ms": "毫秒",

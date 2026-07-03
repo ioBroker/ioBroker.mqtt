@@ -66,7 +66,7 @@
   "Use client settings": "Используйте настройки клиента",
   "Use different topic names for set and get:": "Использовать разные имена для чтения и записи",
   "User:": "Пользователь",
-  "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For examble, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "При включении WebSockets работают два сервера MQTT, при этом порт для WebSockets увеличивается на единицу. Например, если порт установлен на 8883, то сервер с WebSockets работает на 8884, или если порт 1883 (без SSL), то с WebSockets он работает на 1884.",
+  "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "При включении WebSockets работают два сервера MQTT, при этом порт для WebSockets увеличивается на единицу. Например, если порт установлен на 8883, то сервер с WebSockets работает на 8884, или если порт 1883 (без SSL), то с WebSockets он работает на 1884.",
   "chars": "символов",
   "connected": "успешно",
   "ms": "мс",
