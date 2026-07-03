@@ -133,12 +133,17 @@ For MQTT topics, if you want to subscribe to all Finals topics, you can use the 
 `Sport/+/Finals`
 
 ### Binary messages
-With version 4.x, there is a possibility to send and receive binary messages.
-**Send works only with js-controller@4.2 or newer.**
+Binary states were **removed in v7.0.1** (breaking change), because binary states are no longer supported by the ioBroker js-controller. The former *"All new topics will be processed as binary"* option and the `common.type = "file"` handling no longer have any effect.
 
-You can change manually the `common.type` of existing objects to `file` and they will be processed as binary states.
+Incoming MQTT payloads are otherwise always decoded as UTF-8 text and stored as a normal `string` / `number` / `boolean` / JSON state. Decoding a **raw binary payload** (e.g. a compressed image or map data such as the Valetudo map) as text would corrupt the non-text bytes, and changing `common.type` to `mixed` does not help because the value is already a string before it is written to the state.
 
-Or you can set the options *All new topics will be processed as binary** in the instance settings to force all new topics will have automatically `common.type="file"`.
+#### Binary topics (stored as files)
+To handle real binary payloads, list the affected topics under **"Binary topics (stored as files)"** in the instance settings (comma-separated, wildcards allowed, e.g. `valetudo/+/map,zigbee.*.image`). For every matching topic the adapter:
+
+- writes the raw bytes into the adapter's file storage under `mqtt.<instance>/<topic>` (visible in Admin → Files and served at `/files/mqtt.<instance>/<topic>`), and
+- sets the corresponding state (`common.type: "string"`, `role: "url"`, `native.binary: true`) to the file URL, e.g. `/files/mqtt.0/valetudo/robot/map`.
+
+This works in both **client** and **server** mode. When such a state is published again (server mode: forwarded to subscribers; client mode: sent to the broker) the adapter reads the file back and sends the raw bytes, so binary data round-trips losslessly. In `vis` you can bind the state value directly to an `<img src>`.
 
 ### Tests
 The broker was tested with the following clients:
@@ -167,29 +172,32 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Added a "Binary topics" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)
+
 ### 7.0.2 (2026-07-02)
-* (Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
-* (bluefox) Migrated the test suite to TypeScript
+* (@Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
+* (@GermanBluefox) Migrated the test suite to TypeScript
 
 ### 7.0.1 (2026-07-01)
-* (Apollon77) Optimized client state generation logic to prevent load issues
-* (Apollon77) Optimized detection of incoming data as ioBroker states 
-* (bluefox) Breaking change: removed binary states
-* (bluefox) Migrated to TypeScript
-* (bluefox) Breaking change: a minimal supported Node.js version is 22
-* (Marc-Berg) Fixed some errors
-* (driemekasten) Fixed the reject unresolved topic ids with SUBACK failure
+* (@Apollon77) Optimized client state generation logic to prevent load issues
+* (@Apollon77) Optimized detection of incoming data as ioBroker states 
+* (@GermanBluefox) Breaking change: removed binary states
+* (@GermanBluefox) Migrated to TypeScript
+* (@GermanBluefox) Breaking change: a minimal supported Node.js version is 22
+* (@Marc-Berg) Fixed some errors
+* (@driemekasten) Fixed the reject unresolved topic ids with SUBACK failure
 
 ### 6.1.4 (2025-05-07)
-* (bluefox) Allowed disabling the client objects creation
-* (bluefox) Create client objects with timeout (1s) to prevent memory leaks
+* (@GermanBluefox) Allowed disabling the client objects creation
+* (@GermanBluefox) Create client objects with timeout (1s) to prevent memory leaks
 
 ### 6.1.3 (2025-05-04)
-* (Code-X77) Corrected TLS communication
-* (bluefox) Packages updated
+* (@Code-X77) Corrected TLS communication
+* (@GermanBluefox) Packages updated
 
 ### 6.1.2 (2024-09-04)
-* (bluefox) Corrected error if the client has no ID
+* (@GermanBluefox) Corrected error if the client has no ID
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

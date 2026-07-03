@@ -17,6 +17,8 @@ export interface AdapterConfig {
     retransmitInterval?: number;
     retransmitCount?: number;
     ignoreNewObjects?: boolean;
+    ignoredTopics?: string;
+    binaryTopics?: string;
 }
 
 export default class AdapterSimulator {
@@ -31,6 +33,7 @@ export default class AdapterSimulator {
 
     #objects: Record<string, ioBroker.Object> = {};
     #states: Record<string, ioBroker.State> = {};
+    #files: Record<string, Buffer> = {};
 
     constructor(config?: AdapterConfig) {
         this.namespace = 'mqtt.0';
@@ -199,9 +202,28 @@ export default class AdapterSimulator {
         return new Promise(resolve => this.setForeignObject(id, obj, () => resolve()));
     }
 
+    writeFileAsync(adapterName: string, path: string, data: Buffer | string): Promise<void> {
+        this.#files[`${adapterName}/${path}`] = Buffer.isBuffer(data) ? data : Buffer.from(data);
+        return Promise.resolve();
+    }
+
+    readFileAsync(adapterName: string, path: string): Promise<{ file: Buffer | string; mimeType?: string }> {
+        const data = this.#files[`${adapterName}/${path}`];
+        if (data === undefined) {
+            return Promise.reject(new Error(`File not found: ${adapterName}/${path}`));
+        }
+        return Promise.resolve({ file: data, mimeType: 'application/octet-stream' });
+    }
+
+    /** Test helper: returns the raw bytes stored for a file (or undefined). */
+    getStoredFile(adapterName: string, path: string): Buffer | undefined {
+        return this.#files[`${adapterName}/${path}`];
+    }
+
     clearAll(): void {
         this.#objects = {};
         this.#states = {};
+        this.#files = {};
     }
 
     setTimeout(func: (...args: unknown[]) => void, time: number): NodeJS.Timeout {

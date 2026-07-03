@@ -7,8 +7,10 @@ import {
     convertID2topic,
     ensureObjectStructure,
     isIgnoredTopic,
+    isBinaryTopic,
     pattern2RegEx,
     convertMessage,
+    topic2filename,
 } from './common';
 import { createServer as createHttpsServer, type Server as HttpsServer } from 'https';
 import { createServer as createHttpServer, type Server as HttpServer } from 'http';
@@ -154,6 +156,8 @@ export default class MQTTServer {
 
     private readonly ignoredTopicsRegexes: RegExp[] = [];
     private readonly ignoredTopics: string[] = [];
+    private readonly binaryTopicsRegexes: RegExp[] = [];
+    private readonly binaryTopics: string[] = [];
     private readonly states: Record<string, ioBroker.State>;
 
     constructor(adapter: ioBroker.Adapter, states: Record<string, ioBroker.State>) {
@@ -180,6 +184,24 @@ export default class MQTTServer {
             );
             this.ignoredTopicsRegexes.push(new RegExp(ignoredTopicRegex), new RegExp(ignoredTopicRegexWithNameSpace));
         }
+
+        this.binaryTopics = this.config.binaryTopics?.split(',') ?? [];
+        for (const binaryTopicPattern of this.binaryTopics) {
+            if (!binaryTopicPattern) {
+                continue;
+            }
+            const binaryTopicRegexWithNameSpace = pattern2RegEx(
+                `${this.adapter.namespace}.${binaryTopicPattern}`,
+                adapter,
+                this.config.prefix,
+            );
+            const binaryTopicRegex = pattern2RegEx(binaryTopicPattern, adapter, this.config.prefix);
+            this.adapter.log.info(
+                `Storing topic as file with pattern: ${binaryTopicPattern} (RegExp: ${binaryTopicRegex} und ${binaryTopicRegexWithNameSpace})`,
+            );
+            this.binaryTopicsRegexes.push(new RegExp(binaryTopicRegex), new RegExp(binaryTopicRegexWithNameSpace));
+        }
+
         this.config.sendOnStartInterval = parseInt(this.config.sendOnStartInterval as unknown as string, 10) || 2000;
         this.config.sendInterval = parseInt(this.config.sendInterval as unknown as string, 10) || 0;
         this.init();
@@ -446,6 +468,13 @@ export default class MQTTServer {
             return;
         }
 
+        // Binary states are delivered as raw files via sendBinaryState2Client, never as a
+        // (URL) string message. Skip here so the file URL is not published as the payload.
+        if (this.topic2id[this.id2topic[id]]?.obj?.native?.binary) {
+            cb(null, undefined, client);
+            return;
+        }
+
         // client has subscription for this ID
         let message: MqttMessage | undefined;
         let topic;
@@ -585,6 +614,13 @@ export default class MQTTServer {
             return;
         }
 
+        // Binary state: send the raw file bytes instead of the stored URL string
+        const binaryTopic = this.id2topic[id];
+        if (binaryTopic && this.topic2id[binaryTopic]?.obj?.native?.binary) {
+            this.sendBinaryState2Client(client, id, qos, retain, cb);
+            return;
+        }
+
         this.getMqttMessage<MqttConnection>(client, id, state, qos, retain, (_err, message, client) => {
             if (message) {
                 if (this.config.debug) {
@@ -603,6 +639,82 @@ export default class MQTTServer {
 
             cb?.(id);
         });
+    }
+
+    /**
+     * Sends a binary state to a subscribed client by reading its raw bytes back from the file
+     * storage (the state value itself only holds the file URL).
+     */
+    private sendBinaryState2Client(
+        client: MqttConnection,
+        id: string,
+        qos?: 0 | 1 | 2,
+        retain?: boolean,
+        cb?: (id: string) => void,
+    ): void {
+        const topic = this.id2topic[id];
+        const file: string | undefined = topic ? this.topic2id[topic]?.obj?.native?.file : undefined;
+
+        // Determine whether the client is subscribed and with which QoS
+        let subQos: 0 | 1 | 2 | undefined;
+        if (client._subsID?.[id]) {
+            subQos = client._subsID[id].qos;
+        } else if (client._subs) {
+            const pattern = this.checkPattern(client._subs, id);
+            if (pattern) {
+                subQos = pattern.qos;
+                client._subsID ||= {};
+                client._subsID[id] = pattern;
+            }
+        }
+
+        if (!topic || !file || subQos === undefined) {
+            // not subscribed or file unknown
+            cb?.(id);
+            return;
+        }
+
+        const subscribedQos: 0 | 1 | 2 = subQos;
+
+        this.adapter
+            .readFileAsync(this.adapter.namespace, file)
+            .then(res => {
+                const data = res?.file;
+                if (data === undefined || data === null) {
+                    cb?.(id);
+                    return;
+                }
+                const message = this.addMessageAttributes(
+                    {
+                        topic,
+                        payload: data as unknown as string,
+                        qos: subscribedQos,
+                        retain: retain ?? false,
+                        ts: Date.now(),
+                        count: 0,
+                        messageId: 0,
+                    },
+                    { qos: qos ?? subscribedQos ?? this.config.defaultQoS, retain: retain ?? false, binary: true },
+                );
+
+                if (this.config.debug) {
+                    this.adapter.log.debug(
+                        `Client [${client.id}] send binary to this client "${message.topic}" (${(data as Buffer).length} bytes)`,
+                    );
+                }
+
+                client.publish(message);
+
+                if (message.qos > 0) {
+                    client._messages ||= [];
+                    client._messages.push(message);
+                }
+                cb?.(id);
+            })
+            .catch(err => {
+                this.adapter.log.warn(`Cannot read binary file "${file}" for topic "${topic}": ${err as Error}`);
+                cb?.(id);
+            });
     }
 
     private sendStates2Client(client: MqttConnection, list: string[]): void {
@@ -956,6 +1068,134 @@ export default class MQTTServer {
         ensureObjectStructure(this.adapter, stateObj._id, this.verifiedObjects).catch(e => this.adapter.log.error(e));
     }
 
+    /**
+     * Stores a received binary payload as a file in the adapter's file storage, updates the
+     * corresponding state with the file URL and forwards the raw bytes to the other subscribed
+     * clients. Used for topics matching `binaryTopics`.
+     */
+    private async storeBinaryMessage(
+        id: string,
+        topic: MqttTopic,
+        message: Buffer,
+        isAck: boolean,
+        qos: 0 | 1 | 2,
+        retain: boolean,
+        ignoreClient: MqttConnection,
+    ): Promise<void> {
+        const file = topic2filename(topic);
+
+        // Resolve / create the object only once, then reuse it from the cache
+        if (!this.topic2id[topic]?.obj?.native?.binary) {
+            let obj: ioBroker.Object | undefined | null = null;
+            try {
+                obj = await this.adapter.getObjectAsync(id);
+            } catch {
+                // ignore
+            }
+            if (!obj) {
+                try {
+                    obj = await this.adapter.getForeignObjectAsync(id);
+                } catch {
+                    // ignore
+                }
+            }
+            if (
+                obj?._id?.startsWith(`${this.adapter.namespace}.`) &&
+                obj.type === 'folder' &&
+                obj.native?.autocreated === 'by automatic ensure logic'
+            ) {
+                // ignore a default created folder object because we now have a more defined one
+                obj = null;
+            }
+
+            const fullId = obj?._id || `${this.adapter.namespace}.${id}`;
+
+            if (!obj) {
+                if (this.config.ignoreNewObjects) {
+                    this.adapter.log.warn(`Object ${fullId} ignored and not created`);
+                    return;
+                }
+                obj = {
+                    _id: fullId,
+                    type: 'state',
+                    common: {
+                        name: topic,
+                        read: true,
+                        write: false,
+                        role: 'url',
+                        type: 'string',
+                        desc: 'mqtt binary payload (stored as file)',
+                    },
+                    native: { topic, binary: true, file, meta: this.adapter.namespace },
+                };
+                this.adapter.log.debug(`Create binary (file) object for topic: ${topic}[ID: ${fullId}]`);
+                try {
+                    await this.adapter.setForeignObject(fullId, obj);
+                } catch (err) {
+                    this.adapter.log.error(`Could not create object "${fullId}": ${(err as Error).message}`);
+                    return;
+                }
+            } else if (
+                !obj.native?.binary ||
+                obj.native.file !== file ||
+                obj.native.topic !== topic ||
+                obj.common?.role !== 'url'
+            ) {
+                // migrate an existing object to the file-based representation
+                obj.native ||= {};
+                obj.native.binary = true;
+                obj.native.file = file;
+                obj.native.topic = topic;
+                obj.native.meta = this.adapter.namespace;
+                obj.common ||= {} as ioBroker.StateCommon;
+                obj.common.role = 'url';
+                obj.common.type = 'string';
+                try {
+                    await this.adapter.setForeignObject(fullId, obj);
+                } catch (err) {
+                    this.adapter.log.error(`Could not update object "${fullId}": ${(err as Error).message}`);
+                }
+            }
+
+            this.topic2id[topic] = { id: fullId, obj: obj as ioBroker.StateObject };
+            this.id2topic[fullId] = topic;
+
+            ensureObjectStructure(this.adapter, fullId, this.verifiedObjects).catch(e => this.adapter.log.error(e));
+        }
+
+        const entry = this.topic2id[topic];
+
+        try {
+            await this.adapter.writeFileAsync(this.adapter.namespace, file, message);
+        } catch (err) {
+            this.adapter.log.error(`Cannot store binary payload of "${topic}" as file "${file}": ${err as Error}`);
+            return;
+        }
+
+        const url = `/files/${this.adapter.namespace}/${file}`;
+        const state = { val: url, ack: isAck } as ioBroker.State;
+        if (this.config.debug) {
+            this.adapter.log.debug(`Server stored binary "${topic}" (${message.length} bytes) as ${url}`);
+        }
+        try {
+            await this.adapter.setForeignStateAsync(entry.id, state);
+        } catch {
+            // ignore
+        }
+        this.states[entry.id] = state;
+
+        // forward the binary to all other subscribed clients (like the onchange path in processTopic)
+        if (this.config.onchange && this.server) {
+            setImmediate(() => {
+                Object.keys(this.clients).forEach(k => {
+                    if (this.clients[k] !== ignoreClient || this.config.extraSet) {
+                        this.sendState2Client(this.clients[k], entry.id, state, qos, retain);
+                    }
+                });
+            });
+        }
+    }
+
     private async receivedTopic(packet: MqttMessage, client: MqttConnection): Promise<void> {
         let isAck = true;
         let topic = packet.topic;
@@ -982,6 +1222,12 @@ export default class MQTTServer {
             return;
         }
         if (isIgnoredTopic(id, this.ignoredTopicsRegexes)) {
+            return;
+        }
+
+        // Binary payload: store the raw bytes as a file instead of a (lossy) string state
+        if (isBinaryTopic(id, this.binaryTopicsRegexes)) {
+            await this.storeBinaryMessage(id, topic, message as unknown as Buffer, isAck, qos, retain, client);
             return;
         }
 

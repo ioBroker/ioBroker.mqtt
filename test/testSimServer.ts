@@ -18,6 +18,7 @@ describe('MQTT server', function () {
             port: ++port,
             defaultQoS: 1,
             onchange: true,
+            binaryTopics: 'binimg',
         });
         server = new Server(adapter, states);
         done();
@@ -350,6 +351,45 @@ describe('MQTT server', function () {
             emitterClient.destroy();
         });
     }).timeout(3000);
+
+    it('MQTT server: Binary topic payload is stored as a file and the state holds the URL', () => {
+        let emitterClient: any;
+        const topic = 'binimg';
+        // raw bytes that are NOT valid UTF-8 text (would be corrupted by a normal string state)
+        const payload = Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe, 0x10, 0x89, 0x50]);
+        return new Promise<void>(resolve => {
+            emitterClient = new Client(
+                isConnected => {
+                    if (isConnected) {
+                        emitterClient.publish(topic, payload);
+                        setTimeout(() => resolve(), 300);
+                    }
+                },
+                null,
+                { url: `127.0.0.1:${port}`, clean: true, clientId: 'binaryServerClient' },
+            );
+        }).then(async () => {
+            // the exact raw bytes are stored as a file
+            const stored = (adapter as any).getStoredFile('mqtt.0', topic) as Buffer | undefined;
+            assert.ok(stored, 'binary payload should be stored as a file');
+            assert.strictEqual(Buffer.compare(stored, payload), 0, 'stored bytes must match the payload');
+
+            // the object is a url string state marked as binary
+            const obj = (await adapter.getForeignObjectAsync(`mqtt.0.${topic}`)) as ioBroker.StateObject;
+            assert.ok(obj);
+            assert.strictEqual(obj.common.type, 'string');
+            assert.strictEqual(obj.common.role, 'url');
+            assert.strictEqual((obj.native as any).binary, true);
+            assert.strictEqual((obj.native as any).file, topic);
+
+            // the state value points to the stored file
+            const st = await adapter.getForeignStateAsync(`mqtt.0.${topic}`);
+            assert.ok(st);
+            assert.strictEqual(st.val, `/files/mqtt.0/${topic}`);
+
+            emitterClient.destroy();
+        });
+    }).timeout(2000);
 
     after('MQTT server: Stop MQTT server', done => {
         server.destroy(done);

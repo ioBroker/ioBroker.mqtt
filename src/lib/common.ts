@@ -93,6 +93,40 @@ export function isIgnoredTopic(topic: MqttTopic, ignoredTopicsRegexes: RegExp[])
     return false;
 }
 
+/**
+ * Checks whether a received topic must be stored as a file (raw binary payload).
+ * Binary states were removed from the js-controller, so binary payloads (e.g. compressed
+ * images or map data) are written into the adapter's file storage instead of a state.
+ *
+ * @param topic The topic (already converted to an ioBroker id) to check
+ * @param binaryTopicsRegexes The compiled binary-topics filter
+ * @returns Whether the payload should be stored as a file
+ */
+export function isBinaryTopic(topic: MqttTopic, binaryTopicsRegexes: RegExp[]): boolean {
+    for (const regex of binaryTopicsRegexes) {
+        if (regex.test(topic)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Builds the file name (inside the adapter's own file storage) for a binary topic.
+ * The slash-separated MQTT topic is used directly as a path, e.g. "valetudo/robot/map".
+ * A leading slash and any "." / ".." segments are stripped to keep the path safe.
+ *
+ * @param topic The MQTT topic
+ * @returns A safe relative file path
+ */
+export function topic2filename(topic: MqttTopic): string {
+    return topic
+        .replace(/^\/+/, '')
+        .split('/')
+        .filter(part => part && part !== '.' && part !== '..')
+        .join('/');
+}
+
 export function state2string(val: ioBroker.StateValue | ioBroker.State, sendStateObject?: boolean | null): string {
     if (sendStateObject === undefined || sendStateObject === null) {
         sendStateObject = false;

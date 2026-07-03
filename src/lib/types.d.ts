@@ -46,6 +46,7 @@ export interface MqttAdapterConfig {
     noRetain: boolean;
     doNotCheckPublicIP: boolean;
     ignoredTopics: string;
+    binaryTopics: string;
     doNotCreateClientObjects: boolean;
     parseCharCodes: boolean;
     certificates?: ioBroker.Certificates;

@@ -284,6 +284,43 @@
           "agree",
           "cancel"
         ]
+      },
+      {
+        "condition": {
+          "operand": "and",
+          "rules": [
+            "oldVersion<7.0.1",
+            "newVersion>=7.0.1"
+          ]
+        },
+        "title": {
+          "en": "MQTT server: session handling changed",
+          "de": "MQTT-Server: Session-Verhalten geändert",
+          "ru": "MQTT-сервер: изменена обработка сессий",
+          "pt": "Servidor MQTT: manuseio de sessão alterado",
+          "nl": "MQTT-server: sessieafhandeling gewijzigd",
+          "fr": "Serveur MQTT : gestion des sessions modifiée",
+          "it": "Server MQTT: gestione delle sessioni modificata",
+          "es": "Servidor MQTT: manejo de sesiones modificado",
+          "pl": "Serwer MQTT: zmieniono obsługę sesji",
+          "zh-cn": "MQTT 服务器：会话处理已更改"
+        },
+        "text": {
+          "en": "In server mode the MQTT server now respects the client's clean-session flag (changed in v6.1.3). Devices that connect with a clean session (e.g. Arduino/ESP with PubSubClient) and do not re-subscribe after a reconnect will stop receiving messages. To keep the previous behavior, set \"Force clean session\" to \"Always keep sessions for all clients\" in the instance settings, or change the device to re-subscribe after every reconnect.",
+          "de": "Im Server-Modus berücksichtigt der MQTT-Server jetzt das Clean-Session-Flag des Clients (geändert in v6.1.3). Geräte, die sich mit leerer Session verbinden (z. B. Arduino/ESP mit PubSubClient) und nach einem Reconnect nicht erneut abonnieren, empfangen keine Nachrichten mehr. Um das bisherige Verhalten beizubehalten, setzen Sie in den Instanz-Einstellungen \"Leere Session erzwingen\" auf \"Sessions für alle Clients behalten\", oder passen Sie das Gerät so an, dass es nach jedem Reconnect erneut abonniert.",
+          "ru": "В режиме сервера MQTT-сервер теперь учитывает флаг clean session клиента (изменено в v6.1.3). Устройства, которые подключаются с чистой сессией (например, Arduino/ESP с PubSubClient) и не переподписываются после переподключения, перестают получать сообщения. Чтобы сохранить прежнее поведение, установите в настройках экземпляра \"Force clean session\" в значение \"Always keep sessions for all clients\", либо измените устройство так, чтобы оно повторно подписывалось после каждого переподключения.",
+          "pt": "No modo servidor, o servidor MQTT agora respeita o sinalizador clean-session do cliente (alterado na v6.1.3). Dispositivos que se conectam com uma sessão limpa (por exemplo, Arduino/ESP com PubSubClient) e não se reinscrevem após uma reconexão deixarão de receber mensagens. Para manter o comportamento anterior, defina \"Force clean session\" como \"Always keep sessions for all clients\" nas configurações da instância, ou altere o dispositivo para se reinscrever após cada reconexão.",
+          "nl": "In servermodus respecteert de MQTT-server nu de clean-session-vlag van de client (gewijzigd in v6.1.3). Apparaten die verbinding maken met een clean session (bijv. Arduino/ESP met PubSubClient) en zich na een herverbinding niet opnieuw abonneren, ontvangen geen berichten meer. Om het vorige gedrag te behouden, stelt u \"Force clean session\" in op \"Always keep sessions for all clients\" in de instantie-instellingen, of past u het apparaat aan zodat het zich na elke herverbinding opnieuw abonneert.",
+          "fr": "En mode serveur, le serveur MQTT respecte désormais l'indicateur clean-session du client (modifié en v6.1.3). Les appareils qui se connectent avec une session propre (par ex. Arduino/ESP avec PubSubClient) et ne se réabonnent pas après une reconnexion ne recevront plus de messages. Pour conserver le comportement précédent, réglez \"Force clean session\" sur \"Always keep sessions for all clients\" dans les paramètres de l'instance, ou modifiez l'appareil pour qu'il se réabonne après chaque reconnexion.",
+          "it": "In modalità server, il server MQTT ora rispetta il flag clean-session del client (modificato nella v6.1.3). I dispositivi che si connettono con una sessione pulita (ad es. Arduino/ESP con PubSubClient) e non si iscrivono nuovamente dopo una riconnessione smetteranno di ricevere messaggi. Per mantenere il comportamento precedente, imposta \"Force clean session\" su \"Always keep sessions for all clients\" nelle impostazioni dell'istanza, oppure modifica il dispositivo affinché si iscriva di nuovo dopo ogni riconnessione.",
+          "es": "En modo servidor, el servidor MQTT ahora respeta el indicador clean-session del cliente (cambiado en v6.1.3). Los dispositivos que se conectan con una sesión limpia (por ejemplo, Arduino/ESP con PubSubClient) y no se vuelven a suscribir tras una reconexión dejarán de recibir mensajes. Para mantener el comportamiento anterior, establezca \"Force clean session\" en \"Always keep sessions for all clients\" en la configuración de la instancia, o modifique el dispositivo para que se vuelva a suscribir después de cada reconexión.",
+          "pl": "W trybie serwera serwer MQTT uwzględnia teraz flagę clean-session klienta (zmieniono w v6.1.3). Urządzenia, które łączą się z czystą sesją (np. Arduino/ESP z PubSubClient) i nie subskrybują ponownie po ponownym połączeniu, przestaną odbierać wiadomości. Aby zachować poprzednie zachowanie, ustaw \"Force clean session\" na \"Always keep sessions for all clients\" w ustawieniach instancji lub zmień urządzenie tak, aby subskrybowało ponownie po każdym ponownym połączeniu.",
+          "zh-cn": "在服务器模式下，MQTT 服务器现在会遵循客户端的 clean-session 标志（在 v6.1.3 中更改）。以清理会话方式连接的设备（例如使用 PubSubClient 的 Arduino/ESP），如果在重新连接后不重新订阅，将不再接收消息。要保持以前的行为，请在实例设置中将 \"Force clean session\" 设置为 \"Always keep sessions for all clients\"，或修改设备使其在每次重新连接后重新订阅。"
+        },
+        "level": "warn",
+        "buttons": [
+          "ok"
+        ]
       }
     ]
   },
@@ -333,9 +370,9 @@
     "removePrefix": "",
     "ignoreNewObjects": false,
     "noRetain": false,
-    "allBinaries": false,
     "doNotCheckPublicIP": false,
     "ignoredTopics": "",
+    "binaryTopics": "",
     "doNotCreateClientObjects": false,
     "parseCharCodes": false
   },

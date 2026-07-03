@@ -308,6 +308,18 @@
                     "delimiter": ",",
                     "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
                 },
+                "binaryTopics": {
+                    "newLine": true,
+                    "type": "chips",
+                    "label": "Binary topics (stored as files):",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "delimiter": ",",
+                    "help": "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')"
+                },
                 "doNotCreateClientObjects": {
                     "newLine": true,
                     "type": "checkbox",
@@ -471,16 +483,6 @@
                     "newLine": true,
                     "type": "checkbox",
                     "label": "Do not create new states",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "allBinaries": {
-                    "newLine": true,
-                    "type": "checkbox",
-                    "label": "All new topics will be processed as binary",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
