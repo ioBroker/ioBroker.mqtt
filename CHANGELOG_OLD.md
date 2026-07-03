@@ -1,4 +1,7 @@
 # Older changes
+## 6.1.2 (2024-09-04)
+* (@GermanBluefox) Corrected error if the client has no ID
+
 ## 6.1.1 (2024-08-29)
 * (bluefox) Added information about connected clients in the server mode
 

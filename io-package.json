@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "7.0.2",
+    "version": "7.1.0",
     "news": {
+      "7.1.0": {
+        "en": "Added a \"Binary topics\" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)",
+        "de": "Es wurde eine Einstellung namens „Binäre Themen“ hinzugefügt, um rohe Binärdaten (z. B. Valetudo-Karte, Kamerabilder) als Dateien zu speichern, anstatt sie als UTF-8-Zeichenketten zu verfälschen (#573).",
+        "ru": "Добавлена настройка «Бинарные темы» для хранения необработанных бинарных данных (например, карты Valetudo, изображений с камеры) в виде файлов вместо их искажения в виде строк UTF-8 (#573)",
+        "pt": "Adicionada uma configuração de \"Tópicos binários\" para armazenar payloads binários brutos (por exemplo, mapa Valetudo, imagens de câmera) como arquivos em vez de corrompê-los como strings UTF-8 (#573)",
+        "nl": "Er is een instelling \"Binaire onderwerpen\" toegevoegd om onbewerkte binaire gegevens (bijv. Valetudo-kaart, camera-afbeeldingen) als bestanden op te slaan in plaats van ze te beschadigen als UTF-8-tekenreeksen (#573).",
+        "fr": "Ajout d'un paramètre « Sujets binaires » pour stocker les charges utiles binaires brutes (par exemple, la carte Valetudo, les images de la caméra) sous forme de fichiers au lieu de les corrompre en tant que chaînes UTF-8 (#573)",
+        "it": "Aggiunta un'impostazione \"Argomenti binari\" per memorizzare i payload binari non elaborati (ad esempio, mappa di Valetudo, immagini della telecamera) come file anziché corromperli come stringhe UTF-8 (#573)",
+        "es": "Se agregó una configuración de \"Temas binarios\" para almacenar cargas útiles binarias sin procesar (por ejemplo, mapa de Valetudo, imágenes de la cámara) como archivos en lugar de corromperlas como cadenas UTF-8 (#573).",
+        "pl": "Dodano ustawienie „Tematy binarne” umożliwiające przechowywanie surowych ładunków binarnych (np. mapy Valetudo, obrazów z kamer) jako plików zamiast ich uszkadzania jako ciągów UTF-8 (#573)",
+        "uk": "Додано налаштування «Бінкові теми» для зберігання необроблених бінарних корисних даних (наприклад, карти Valetudo, зображень з камери) у вигляді файлів, замість їх пошкодження як рядків UTF-8 (#573)",
+        "zh-cn": "添加了“二进制主题”设置，用于将原始二进制有效载荷（例如 Valetudo 地图、相机图像）存储为文件，而不是将其损坏为 UTF-8 字符串（#573）"
+      },
       "7.0.2": {
         "en": "Added an optional \"Parse comma-separated numbers as character codes\" setting (disabled by default) to prevent garbled values from devices like NUKI locks\nMigrated the test suite to TypeScript",
         "de": "Es wurde eine optionale Einstellung „Kommagetrennte Zahlen als Zeichencodes interpretieren“ hinzugefügt (standardmäßig deaktiviert), um fehlerhafte Werte von Geräten wie NUKI-Schlössern zu verhindern.\nDie Testsuite wurde nach TypeScript migriert.",
@@ -80,19 +93,6 @@
         "pl": "Dodano informacje o podłączonych klientach w trybie serwera",
         "uk": "Додано інформацію про підключені клієнти в режимі сервера",
         "zh-cn": "在服务器模式中添加了连接客户端的信息"
-      },
-      "6.0.2": {
-        "en": "Added a space to the connection string for better readability",
-        "de": "Hinzufügen eines Platzes zum Verbindungsstring für eine bessere Lesbarkeit",
-        "ru": "Добавлено пространство к строке подключения для лучшей читаемости",
-        "pt": "Adicionado um espaço para a cadeia de conexão para melhor legibilidade",
-        "nl": "Een ruimte aan de verbindingsstring toegevoegd voor betere leesbaarheid",
-        "fr": "Ajout d'un espace à la chaîne de connexion pour une meilleure lisibilité",
-        "it": "Aggiunto uno spazio alla stringa di connessione per una migliore leggibilità",
-        "es": "Añadido un espacio a la cadena de conexión para una mejor legibilidad",
-        "pl": "Dodano przestrzeń do łańcucha połączeń dla lepszej czytelności",
-        "uk": "Додано простір на рядок з'єднання для кращого зчитування",
-        "zh-cn": "添加到连接字符串中的空格以更好地读取"
       }
     },
     "titleLang": {
