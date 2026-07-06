@@ -843,7 +843,7 @@ export default class MQTTClient {
                     };
                     if (
                         !this.config.onchange ||
-                        storedMessage.message !== parsedMessage.message ||
+                        this.topic2id[topic].message?.message !== parsedMessage.message ||
                         this.topic2id[topic].isAck !== isAck
                     ) {
                         if (this.config.onchange) {
