@@ -84,6 +84,34 @@ describe('MQTT client', function () {
         );
     }).timeout(3000);
 
+    it('MQTT client: onchange=true processes multiple primitive changes on same topic', done => {
+        const topic = 'clientOnchangePrimitive';
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, 'true');
+                    setTimeout(async () => {
+                        const firstState = await adapter.getForeignStateAsync(`mqtt.0.${topic}`);
+                        assert.ok(firstState);
+                        assert.strictEqual(firstState.val, true);
+
+                        publisher.publish(topic, 'false');
+                        setTimeout(async () => {
+                            const secondState = await adapter.getForeignStateAsync(`mqtt.0.${topic}`);
+                            assert.ok(secondState);
+                            assert.strictEqual(secondState.val, false);
+
+                            publisher.destroy();
+                            done();
+                        }, 500);
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'clientOnchangePrimitivePublisher', subscribe: false },
+        );
+    }).timeout(3000);
+
     it('MQTT client: Binary topic payload is stored as a file and the state holds the URL', done => {
         const topic = 'binimg';
         // raw bytes that are NOT valid UTF-8 text (would be corrupted by a normal string state)
