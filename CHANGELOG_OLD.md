@@ -1,4 +1,8 @@
 # Older changes
+## 6.1.3 (2025-05-04)
+* (@Code-X77) Corrected TLS communication
+* (@GermanBluefox) Packages updated
+
 ## 6.1.2 (2024-09-04)
 * (@GermanBluefox) Corrected error if the client has no ID
 

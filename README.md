@@ -172,7 +172,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 7.1.1 (2026-07-08)
 * (@Marc-Berg) Fixed: Publish only on change issue
 
 ### 7.1.0 (2026-07-03)
@@ -194,10 +194,6 @@ Note: If you have some client that connects and disconnects very often, the list
 ### 6.1.4 (2025-05-07)
 * (@GermanBluefox) Allowed disabling the client objects creation
 * (@GermanBluefox) Create client objects with timeout (1s) to prevent memory leaks
-
-### 6.1.3 (2025-05-04)
-* (@Code-X77) Corrected TLS communication
-* (@GermanBluefox) Packages updated
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

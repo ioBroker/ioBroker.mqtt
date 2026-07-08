@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "7.1.0",
+    "version": "7.1.1",
     "news": {
+      "7.1.1": {
+        "en": "Fixed: Publish only on change issue",
+        "de": "Behoben: Problem „Nur bei Änderung veröffentlichen“",
+        "ru": "Исправлено: Публиковать только изменения в запросе на внесение исправлений.",
+        "pt": "Corrigido: Publicar somente em caso de alteração",
+        "nl": "Opgelost: Publiceer alleen bij wijziging",
+        "fr": "Corrigé : Publication uniquement en cas de modification.",
+        "it": "Risolto: problema di pubblicazione solo in caso di modifiche",
+        "es": "Solucionado: Publicar solo al cambiar el problema",
+        "pl": "Naprawiono: Publikuj tylko w przypadku zmiany",
+        "uk": "Виправлено: Публікація лише після зміни проблеми",
+        "zh-cn": "已修复：仅在更改时发布的问题"
+      },
       "7.1.0": {
         "en": "Added a \"Binary topics\" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)",
         "de": "Es wurde eine Einstellung namens „Binäre Themen“ hinzugefügt, um rohe Binärdaten (z. B. Valetudo-Karte, Kamerabilder) als Dateien zu speichern, anstatt sie als UTF-8-Zeichenketten zu verfälschen (#573).",
@@ -80,19 +93,6 @@
         "pl": "Skorygowany błąd, jeśli klient nie ma ID",
         "uk": "Виправлена помилка, якщо клієнт не має ідентифікатора",
         "zh-cn": "如果客户端没有ID, 已更正错误"
-      },
-      "6.1.1": {
-        "en": "Added information about connected clients in the server mode",
-        "de": "Weitere Informationen zu verbundenen Clients im Servermodus",
-        "ru": "Добавлена информация о подключенных клиентах в серверном режиме",
-        "pt": "InformaÃ§Ãμes adicionais sobre clientes conectados no modo servidor",
-        "nl": "Informatie over verbonden clients toegevoegd in de servermodus",
-        "fr": "Ajout d'informations sur les clients connectés en mode serveur",
-        "it": "Aggiunte informazioni sui client connessi nella modalità server",
-        "es": "Información adicional sobre clientes conectados en el modo servidor",
-        "pl": "Dodano informacje o podłączonych klientach w trybie serwera",
-        "uk": "Додано інформацію про підключені клієнти в режимі сервера",
-        "zh-cn": "在服务器模式中添加了连接客户端的信息"
       }
     },
     "titleLang": {
