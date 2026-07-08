@@ -172,6 +172,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@Marc-Berg) Fixed: Publish only on change issue
+
 ### 7.1.0 (2026-07-03)
 * (@GermanBluefox) Added a "Binary topics" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)
 

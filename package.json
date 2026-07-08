@@ -30,7 +30,7 @@
   ],
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.1",
-    "mqtt": "^5.15.1",
+    "mqtt": "^5.15.2",
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
     "ws": "^8.21.0"
@@ -45,7 +45,6 @@
     "@iobroker/legacy-testing": "^2.0.2",
     "@iobroker/testing": "^5.2.2",
     "@types/mocha": "^10.0.10",
-    "mocha": "^11.7.6",
     "node.extend": "^2.0.3",
     "globals": "^17.7.0",
     "typescript": "^6.0.3"
