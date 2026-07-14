@@ -499,6 +499,42 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "dotToUnderscore": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Replace dots in topic names with underscore",
+                    "tooltip": "MQTT topics may contain dots (e.g. \"HK1.Vorlauftemperatur\"). ioBroker uses the dot as object hierarchy separator, so such topics would create extra object levels. Enable this to replace every dot in a topic name with \"_\".",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "doNotSubscribeOwnStates": {
+                    "newLine": true,
+                    "type": "checkbox",
+                    "label": "Do not subscribe to own states",
+                    "tooltip": "Client mode only: do not automatically subscribe to and publish this instance's own states (mqtt.<instance>.*). States that were created from received broker messages are then never published back, which prevents an endless loop.",
+                    "hidden": "data.type !== 'client'",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
+                "noEchoInterval": {
+                    "type": "number",
+                    "min": 0,
+                    "label": "Loop protection interval",
+                    "tooltip": "Client mode only: a value received from the broker is not published back within this time (in ms). This breaks endless loops when the same values are received and published again. Set to 0 to disable.",
+                    "hidden": "data.type !== 'client'",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4,
+                    "help": "ms"
                 }
             }
         }

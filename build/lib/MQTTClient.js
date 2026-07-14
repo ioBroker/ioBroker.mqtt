@@ -11,6 +11,9 @@ class MQTTClient {
     client = null;
     topic2id = {};
     id2topic = {};
+    // Loop protection (#414): last value written to a state because it was received from the broker,
+    // keyed by state id, together with the time it was received. Used to suppress echoing it back.
+    lastReceived = {};
     namespaceRegEx;
     connected = false;
     verifiedObjects = {};
@@ -36,8 +39,8 @@ class MQTTClient {
                 }
                 continue;
             }
-            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, this.adapter, this.config.prefix);
-            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, this.adapter, this.config.prefix);
+            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, this.adapter, this.config.prefix, this.config.dotToUnderscore);
+            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, this.adapter, this.config.prefix, this.config.dotToUnderscore);
             this.adapter.log.info(`Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`);
             this.ignoredTopicsRegexes.push(new RegExp(ignoredTopicRegex), new RegExp(ignoredTopicRegexWithNameSpace));
         }
@@ -46,8 +49,8 @@ class MQTTClient {
             if (!binaryTopicPattern) {
                 continue;
             }
-            const binaryTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${binaryTopicPattern}`, this.adapter, this.config.prefix);
-            const binaryTopicRegex = (0, common_1.pattern2RegEx)(binaryTopicPattern, this.adapter, this.config.prefix);
+            const binaryTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${binaryTopicPattern}`, this.adapter, this.config.prefix, this.config.dotToUnderscore);
+            const binaryTopicRegex = (0, common_1.pattern2RegEx)(binaryTopicPattern, this.adapter, this.config.prefix, this.config.dotToUnderscore);
             this.adapter.log.info(`Storing topic as file with pattern: ${binaryTopicPattern} (RegExp: ${binaryTopicRegex} und ${binaryTopicRegexWithNameSpace})`);
             this.binaryTopicsRegexes.push(new RegExp(binaryTopicRegex), new RegExp(binaryTopicRegexWithNameSpace));
         }
@@ -66,8 +69,28 @@ class MQTTClient {
     onMessage(topic, message, retain, binary) {
         this.publishMessage(topic, message, retain, binary);
     }
+    /**
+     * Remembers a value that was written to a state because it was received from the broker, so a
+     * subsequent state change carrying the same value can be recognised as an echo and not be
+     * published back (loop protection, #414). Keyed by state id. A no-op when the protection is off.
+     */
+    rememberReceived(id, val) {
+        if (this.config.noEchoInterval) {
+            this.lastReceived[id] = { val: JSON.stringify(val ?? null), ts: Date.now() };
+        }
+    }
     send2Server(id, state, cb) {
         if (!this.client) {
+            return;
+        }
+        // Loop protection (#414): do not publish a value straight back to the broker that we just
+        // received from it and stored as a state. The value must match and still be within the
+        // configured time window, so a later genuine change (or the same value after the window)
+        // is published normally.
+        if (state &&
+            (0, common_1.isEchoOfReceived)(this.lastReceived[id], JSON.stringify(state.val ?? null), Date.now(), this.config.noEchoInterval)) {
+            this.adapter.log.debug(`Skip publish of "${id}": echo of a value just received from the broker`);
+            cb?.(id);
             return;
         }
         const topic = this.id2topic[id];
@@ -446,7 +469,8 @@ class MQTTClient {
                 }
             }
             // try to convert a topic to ID
-            let id = this.topic2id[topic]?.id || (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+            let id = this.topic2id[topic]?.id ||
+                (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
             if (id.length > this.config.maxTopicLength) {
                 this.adapter.log.warn(`[${this.client ? this.config.clientId : 'disconnected'}] Topic name is too long: ${id.substring(0, 100)}...`);
                 return;
@@ -632,6 +656,12 @@ class MQTTClient {
                 catch (err) {
                     this.adapter.log.warn(`Error while setting state "${this.topic2id[topic].id}" for Client: ${err}`);
                 }
+                // Remember the received value so it is not published straight back (loop protection, #414)
+                this.rememberReceived(stateObj._id, parsedMessage.isStateObject
+                    ? parsedMessage.message.val
+                    : typeof parsedMessage.message === 'object'
+                        ? JSON.stringify(parsedMessage.message)
+                        : parsedMessage.message);
                 // we do not need these values anymore
                 if (!this.config.onchange) {
                     delete this.topic2id[topic].message;
@@ -730,6 +760,8 @@ class MQTTClient {
                 else if (value !== undefined && typeof value === 'object' && value.val !== undefined) {
                     try {
                         await this.adapter.setForeignStateAsync(this.topic2id[topic].id, value);
+                        // Remember the received value so it is not published straight back (loop protection, #414)
+                        this.rememberReceived(this.topic2id[topic].id, value.val);
                     }
                     catch (err) {
                         this.adapter.log.warn(`Error while setting state "${this.topic2id[topic].id}" for Client: ${err}`);

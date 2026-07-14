@@ -53,8 +53,8 @@ class MQTTServer {
                 this.ignoredTopics.length > 1 && this.adapter.log.warn(`Ignored topics should not end with an ",".`);
                 continue;
             }
-            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, adapter, this.config.prefix);
-            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, adapter, this.config.prefix);
+            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, adapter, this.config.prefix, this.config.dotToUnderscore);
+            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, adapter, this.config.prefix, this.config.dotToUnderscore);
             this.adapter.log.info(`Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`);
             this.ignoredTopicsRegexes.push(new RegExp(ignoredTopicRegex), new RegExp(ignoredTopicRegexWithNameSpace));
         }
@@ -63,8 +63,8 @@ class MQTTServer {
             if (!binaryTopicPattern) {
                 continue;
             }
-            const binaryTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${binaryTopicPattern}`, adapter, this.config.prefix);
-            const binaryTopicRegex = (0, common_1.pattern2RegEx)(binaryTopicPattern, adapter, this.config.prefix);
+            const binaryTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${binaryTopicPattern}`, adapter, this.config.prefix, this.config.dotToUnderscore);
+            const binaryTopicRegex = (0, common_1.pattern2RegEx)(binaryTopicPattern, adapter, this.config.prefix, this.config.dotToUnderscore);
             this.adapter.log.info(`Storing topic as file with pattern: ${binaryTopicPattern} (RegExp: ${binaryTopicRegex} und ${binaryTopicRegexWithNameSpace})`);
             this.binaryTopicsRegexes.push(new RegExp(binaryTopicRegex), new RegExp(binaryTopicRegexWithNameSpace));
         }
@@ -887,10 +887,12 @@ class MQTTServer {
             topic = packet.topic;
         }
         if (this.topic2id[topic]) {
-            id = this.topic2id[topic].id || (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+            id =
+                this.topic2id[topic].id ||
+                    (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
         }
         else {
-            id = (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+            id = (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
         }
         if (!id) {
             this.adapter.log.error(`Client [${client.id}] Invalid topic name: ${JSON.stringify(topic)}`);
@@ -1135,10 +1137,10 @@ class MQTTServer {
                     if (this.topic2id[client._will.topic]) {
                         id =
                             this.topic2id[client._will.topic].id ||
-                                (0, common_1.convertTopic2id)(client._will.topic, false, this.config.prefix, this.adapter.namespace);
+                                (0, common_1.convertTopic2id)(client._will.topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
                     }
                     else {
-                        id = (0, common_1.convertTopic2id)(client._will.topic, false, this.config.prefix, this.adapter.namespace);
+                        id = (0, common_1.convertTopic2id)(client._will.topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
                     }
                     this.checkObject(id, client._will.topic, options.will.payload)
                         .then(() => {
@@ -1344,10 +1346,10 @@ class MQTTServer {
                     if (this.topic2id[topic]) {
                         id =
                             this.topic2id[topic].id ||
-                                (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+                                (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
                     }
                     else {
-                        id = (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+                        id = (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
                     }
                     if (!id) {
                         this.adapter.log.error(`Client [${client.id}] Invalid topic: ${topic}`);
@@ -1441,10 +1443,10 @@ class MQTTServer {
                     if (this.topic2id[topic]) {
                         id =
                             this.topic2id[topic].id ||
-                                (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+                                (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
                     }
                     else {
-                        id = (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace);
+                        id = (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
                     }
                     if (!id) {
                         this.adapter.log.error(`Client [${client.id}] unsubscribes from invalid topic: ${topic}`);

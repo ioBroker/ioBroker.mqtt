@@ -46,8 +46,13 @@ export function convertID2topic(
  ·         “sport/+/player1” is valid
  ·         “/finance” matches “+/+” and “/+”, but not “+”
  */
-export function pattern2RegEx(pattern: MqttPattern, adapter: ioBroker.Adapter, prefix: string): string {
-    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace);
+export function pattern2RegEx(
+    pattern: MqttPattern,
+    adapter: ioBroker.Adapter,
+    prefix: string,
+    dotToUnderscore?: boolean,
+): string {
+    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore);
     pattern = pattern.replace(/#/g, '*');
     pattern = pattern.replace(/\$/g, '\\$');
     pattern = pattern.replace(/\^/g, '\\^');
@@ -127,6 +132,34 @@ export function topic2filename(topic: MqttTopic): string {
         .join('/');
 }
 
+/**
+ * Loop protection for client mode (see issue #414).
+ *
+ * When the adapter stores a message received from the broker as an ioBroker state, that write
+ * triggers a state change which — if the adapter also publishes its own namespace — would be sent
+ * straight back to the broker. The broker echoes it, the adapter stores it again, and so on: an
+ * endless loop. To break it we remember the last value written for a state because it was received
+ * from the broker (together with a timestamp) and suppress publishing an outgoing value that is
+ * still the very same, received-from-broker value within `intervalMs`.
+ *
+ * @param lastReceived The last value received from the broker for this id (serialized) and its timestamp, or undefined
+ * @param outgoing The value that is about to be published (serialized the same way as `lastReceived.val`)
+ * @param now The current timestamp in ms
+ * @param intervalMs The suppression window in ms; `0` (or a falsy value) disables the protection entirely
+ * @returns Whether the outgoing publish should be suppressed because it is an echo
+ */
+export function isEchoOfReceived(
+    lastReceived: { val: string; ts: number } | undefined,
+    outgoing: string,
+    now: number,
+    intervalMs: number,
+): boolean {
+    if (!intervalMs || !lastReceived) {
+        return false;
+    }
+    return lastReceived.val === outgoing && now - lastReceived.ts <= intervalMs;
+}
+
 export function state2string(val: ioBroker.StateValue | ioBroker.State, sendStateObject?: boolean | null): string {
     if (sendStateObject === undefined || sendStateObject === null) {
         sendStateObject = false;
@@ -158,6 +191,7 @@ export function convertTopic2id(
     dontCutNamespace: boolean,
     prefix: string,
     namespace: `${string}.${number}`,
+    dotToUnderscore?: boolean,
 ): string {
     if (!topic) {
         return topic;
@@ -166,6 +200,15 @@ export function convertTopic2id(
     // Remove own prefix if
     if (prefix && topic.substring(0, prefix.length) === prefix) {
         topic = topic.substring(prefix.length);
+    }
+
+    // In MQTT the only level separator is "/" — a "." is a normal character inside a topic level
+    // name (e.g. Wolf heating via ism7mqtt sends "HK1.Vorlauftemperatur"). ioBroker however uses
+    // "." as its object hierarchy separator, so such a "." would create extra object levels.
+    // When enabled, replace every "." in the topic name with "_" so it stays a single level.
+    // See issue #413.
+    if (dotToUnderscore) {
+        topic = topic.replace(/\./g, '_');
     }
 
     topic = topic.replace(/\//g, '.').replace(/\s/g, '_');

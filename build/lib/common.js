@@ -5,6 +5,7 @@ exports.pattern2RegEx = pattern2RegEx;
 exports.isIgnoredTopic = isIgnoredTopic;
 exports.isBinaryTopic = isBinaryTopic;
 exports.topic2filename = topic2filename;
+exports.isEchoOfReceived = isEchoOfReceived;
 exports.state2string = state2string;
 exports.convertTopic2id = convertTopic2id;
 exports.ensureObjectStructure = ensureObjectStructure;
@@ -51,8 +52,8 @@ function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
  ·         “sport/+/player1” is valid
  ·         “/finance” matches “+/+” and “/+”, but not “+”
  */
-function pattern2RegEx(pattern, adapter, prefix) {
-    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace);
+function pattern2RegEx(pattern, adapter, prefix, dotToUnderscore) {
+    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore);
     pattern = pattern.replace(/#/g, '*');
     pattern = pattern.replace(/\$/g, '\\$');
     pattern = pattern.replace(/\^/g, '\\^');
@@ -128,6 +129,28 @@ function topic2filename(topic) {
         .filter(part => part && part !== '.' && part !== '..')
         .join('/');
 }
+/**
+ * Loop protection for client mode (see issue #414).
+ *
+ * When the adapter stores a message received from the broker as an ioBroker state, that write
+ * triggers a state change which — if the adapter also publishes its own namespace — would be sent
+ * straight back to the broker. The broker echoes it, the adapter stores it again, and so on: an
+ * endless loop. To break it we remember the last value written for a state because it was received
+ * from the broker (together with a timestamp) and suppress publishing an outgoing value that is
+ * still the very same, received-from-broker value within `intervalMs`.
+ *
+ * @param lastReceived The last value received from the broker for this id (serialized) and its timestamp, or undefined
+ * @param outgoing The value that is about to be published (serialized the same way as `lastReceived.val`)
+ * @param now The current timestamp in ms
+ * @param intervalMs The suppression window in ms; `0` (or a falsy value) disables the protection entirely
+ * @returns Whether the outgoing publish should be suppressed because it is an echo
+ */
+function isEchoOfReceived(lastReceived, outgoing, now, intervalMs) {
+    if (!intervalMs || !lastReceived) {
+        return false;
+    }
+    return lastReceived.val === outgoing && now - lastReceived.ts <= intervalMs;
+}
 function state2string(val, sendStateObject) {
     if (sendStateObject === undefined || sendStateObject === null) {
         sendStateObject = false;
@@ -152,13 +175,21 @@ function state2string(val, sendStateObject) {
                 ? JSON.stringify(val)
                 : val.toString();
 }
-function convertTopic2id(topic, dontCutNamespace, prefix, namespace) {
+function convertTopic2id(topic, dontCutNamespace, prefix, namespace, dotToUnderscore) {
     if (!topic) {
         return topic;
     }
     // Remove own prefix if
     if (prefix && topic.substring(0, prefix.length) === prefix) {
         topic = topic.substring(prefix.length);
+    }
+    // In MQTT the only level separator is "/" — a "." is a normal character inside a topic level
+    // name (e.g. Wolf heating via ism7mqtt sends "HK1.Vorlauftemperatur"). ioBroker however uses
+    // "." as its object hierarchy separator, so such a "." would create extra object levels.
+    // When enabled, replace every "." in the topic name with "_" so it stays a single level.
+    // See issue #413.
+    if (dotToUnderscore) {
+        topic = topic.replace(/\./g, '_');
     }
     topic = topic.replace(/\//g, '.').replace(/\s/g, '_');
     if (topic[0] === '.') {

@@ -49,5 +49,8 @@ export interface MqttAdapterConfig {
     binaryTopics: string;
     doNotCreateClientObjects: boolean;
     parseCharCodes: boolean;
+    dotToUnderscore: boolean;
+    doNotSubscribeOwnStates: boolean;
+    noEchoInterval: number;
     certificates?: ioBroker.Certificates;
 }

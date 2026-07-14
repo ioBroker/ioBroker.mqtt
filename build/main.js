@@ -56,8 +56,10 @@ class MQTT extends adapter_core_1.Adapter {
     };
     async main() {
         this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
-        // Subscribe on own variables to publish it
-        if (this.config.type === 'client') {
+        // Subscribe on own variables to publish it.
+        // "doNotSubscribeOwnStates" (client mode) skips this so states that were created from
+        // received broker messages are not published back to the broker (loop protection, #414).
+        if (this.config.type === 'client' && !this.config.doNotSubscribeOwnStates) {
             await this.subscribeForeignStatesAsync(`${this.namespace}.*`);
             await this.readStatesForPattern(`${this.namespace}.*`);
         }
@@ -100,6 +102,12 @@ class MQTT extends adapter_core_1.Adapter {
             this.config.persistent === 'true' || this.config.persistent === true;
         this.config.retransmitInterval = parseInt(this.config.retransmitInterval, 10) || 2000;
         this.config.retransmitCount = parseInt(this.config.retransmitCount, 10) || 10;
+        // Loop protection window (#414). A value received from the broker is not published back
+        // within this time. Default 2000 ms; an explicit 0 disables the protection.
+        this.config.noEchoInterval = parseInt(this.config.noEchoInterval, 10);
+        if (isNaN(this.config.noEchoInterval)) {
+            this.config.noEchoInterval = 2000;
+        }
         if (this.config.retransmitInterval < this.config.sendInterval) {
             this.config.retransmitInterval = this.config.sendInterval * 5;
         }

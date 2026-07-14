@@ -189,7 +189,8 @@
           "it": "Reinserire la password dopo l'aggiornamento!",
           "es": "Vuelva a ingresar la contraseña después de ¡Actualizar!",
           "pl": "Wprowadź hasło ponownie po aktualizacji!",
-          "zh-cn": "更新后重新输入密码！"
+          "zh-cn": "更新后重新输入密码！",
+          "uk": "Повторно введіть пароль після оновлення!"
         },
         "text": {
           "en": "After installing this update the password needs to be re-entered in the Instance-Settings!",
@@ -201,7 +202,8 @@
           "it": "Dopo aver installato questo aggiornamento, è necessario reinserire la password nelle impostazioni dell'istanza!",
           "es": "¡Después de instalar esta actualización, la contraseña debe volver a ingresarse en la Configuración de instancia!",
           "pl": "Po zainstalowaniu tej aktualizacji hasło należy ponownie wprowadzić w ustawieniach instancji!",
-          "zh-cn": "安装此更新后，需要在实例设置中重新输入密码！"
+          "zh-cn": "安装此更新后，需要在实例设置中重新输入密码！",
+          "uk": "Після встановлення цього оновлення потрібно повторно ввести пароль у налаштуваннях екземпляра!"
         },
         "level": "warn",
         "buttons": [
@@ -227,7 +229,8 @@
           "it": "Il comportamento dell'abbonamento è cambiato",
           "es": "Comportamiento de suscripción cambiado",
           "pl": "Zmieniono zachowanie subskrypcji",
-          "zh-cn": "订阅行为已更改"
+          "zh-cn": "订阅行为已更改",
+          "uk": "Поведінка підписки змінена"
         },
         "text": {
           "en": "In client mode only the own \"mqtt.X.*\" states will be subscribed. In server mode with an empty \"publish\" setting, no states will be subscribed.",
@@ -239,7 +242,8 @@
           "it": "In modalità client verranno sottoscritti solo i propri stati \"mqtt.X.*\". In modalità server con un'impostazione \"pubblica\" vuota, nessuno stato verrà sottoscritto.",
           "es": "En modo cliente sólo se suscribirán los propios estados \"mqtt.X.*\". En el modo de servidor con una configuración de \"publicación\" vacía, no se suscribirá ningún estado.",
           "pl": "W trybie klienta subskrybowane będą tylko własne stany \"mqtt.X.*\". W trybie serwera z pustym ustawieniem „publikuj”, żadne stany nie będą subskrybowane.",
-          "zh-cn": "在客户端模式下，只会订阅自己的“mqtt.X.*”状态。在“发布”设置为空的服务器模式下，不会订阅任何状态。"
+          "zh-cn": "在客户端模式下，只会订阅自己的“mqtt.X.*”状态。在“发布”设置为空的服务器模式下，不会订阅任何状态。",
+          "uk": "У режимі клієнта буде передплачено лише власні стани \"mqtt.X.*\". У режимі сервера з порожнім параметром «опублікувати» жодні стани не підписуються."
         },
         "level": "warn",
         "buttons": [
@@ -265,7 +269,8 @@
           "it": "L'interpretazione dei codici carattere è ora disattivata per impostazione predefinita",
           "es": "El análisis de códigos de caracteres ahora está desactivado de forma predeterminada",
           "pl": "Interpretacja kodów znaków jest teraz domyślnie wyłączona",
-          "zh-cn": "字符代码解析现在默认关闭"
+          "zh-cn": "字符代码解析现在默认关闭",
+          "uk": "Розбір коду символів тепер вимкнено за замовчуванням"
         },
         "text": {
           "en": "Comma-separated numbers such as \"72,101,108,108,111\" are no longer converted to text as character codes by default. If a device relied on this, enable \"Parse comma-separated numbers as character codes\" in the instance settings.",
@@ -277,7 +282,8 @@
           "it": "I numeri separati da virgola come \"72,101,108,108,111\" non vengono più convertiti in testo come codici carattere per impostazione predefinita. Se un dispositivo ne dipende, abilita la relativa opzione di analisi dei codici carattere nelle impostazioni dell'istanza.",
           "es": "Los números separados por comas como \"72,101,108,108,111\" ya no se convierten en texto como códigos de caracteres de forma predeterminada. Si un dispositivo depende de esto, active la opción correspondiente de análisis de códigos de caracteres en la configuración de la instancia.",
           "pl": "Liczby oddzielone przecinkami, takie jak \"72,101,108,108,111\", nie są już domyślnie konwertowane na tekst jako kody znaków. Jeśli urządzenie tego wymaga, włącz odpowiednią opcję analizy kodów znaków w ustawieniach instancji.",
-          "zh-cn": "默认情况下，诸如 \"72,101,108,108,111\" 之类的逗号分隔数字不再作为字符代码转换为文本。如果设备依赖此功能，请在实例设置中启用相应的字符代码解析选项。"
+          "zh-cn": "默认情况下，诸如 \"72,101,108,108,111\" 之类的逗号分隔数字不再作为字符代码转换为文本。如果设备依赖此功能，请在实例设置中启用相应的字符代码解析选项。",
+          "uk": "Числа, розділені комами, наприклад \"72,101,108,108,111\", більше не перетворюються на текст як коди символів за умовчанням. Якщо пристрій покладається на це, увімкніть «Аналізувати числа, розділені комами, як коди символів» у налаштуваннях екземпляра."
         },
         "level": "warn",
         "buttons": [
@@ -303,7 +309,8 @@
           "it": "Server MQTT: gestione delle sessioni modificata",
           "es": "Servidor MQTT: manejo de sesiones modificado",
           "pl": "Serwer MQTT: zmieniono obsługę sesji",
-          "zh-cn": "MQTT 服务器：会话处理已更改"
+          "zh-cn": "MQTT 服务器：会话处理已更改",
+          "uk": "Сервер MQTT: змінено обробку сеансу"
         },
         "text": {
           "en": "In server mode the MQTT server now respects the client's clean-session flag (changed in v6.1.3). Devices that connect with a clean session (e.g. Arduino/ESP with PubSubClient) and do not re-subscribe after a reconnect will stop receiving messages. To keep the previous behavior, set \"Force clean session\" to \"Always keep sessions for all clients\" in the instance settings, or change the device to re-subscribe after every reconnect.",
@@ -315,7 +322,8 @@
           "it": "In modalità server, il server MQTT ora rispetta il flag clean-session del client (modificato nella v6.1.3). I dispositivi che si connettono con una sessione pulita (ad es. Arduino/ESP con PubSubClient) e non si iscrivono nuovamente dopo una riconnessione smetteranno di ricevere messaggi. Per mantenere il comportamento precedente, imposta \"Force clean session\" su \"Always keep sessions for all clients\" nelle impostazioni dell'istanza, oppure modifica il dispositivo affinché si iscriva di nuovo dopo ogni riconnessione.",
           "es": "En modo servidor, el servidor MQTT ahora respeta el indicador clean-session del cliente (cambiado en v6.1.3). Los dispositivos que se conectan con una sesión limpia (por ejemplo, Arduino/ESP con PubSubClient) y no se vuelven a suscribir tras una reconexión dejarán de recibir mensajes. Para mantener el comportamiento anterior, establezca \"Force clean session\" en \"Always keep sessions for all clients\" en la configuración de la instancia, o modifique el dispositivo para que se vuelva a suscribir después de cada reconexión.",
           "pl": "W trybie serwera serwer MQTT uwzględnia teraz flagę clean-session klienta (zmieniono w v6.1.3). Urządzenia, które łączą się z czystą sesją (np. Arduino/ESP z PubSubClient) i nie subskrybują ponownie po ponownym połączeniu, przestaną odbierać wiadomości. Aby zachować poprzednie zachowanie, ustaw \"Force clean session\" na \"Always keep sessions for all clients\" w ustawieniach instancji lub zmień urządzenie tak, aby subskrybowało ponownie po każdym ponownym połączeniu.",
-          "zh-cn": "在服务器模式下，MQTT 服务器现在会遵循客户端的 clean-session 标志（在 v6.1.3 中更改）。以清理会话方式连接的设备（例如使用 PubSubClient 的 Arduino/ESP），如果在重新连接后不重新订阅，将不再接收消息。要保持以前的行为，请在实例设置中将 \"Force clean session\" 设置为 \"Always keep sessions for all clients\"，或修改设备使其在每次重新连接后重新订阅。"
+          "zh-cn": "在服务器模式下，MQTT 服务器现在会遵循客户端的 clean-session 标志（在 v6.1.3 中更改）。以清理会话方式连接的设备（例如使用 PubSubClient 的 Arduino/ESP），如果在重新连接后不重新订阅，将不再接收消息。要保持以前的行为，请在实例设置中将 \"Force clean session\" 设置为 \"Always keep sessions for all clients\"，或修改设备使其在每次重新连接后重新订阅。",
+          "uk": "У режимі сервера сервер MQTT тепер поважає прапор чистого сеансу клієнта (змінено у v6.1.3). Пристрої, які підключаються за допомогою чистого сеансу (наприклад, Arduino/ESP з PubSubClient) і не підписуються повторно після повторного підключення, перестануть отримувати повідомлення. Щоб зберегти попередню поведінку, установіть для параметра «Примусово чистий сеанс» значення «Завжди зберігати сеанси для всіх клієнтів» у налаштуваннях екземпляра або змініть пристрій на повторну підписку після кожного повторного підключення."
         },
         "level": "warn",
         "buttons": [
@@ -374,7 +382,10 @@
     "ignoredTopics": "",
     "binaryTopics": "",
     "doNotCreateClientObjects": false,
-    "parseCharCodes": false
+    "parseCharCodes": false,
+    "dotToUnderscore": false,
+    "doNotSubscribeOwnStates": false,
+    "noEchoInterval": 2000
   },
   "objects": [],
   "instanceObjects": [

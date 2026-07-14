@@ -177,8 +177,14 @@ export default class MQTTServer {
                 `${this.adapter.namespace}.${ignoredTopicPattern}`,
                 adapter,
                 this.config.prefix,
+                this.config.dotToUnderscore,
             );
-            const ignoredTopicRegex = pattern2RegEx(ignoredTopicPattern, adapter, this.config.prefix);
+            const ignoredTopicRegex = pattern2RegEx(
+                ignoredTopicPattern,
+                adapter,
+                this.config.prefix,
+                this.config.dotToUnderscore,
+            );
             this.adapter.log.info(
                 `Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`,
             );
@@ -194,8 +200,14 @@ export default class MQTTServer {
                 `${this.adapter.namespace}.${binaryTopicPattern}`,
                 adapter,
                 this.config.prefix,
+                this.config.dotToUnderscore,
             );
-            const binaryTopicRegex = pattern2RegEx(binaryTopicPattern, adapter, this.config.prefix);
+            const binaryTopicRegex = pattern2RegEx(
+                binaryTopicPattern,
+                adapter,
+                this.config.prefix,
+                this.config.dotToUnderscore,
+            );
             this.adapter.log.info(
                 `Storing topic as file with pattern: ${binaryTopicPattern} (RegExp: ${binaryTopicRegex} und ${binaryTopicRegexWithNameSpace})`,
             );
@@ -1212,9 +1224,11 @@ export default class MQTTServer {
         }
 
         if (this.topic2id[topic]) {
-            id = this.topic2id[topic].id || convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace);
+            id =
+                this.topic2id[topic].id ||
+                convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
         } else {
-            id = convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace);
+            id = convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
         }
 
         if (!id) {
@@ -1523,9 +1537,21 @@ export default class MQTTServer {
                         if (this.topic2id[client._will.topic]) {
                             id =
                                 this.topic2id[client._will.topic].id ||
-                                convertTopic2id(client._will.topic, false, this.config.prefix, this.adapter.namespace);
+                                convertTopic2id(
+                                    client._will.topic,
+                                    false,
+                                    this.config.prefix,
+                                    this.adapter.namespace,
+                                    this.config.dotToUnderscore,
+                                );
                         } else {
-                            id = convertTopic2id(client._will.topic, false, this.config.prefix, this.adapter.namespace);
+                            id = convertTopic2id(
+                                client._will.topic,
+                                false,
+                                this.config.prefix,
+                                this.adapter.namespace,
+                                this.config.dotToUnderscore,
+                            );
                         }
                         this.checkObject(id, client._will.topic, options.will.payload)
                             .then(() => {
@@ -1815,9 +1841,21 @@ export default class MQTTServer {
                         if (this.topic2id[topic]) {
                             id =
                                 this.topic2id[topic].id ||
-                                convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace);
+                                convertTopic2id(
+                                    topic,
+                                    false,
+                                    this.config.prefix,
+                                    this.adapter.namespace,
+                                    this.config.dotToUnderscore,
+                                );
                         } else {
-                            id = convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace);
+                            id = convertTopic2id(
+                                topic,
+                                false,
+                                this.config.prefix,
+                                this.adapter.namespace,
+                                this.config.dotToUnderscore,
+                            );
                         }
 
                         if (!id) {
@@ -1937,9 +1975,21 @@ export default class MQTTServer {
                     if (this.topic2id[topic]) {
                         id =
                             this.topic2id[topic].id ||
-                            convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace);
+                            convertTopic2id(
+                                topic,
+                                false,
+                                this.config.prefix,
+                                this.adapter.namespace,
+                                this.config.dotToUnderscore,
+                            );
                     } else {
-                        id = convertTopic2id(topic, false, this.config.prefix, this.adapter.namespace);
+                        id = convertTopic2id(
+                            topic,
+                            false,
+                            this.config.prefix,
+                            this.adapter.namespace,
+                            this.config.dotToUnderscore,
+                        );
                     }
 
                     if (!id) {
