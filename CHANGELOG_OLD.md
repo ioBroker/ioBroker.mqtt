@@ -1,4 +1,8 @@
 # Older changes
+## 6.1.4 (2025-05-07)
+* (@GermanBluefox) Allowed disabling the client objects creation
+* (@GermanBluefox) Create client objects with timeout (1s) to prevent memory leaks
+
 ## 6.1.3 (2025-05-04)
 * (@Code-X77) Corrected TLS communication
 * (@GermanBluefox) Packages updated
