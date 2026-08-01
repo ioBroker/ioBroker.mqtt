@@ -29,7 +29,7 @@
     "message"
   ],
   "dependencies": {
-    "@iobroker/adapter-core": "^3.4.1",
+    "@iobroker/adapter-core": "^3.4.3",
     "mqtt": "^5.15.2",
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
