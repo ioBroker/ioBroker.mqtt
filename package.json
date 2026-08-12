@@ -47,7 +47,7 @@
     "@types/mocha": "^10.0.10",
     "node.extend": "^2.0.3",
     "globals": "^17.8.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
