@@ -489,6 +489,13 @@ class MQTTClient {
             }
             // if no cache for this topic found
             if (!this.topic2id[topic]) {
+                // Topic of a state we publish ourselves whose ID cannot be restored from it
+                // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
+                const knownId = (0, common_1.findIdForTopic)(topic, this.states, this.config.prefix, this.adapter.namespace, this.config.removePrefix);
+                if (knownId && knownId !== id) {
+                    this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
+                    id = knownId;
+                }
                 // null indicates that it is processing now
                 this.topic2id[topic] = { id: '', isAck, obj: null, processing: true };
                 // Create an object if not exists

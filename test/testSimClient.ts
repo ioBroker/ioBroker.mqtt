@@ -112,6 +112,43 @@ describe('MQTT client', function () {
         );
     }).timeout(3000);
 
+    it('MQTT client: a topic of a published state with "#" in the ID is written back to that state', done => {
+        // The Shelly adapter creates IDs like "shelly.0.SHCB-1#3494546B9BEC#1"; "#" is a wildcard
+        // in MQTT, so it is published as "_" and cannot be restored from the topic.
+        const shellyId = 'shelly.0.SHCB-1#3494546B9BEC#1.lights.Switch';
+        const topic = 'shelly/0/SHCB-1_3494546B9BEC_1/lights/Switch';
+        const wrongId = 'mqtt.0.shelly.0.SHCB-1_3494546B9BEC_1.lights.Switch';
+
+        // this state is published by the adapter (main.ts pre-loads the "publish" pattern into `states`)
+        states[shellyId] = { val: false, ack: true } as ioBroker.State;
+        void adapter.setForeignObjectAsync(shellyId, {
+            type: 'state',
+            common: { name: 'Switch', type: 'boolean', read: true, write: true, role: 'switch' },
+            native: {},
+        });
+
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, 'true');
+                    setTimeout(async () => {
+                        const st = await adapter.getForeignStateAsync(shellyId);
+                        assert.ok(st, 'the value must be written back to the original state');
+                        assert.strictEqual(st.val, true);
+
+                        const created = await adapter.getForeignObjectAsync(wrongId);
+                        assert.strictEqual(created, undefined, 'no state may be created in the own namespace');
+
+                        publisher.destroy();
+                        done();
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'shellyIdPublisher', subscribe: false },
+        );
+    }).timeout(3000);
+
     it('MQTT client: Binary topic payload is stored as a file and the state holds the URL', done => {
         const topic = 'binimg';
         // raw bytes that are NOT valid UTF-8 text (would be corrupted by a normal string state)
@@ -150,6 +187,114 @@ describe('MQTT client', function () {
     }).timeout(3000);
 
     after('MQTT simulatedServer: Stop MQTT simulatedServer', done => {
+        simulatedServer.stop(done);
+        client.destroy();
+    });
+});
+
+// Commands are the main use case of the client mode: the remote side publishes "<topic>/set"
+// (extraSet) and the value must arrive at the original state with ack=false, so the device
+// adapter (here: Shelly) acts on it.
+describe('MQTT client with extraSet (commands)', function () {
+    let adapter: Adapter;
+    let simulatedServer: SimulatedServer;
+    let client: any;
+    const states: Record<string, ioBroker.State> = {};
+    this.timeout(5000);
+
+    const shellyId = 'shelly.0.SHCB-1#3494546B9BEC#1.lights.Switch';
+    const topic = 'shelly/0/SHCB-1_3494546B9BEC_1/lights/Switch';
+    const wrongId = 'mqtt.0.shelly.0.SHCB-1_3494546B9BEC_1.lights.Switch';
+
+    before('MQTT client (extraSet): Start MQTT simulatedServer', done => {
+        adapter = new Adapter({
+            port: ++port,
+            url: '127.0.0.1',
+            onchange: true,
+            extraSet: true,
+            clientId: 'testAdapterExtraSet',
+        });
+        simulatedServer = new SimulatedServer({ port, dontSend: true });
+
+        // this state is published by the adapter (main.ts pre-loads the "publish" pattern into `states`)
+        states[shellyId] = { val: false, ack: true } as ioBroker.State;
+        void adapter.setForeignObjectAsync(shellyId, {
+            type: 'state',
+            common: { name: 'Switch', type: 'boolean', read: true, write: true, role: 'switch' },
+            native: {},
+        });
+
+        client = new Client(adapter, states);
+        done();
+    });
+
+    it('MQTT client: a command for a state with "#" in the ID reaches that state with ack=false', done => {
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(`${topic}/set`, 'true');
+                    setTimeout(async () => {
+                        const st = await adapter.getForeignStateAsync(shellyId);
+                        assert.ok(st, 'the command must reach the original state');
+                        assert.strictEqual(st.val, true);
+                        assert.strictEqual(st.ack, false, 'a command must not be acknowledged');
+
+                        const created = await adapter.getForeignObjectAsync(wrongId);
+                        assert.strictEqual(created, undefined, 'no state may be created in the own namespace');
+
+                        publisher.destroy();
+                        done();
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'shellyCommandPublisher', subscribe: false },
+        );
+    }).timeout(3000);
+
+    it('MQTT client: a second command on the same topic is processed again (onchange=true)', done => {
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(`${topic}/set`, 'false');
+                    setTimeout(async () => {
+                        const st = await adapter.getForeignStateAsync(shellyId);
+                        assert.ok(st);
+                        assert.strictEqual(st.val, false);
+                        assert.strictEqual(st.ack, false);
+
+                        publisher.destroy();
+                        done();
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'shellyCommandPublisher2', subscribe: false },
+        );
+    }).timeout(3000);
+
+    it('MQTT client: an acknowledged value on the plain topic keeps ack=true', done => {
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, 'true');
+                    setTimeout(async () => {
+                        const st = await adapter.getForeignStateAsync(shellyId);
+                        assert.ok(st);
+                        assert.strictEqual(st.val, true);
+                        assert.strictEqual(st.ack, true, 'a value without "/set" is a status, not a command');
+
+                        publisher.destroy();
+                        done();
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'shellyStatusPublisher', subscribe: false },
+        );
+    }).timeout(3000);
+
+    after('MQTT client (extraSet): Stop MQTT simulatedServer', done => {
         simulatedServer.stop(done);
         client.destroy();
     });
