@@ -28,6 +28,9 @@ class MQTTServer {
     clients = {};
     topic2id = {};
     id2topic = {};
+    // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
+    // at most once per topic.
+    resolvedTopics = {};
     messageId = 1;
     persistentSessions = {};
     resending = false;
@@ -642,7 +645,45 @@ class MQTTServer {
         // ELSE
         // this will be done indirectly. The message will be sent to js-controller, and if the adapter is subscribed, it gets this message over stateChange
     }
+    /**
+     * Resolves a received topic back to the state ID it was published from, for IDs that cannot be
+     * restored from the topic because "+"/"#"/whitespace were replaced with "_".
+     *
+     * This must also correct an *already cached* mapping: `topic2id` is filled first-wins by
+     * `sendState2Client`, so on an installation that still carries a leftover
+     * `mqtt.<n>.<lossy topic>` state (created by this bug before it was fixed) that leftover can
+     * claim the topic before any message arrives. The cache entry is dropped so the caller
+     * re-runs the object lookup for the correct ID.
+     *
+     * The scan itself is O(number of published states), so it runs at most once per topic.
+     *
+     * @param topic The received topic (already stripped of a possible "/set" suffix)
+     * @param id The ID the topic was converted to (or the cached one)
+     * @returns The original state ID, or `id` unchanged if the topic does not belong to one
+     */
+    resolveTopicId(topic, id) {
+        if (this.resolvedTopics[topic]) {
+            return id;
+        }
+        this.resolvedTopics[topic] = true;
+        const knownId = (0, common_1.findIdForTopic)(topic, this.states, this.config.prefix, this.adapter.namespace, this.config.removePrefix);
+        if (!knownId || knownId === id) {
+            return id;
+        }
+        this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
+        if (this.topic2id[topic]) {
+            this.adapter.log.warn(`Topic "${topic}" was mapped to "${this.topic2id[topic].id}" instead of "${knownId}". ` +
+                `"${this.topic2id[topic].id}" is a leftover of an earlier version and can be deleted.`);
+            delete this.topic2id[topic];
+        }
+        return knownId;
+    }
     async checkObject(id, topic, message) {
+        // Topic of a state we publish ourselves whose ID cannot be restored from it
+        // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
+        // For a received message this already happened in `onMessage`; this call covers the
+        // subscribe and "last will" paths.
+        id = this.resolveTopicId(topic, id);
         if ((0, common_1.isIgnoredTopic)(id, this.ignoredTopicsRegexes)) {
             return;
         }
@@ -653,13 +694,6 @@ class MQTTServer {
         };
         if (this.config.debug) {
             this.adapter.log.debug(`Check object for topic "${topic}"`);
-        }
-        // Topic of a state we publish ourselves whose ID cannot be restored from it
-        // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
-        const knownId = (0, common_1.findIdForTopic)(topic, this.states, this.config.prefix, this.adapter.namespace, this.config.removePrefix);
-        if (knownId && knownId !== id) {
-            this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
-            id = knownId;
         }
         let obj = null;
         try {
@@ -918,6 +952,11 @@ class MQTTServer {
             this.adapter.log.warn(`Client [${client.id}] Topic name is too long: ${id.substring(0, 100)}...`);
             return;
         }
+        // Topic of a state we publish ourselves whose ID cannot be restored from it
+        // ("+"/"#"/whitespace became "_") — resolve it back to the original state. `checkObject`
+        // does the same, but it is only reached on a cache miss and the cache may already point
+        // to a leftover state (see `resolveTopicId`).
+        id = this.resolveTopicId(topic, id);
         if (!this.topic2id[topic]) {
             try {
                 await this.checkObject(id, topic, message);

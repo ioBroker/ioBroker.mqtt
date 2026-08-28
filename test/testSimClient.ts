@@ -299,3 +299,89 @@ describe('MQTT client with extraSet (commands)', function () {
         client.destroy();
     });
 });
+
+// An installation that already ran a version with the ID → topic → ID bug carries a leftover
+// state in the adapter's own namespace ("mqtt.0.shelly.0.SHCB-1_3494546B9BEC_1.lights.Switch").
+// That leftover is published on start as well and would claim the topic in the `topic2id` cache
+// before any message arrives (the cache is filled first-wins), so the fallback resolution has to
+// correct an already cached mapping, not only fill an empty one.
+describe('MQTT client with a leftover state from the old ID conversion', function () {
+    let adapter: Adapter;
+    let simulatedServer: SimulatedServer;
+    let client: any;
+    const states: Record<string, ioBroker.State> = {};
+    this.timeout(10000);
+
+    const shellyId = 'shelly.0.SHCB-1#3494546B9BEC#1.lights.Switch';
+    const topic = 'shelly/0/SHCB-1_3494546B9BEC_1/lights/Switch';
+    const leftoverId = 'mqtt.0.shelly.0.SHCB-1_3494546B9BEC_1.lights.Switch';
+
+    before('MQTT client (leftover): Start MQTT simulatedServer', async () => {
+        adapter = new Adapter({
+            port: ++port,
+            url: '127.0.0.1',
+            onchange: false,
+            clientId: 'testAdapterLeftover',
+            publishAllOnStart: true,
+        });
+        simulatedServer = new SimulatedServer({ port, dontSend: true });
+
+        // the leftover object as the buggy version created it, including its stored topic
+        await adapter.setForeignObjectAsync(leftoverId, {
+            type: 'state',
+            common: { name: topic, type: 'mixed', read: true, write: true, role: 'variable' },
+            native: { topic },
+        });
+        await adapter.setForeignObjectAsync(shellyId, {
+            type: 'state',
+            common: { name: 'Switch', type: 'boolean', read: true, write: true, role: 'switch' },
+            native: {},
+        });
+
+        // main.ts reads the own namespace first and the "publish" pattern afterwards, so the
+        // leftover is published before the real state
+        states[leftoverId] = { val: false, ack: true } as ioBroker.State;
+        states[shellyId] = { val: false, ack: true } as ioBroker.State;
+
+        client = new Client(adapter, states);
+
+        // let the client connect, subscribe and run publishAllStates
+        await new Promise<void>(resolve => setTimeout(resolve, 1500));
+    });
+
+    it('MQTT client: the leftover state must not win the topic over the real one', done => {
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, 'true');
+                    setTimeout(async () => {
+                        const real = await adapter.getForeignStateAsync(shellyId);
+                        const leftover = await adapter.getForeignStateAsync(leftoverId);
+                        // destroy before asserting, so a failure does not leave the publisher
+                        // reconnecting into the following suites
+                        publisher.destroy();
+                        try {
+                            assert.ok(real, 'the value must be written back to the original state');
+                            assert.strictEqual(real.val, true);
+                            assert.notStrictEqual(
+                                leftover?.val,
+                                true,
+                                'the value must not be written into the leftover state',
+                            );
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    }, 600);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'leftoverPublisher', subscribe: false },
+        );
+    }).timeout(4000);
+
+    after('MQTT client (leftover): Stop MQTT simulatedServer', done => {
+        simulatedServer.stop(done);
+        client.destroy();
+    });
+});

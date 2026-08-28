@@ -892,3 +892,90 @@ describe('MQTT server: subscribe rejects unresolvable topic with SUBACK failure'
         server5.destroy(done);
     });
 });
+
+// The Shelly adapter creates IDs like "shelly.0.SHCB-1#3494546B9BEC#1"; "#" is an MQTT wildcard,
+// so it is published as "_" and cannot be restored from the topic by convertTopic2id.
+describe('MQTT server with an ID that cannot be restored from its topic', function () {
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+
+    const shellyId = 'shelly.0.SHCB-1#3494546B9BEC#1.lights.Switch';
+    const topic = 'shelly/0/SHCB-1_3494546B9BEC_1/lights/Switch';
+    const wrongId = 'mqtt.0.shelly.0.SHCB-1_3494546B9BEC_1.lights.Switch';
+
+    before('MQTT server (lossy ID): Start MQTT server', async () => {
+        adapter = new Adapter({ port: ++port, defaultQoS: 0, onchange: true });
+
+        // this state is published by the adapter (main.ts pre-loads the "publish" pattern)
+        states[shellyId] = { val: false, ack: true };
+        await adapter.setForeignObjectAsync(shellyId, {
+            _id: shellyId,
+            type: 'state',
+            common: { name: 'Switch', type: 'boolean', read: true, write: true, role: 'switch' },
+            native: {},
+        });
+
+        server = new Server(adapter, states);
+        await new Promise<void>(resolve => setTimeout(resolve, 200));
+    });
+
+    it('MQTT server: a published value is written back to the original state', done => {
+        const client: any = new Client(
+            isConnected => {
+                if (isConnected) {
+                    client.publish(topic, 'true');
+                    setTimeout(async () => {
+                        const st = await adapter.getForeignStateAsync(shellyId);
+                        const created = await adapter.getForeignObjectAsync(wrongId);
+                        // destroy before asserting, so a failure does not leave the client
+                        // reconnecting into the following suites
+                        client.destroy();
+                        try {
+                            assert.ok(st, 'the value must be written back to the original state');
+                            assert.strictEqual(st.val, true);
+                            assert.strictEqual(created, undefined, 'no state may be created in the own namespace');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    }, 500);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'shellyServerPublisher', subscribe: false },
+        );
+    }).timeout(4000);
+
+    it('MQTT server: a subscription on that topic is registered for the original state', done => {
+        const client: any = new Client(
+            isConnected => {
+                if (isConnected) {
+                    client.subscribe(topic);
+                    setTimeout(() => {
+                        // the value has to reach the subscriber under its original ID
+                        server.onStateChange(shellyId, { val: false, ack: true });
+                    }, 200);
+                }
+            },
+            (receivedTopic: string, message: Buffer) => {
+                if (receivedTopic === topic) {
+                    const payload = message.toString();
+                    client.destroy();
+                    try {
+                        assert.strictEqual(payload, 'false');
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                }
+            },
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'shellyServerSubscriber', resubscribe: false },
+        );
+    }).timeout(4000);
+
+    after('MQTT server (lossy ID): Stop server', done => {
+        server.destroy(done);
+    });
+});

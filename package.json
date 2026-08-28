@@ -33,21 +33,21 @@
     "mqtt": "^5.15.2",
     "mqtt-connection": "^4.1.0",
     "websocket-stream": "^5.5.2",
-    "ws": "^8.21.1"
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^5.2.1",
     "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
-    "@alcalzone/release-script-plugin-license": "^5.2.0",
+    "@alcalzone/release-script-plugin-license": "^5.2.2",
     "@alcalzone/release-script-plugin-manual-review": "^5.2.0",
     "@iobroker/adapter-dev": "^1.5.0",
     "@iobroker/eslint-config": "^2.3.4",
-    "@iobroker/legacy-testing": "^2.0.2",
+    "@iobroker/legacy-testing": "^3.0.1",
     "@iobroker/testing": "^5.3.0",
     "@types/mocha": "^10.0.10",
     "node.extend": "^2.0.3",
-    "globals": "^17.8.0",
-    "typescript": "^6.0.3"
+    "globals": "^17.11.0",
+    "typescript": "^7.0.2"
   },
   "bugs": {
     "url": "https://github.com/ioBroker/ioBroker.mqtt/issues"
@@ -62,9 +62,10 @@
   ],
   "scripts": {
     "test:package": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/package.js --exit",
-    "test:unit": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/test*.js --exit",
+    "test:unit": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/testConvert.js ./test/testSimClient.js ./test/testSimServer.js --exit",
+    "test:legacy": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/testClient.js ./test/testServer.js --exit",
     "test:integration": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/integration.js --exit",
-    "test": "npm run test:package && npm run test:unit && npm run test:integration",
+    "test": "npm run test:package && npm run test:unit && npm run test:legacy && npm run test:integration",
     "release": "release-script",
     "build": "tsc -p tsconfig.build.json",
     "release-patch": "release-script patch --yes",

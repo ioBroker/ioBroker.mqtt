@@ -11,6 +11,9 @@ class MQTTClient {
     client = null;
     topic2id = {};
     id2topic = {};
+    // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
+    // at most once per topic.
+    resolvedTopics = {};
     // Loop protection (#414): last value written to a state because it was received from the broker,
     // keyed by state id, together with the time it was received. Used to suppress echoing it back.
     lastReceived = {};
@@ -78,6 +81,39 @@ class MQTTClient {
         if (this.config.noEchoInterval) {
             this.lastReceived[id] = { val: JSON.stringify(val ?? null), ts: Date.now() };
         }
+    }
+    /**
+     * Resolves a received topic back to the state ID it was published from, for IDs that cannot be
+     * restored from the topic because "+"/"#"/whitespace were replaced with "_".
+     *
+     * This must also correct an *already cached* mapping: `topic2id` is filled first-wins by
+     * `send2Server` / `publishAllStates`, so on an installation that still carries a leftover
+     * `mqtt.<n>.<lossy topic>` state (created by this bug before it was fixed) that leftover is
+     * published on start and claims the topic before any message arrives. The cache entry is
+     * dropped so the caller re-runs the object lookup for the correct ID.
+     *
+     * The scan itself is O(number of published states), so it runs at most once per topic.
+     *
+     * @param topic The received topic (already stripped of a possible "/set" suffix)
+     * @param id The ID the topic was converted to (or the cached one)
+     * @returns The original state ID, or `id` unchanged if the topic does not belong to one
+     */
+    resolveTopicId(topic, id) {
+        if (this.resolvedTopics[topic]) {
+            return id;
+        }
+        this.resolvedTopics[topic] = true;
+        const knownId = (0, common_1.findIdForTopic)(topic, this.states, this.config.prefix, this.adapter.namespace, this.config.removePrefix);
+        if (!knownId || knownId === id) {
+            return id;
+        }
+        this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
+        if (this.topic2id[topic]) {
+            this.adapter.log.warn(`Topic "${topic}" was mapped to "${this.topic2id[topic].id}" instead of "${knownId}". ` +
+                `"${this.topic2id[topic].id}" is a leftover of an earlier version and can be deleted.`);
+            delete this.topic2id[topic];
+        }
+        return knownId;
     }
     send2Server(id, state, cb) {
         if (!this.client) {
@@ -487,15 +523,11 @@ class MQTTClient {
                 await this.storeBinaryMessage(topic, id, message, isAck);
                 return;
             }
+            // Topic of a state we publish ourselves whose ID cannot be restored from it
+            // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
+            id = this.resolveTopicId(topic, id);
             // if no cache for this topic found
             if (!this.topic2id[topic]) {
-                // Topic of a state we publish ourselves whose ID cannot be restored from it
-                // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
-                const knownId = (0, common_1.findIdForTopic)(topic, this.states, this.config.prefix, this.adapter.namespace, this.config.removePrefix);
-                if (knownId && knownId !== id) {
-                    this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
-                    id = knownId;
-                }
                 // null indicates that it is processing now
                 this.topic2id[topic] = { id: '', isAck, obj: null, processing: true };
                 // Create an object if not exists

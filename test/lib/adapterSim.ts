@@ -19,6 +19,7 @@ export interface AdapterConfig {
     ignoreNewObjects?: boolean;
     ignoredTopics?: string;
     binaryTopics?: string;
+    publishAllOnStart?: boolean;
 }
 
 export default class AdapterSimulator {

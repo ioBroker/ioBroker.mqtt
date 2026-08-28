@@ -36,6 +36,9 @@ export default class MQTTClient {
         }
     > = {};
     private readonly id2topic: Record<string, MqttTopic> = {};
+    // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
+    // at most once per topic.
+    private readonly resolvedTopics: Record<MqttTopic, true> = {};
     // Loop protection (#414): last value written to a state because it was received from the broker,
     // keyed by state id, together with the time it was received. Used to suppress echoing it back.
     private readonly lastReceived: Record<string, { val: string; ts: number }> = {};
@@ -135,6 +138,53 @@ export default class MQTTClient {
         if (this.config.noEchoInterval) {
             this.lastReceived[id] = { val: JSON.stringify(val ?? null), ts: Date.now() };
         }
+    }
+
+    /**
+     * Resolves a received topic back to the state ID it was published from, for IDs that cannot be
+     * restored from the topic because "+"/"#"/whitespace were replaced with "_".
+     *
+     * This must also correct an *already cached* mapping: `topic2id` is filled first-wins by
+     * `send2Server` / `publishAllStates`, so on an installation that still carries a leftover
+     * `mqtt.<n>.<lossy topic>` state (created by this bug before it was fixed) that leftover is
+     * published on start and claims the topic before any message arrives. The cache entry is
+     * dropped so the caller re-runs the object lookup for the correct ID.
+     *
+     * The scan itself is O(number of published states), so it runs at most once per topic.
+     *
+     * @param topic The received topic (already stripped of a possible "/set" suffix)
+     * @param id The ID the topic was converted to (or the cached one)
+     * @returns The original state ID, or `id` unchanged if the topic does not belong to one
+     */
+    private resolveTopicId(topic: MqttTopic, id: string): string {
+        if (this.resolvedTopics[topic]) {
+            return id;
+        }
+        this.resolvedTopics[topic] = true;
+
+        const knownId = findIdForTopic(
+            topic,
+            this.states,
+            this.config.prefix,
+            this.adapter.namespace,
+            this.config.removePrefix,
+        );
+
+        if (!knownId || knownId === id) {
+            return id;
+        }
+
+        this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
+
+        if (this.topic2id[topic]) {
+            this.adapter.log.warn(
+                `Topic "${topic}" was mapped to "${this.topic2id[topic].id}" instead of "${knownId}". ` +
+                    `"${this.topic2id[topic].id}" is a leftover of an earlier version and can be deleted.`,
+            );
+            delete this.topic2id[topic];
+        }
+
+        return knownId;
     }
 
     private send2Server(id: string, state: ioBroker.State | null | undefined, cb?: (id: string) => void): void {
@@ -642,22 +692,12 @@ export default class MQTTClient {
                 return;
             }
 
+            // Topic of a state we publish ourselves whose ID cannot be restored from it
+            // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
+            id = this.resolveTopicId(topic, id);
+
             // if no cache for this topic found
             if (!this.topic2id[topic]) {
-                // Topic of a state we publish ourselves whose ID cannot be restored from it
-                // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
-                const knownId = findIdForTopic(
-                    topic,
-                    this.states,
-                    this.config.prefix,
-                    this.adapter.namespace,
-                    this.config.removePrefix,
-                );
-                if (knownId && knownId !== id) {
-                    this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
-                    id = knownId;
-                }
-
                 // null indicates that it is processing now
                 this.topic2id[topic] = { id: '', isAck, obj: null, processing: true };
 
