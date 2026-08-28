@@ -1,7 +1,14 @@
 import assert from 'node:assert';
 
 // The compiled adapter under test (build/) ships no type declarations, so load it untyped.
-const { convertMessage, convertTopic2id, pattern2RegEx, isEchoOfReceived } = require('../build/lib/common');
+const {
+    convertMessage,
+    convertTopic2id,
+    convertID2topic,
+    pattern2RegEx,
+    isEchoOfReceived,
+    findIdForTopic,
+} = require('../build/lib/common');
 
 // Minimal adapter stub – convertMessage only uses `log` (for the invalid-JSON debug branch).
 const adapter = {
@@ -101,6 +108,57 @@ describe('Test convert version', function () {
             const regex = new RegExp(pattern2RegEx('wolf/#', adapter, '', true));
             const id = convertTopic2id('wolf/HK1.Vorlauftemperatur', false, '', 'mqtt.0', true);
             assert.strictEqual(regex.test(id), true);
+        });
+    });
+
+    describe('findIdForTopic (IDs with characters that are not allowed in a topic)', () => {
+        // The Shelly adapter creates IDs like "shelly.0.SHCB-1#3494546B9BEC#1"
+        const shellyId = 'shelly.0.SHCB-1#3494546B9BEC#1.lights.Switch';
+        const states = {
+            [shellyId]: { val: true } as ioBroker.State,
+            'shelly.0.SHCB-1_3494546B9BEC_2.lights.Switch': { val: true } as ioBroker.State,
+            'hm-rpc.0.ABC.STATE': { val: true } as ioBroker.State,
+        };
+
+        it('resolves a topic back to the ID it was created from', () => {
+            const topic = convertID2topic(shellyId, null, 'ferienhaus/', 'mqtt.0', '');
+            assert.strictEqual(topic, 'ferienhaus/shelly/0/SHCB-1_3494546B9BEC_1/lights/Switch');
+            assert.strictEqual(findIdForTopic(topic, states, 'ferienhaus/', 'mqtt.0', ''), shellyId);
+        });
+
+        it('works without a prefix', () => {
+            assert.strictEqual(
+                findIdForTopic('shelly/0/SHCB-1_3494546B9BEC_1/lights/Switch', states, '', 'mqtt.0', ''),
+                shellyId,
+            );
+        });
+
+        it('resolves an ID containing a space', () => {
+            const id = 'javascript.0.My Script.value';
+            const topic = convertID2topic(id, null, '', 'mqtt.0', '');
+            assert.strictEqual(topic, 'javascript/0/My Script/value');
+            assert.strictEqual(findIdForTopic(topic, { [id]: { val: 1 } as ioBroker.State }, '', 'mqtt.0', ''), id);
+        });
+
+        it('respects removePrefix', () => {
+            const id = 'shelly.0.SHCB-1#3494546B9BEC#1.lights.Switch';
+            const topic = convertID2topic(id, null, '', 'mqtt.0', 'shelly.0.');
+            assert.strictEqual(topic, 'SHCB-1_3494546B9BEC_1/lights/Switch');
+            assert.strictEqual(findIdForTopic(topic, states, '', 'mqtt.0', 'shelly.0.'), id);
+        });
+
+        it('does not resolve an ID that survives the conversion', () => {
+            // "hm-rpc.0.ABC.STATE" can be restored by convertTopic2id, so it must not be reported
+            assert.strictEqual(findIdForTopic('hm-rpc/0/ABC/STATE', states, '', 'mqtt.0', ''), undefined);
+        });
+
+        it('returns undefined for an unknown topic', () => {
+            assert.strictEqual(findIdForTopic('shelly/0/unknown/lights/Switch', states, '', 'mqtt.0', ''), undefined);
+            assert.strictEqual(findIdForTopic('', states, '', 'mqtt.0', ''), undefined);
+        });
+
+        it('returns undefined if no state is published', () => {
+            assert.strictEqual(findIdForTopic('shelly/0/SHCB-1_3494546B9BEC_1', {}, '', 'mqtt.0', ''), undefined);
         });
     });
 

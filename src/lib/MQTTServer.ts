@@ -11,6 +11,7 @@ import {
     pattern2RegEx,
     convertMessage,
     topic2filename,
+    findIdForTopic,
 } from './common';
 import { createServer as createHttpsServer, type Server as HttpsServer } from 'https';
 import { createServer as createHttpServer, type Server as HttpServer } from 'http';
@@ -962,6 +963,20 @@ export default class MQTTServer {
 
         if (this.config.debug) {
             this.adapter.log.debug(`Check object for topic "${topic}"`);
+        }
+
+        // Topic of a state we publish ourselves whose ID cannot be restored from it
+        // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
+        const knownId = findIdForTopic(
+            topic,
+            this.states,
+            this.config.prefix,
+            this.adapter.namespace,
+            this.config.removePrefix,
+        );
+        if (knownId && knownId !== id) {
+            this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
+            id = knownId;
         }
 
         let obj: ioBroker.Object | undefined | null = null;

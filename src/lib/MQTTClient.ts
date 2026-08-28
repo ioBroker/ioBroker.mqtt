@@ -11,6 +11,7 @@ import {
     convertMessage,
     topic2filename,
     isEchoOfReceived,
+    findIdForTopic,
 } from './common';
 import type { MqttAdapterConfig, MqttTopic } from './types';
 
@@ -643,6 +644,20 @@ export default class MQTTClient {
 
             // if no cache for this topic found
             if (!this.topic2id[topic]) {
+                // Topic of a state we publish ourselves whose ID cannot be restored from it
+                // ("+"/"#"/whitespace became "_") — resolve it back to the original state.
+                const knownId = findIdForTopic(
+                    topic,
+                    this.states,
+                    this.config.prefix,
+                    this.adapter.namespace,
+                    this.config.removePrefix,
+                );
+                if (knownId && knownId !== id) {
+                    this.adapter.log.debug(`Topic "${topic}" resolved to the published state "${knownId}"`);
+                    id = knownId;
+                }
+
                 // null indicates that it is processing now
                 this.topic2id[topic] = { id: '', isAck, obj: null, processing: true };
 

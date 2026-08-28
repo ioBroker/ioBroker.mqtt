@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertID2topic = convertID2topic;
+exports.findIdForTopic = findIdForTopic;
 exports.pattern2RegEx = pattern2RegEx;
 exports.isIgnoredTopic = isIgnoredTopic;
 exports.isBinaryTopic = isBinaryTopic;
@@ -35,6 +36,39 @@ function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
     topic = topic.replace(/\./g, '/');
     topic = topic.replace(/[+#]/g, '_');
     return topic;
+}
+// Characters that do not survive ID → topic → ID: "+"/"#" are replaced with "_" by
+// convertID2topic (MQTT wildcards), whitespace by convertTopic2id.
+const LOSSY_ID_CHARS = /[+#\s]/;
+/**
+ * Finds the published state ID a topic was built from, e.g. the Shelly ID
+ * "shelly.0.SHCB-1#3494546B9BEC#1" for the topic "shelly/0/SHCB-1_3494546B9BEC_1".
+ *
+ * `convertTopic2id` cannot restore such an ID, and the `topic2id` cache only holds the mapping
+ * once the state has been published — on a miss the value would end up in a newly created state
+ * in our own namespace. Only IDs that cannot round-trip are checked, so every other topic keeps
+ * being resolved by the normal object lookup.
+ *
+ * @param topic The received topic (already stripped of a possible "/set" suffix)
+ * @param states The states this adapter publishes
+ * @param prefix The configured topic prefix
+ * @param namespace The adapter namespace
+ * @param removePrefix The configured ID prefix to remove
+ * @returns The state ID, or undefined if no published state matches
+ */
+function findIdForTopic(topic, states, prefix, namespace, removePrefix) {
+    if (!topic) {
+        return undefined;
+    }
+    for (const id of Object.keys(states)) {
+        if (!LOSSY_ID_CHARS.test(id)) {
+            continue;
+        }
+        if (convertID2topic(id, null, prefix, namespace, removePrefix) === topic) {
+            return id;
+        }
+    }
+    return undefined;
 }
 /*4.7.1.3 Single level wildcard
 
