@@ -191,7 +191,6 @@ describe('MQTT server: Test mqtt server', () => {
     before('MQTT server: Start js-controller', function (done) {
         this.timeout(600000); // because of the first installation from npm
         let _done: Mocha.Done | null = done;
-        setup.adapterStarted = false;
 
         setup.setupController(async (systemConfig: { native: { secret: string } }) => {
             const config = await setup.getAdapterConfig();
@@ -204,7 +203,10 @@ describe('MQTT server: Test mqtt server', () => {
             config.native.pass = encrypt(systemConfig.native.secret, 'pass!?#1');
             await setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController((_objects: any, _states: any) => {
+            // @iobroker/legacy-testing v3 dropped the single-callback overload: a lone function
+            // is taken as an object-change handler and the completion callback stays undefined,
+            // so the "before" hook would wait forever. The first argument says "start the adapter".
+            setup.startController(true, (_objects: any, _states: any) => {
                 objects = _objects;
                 states = _states;
                 brokerStarted = true;

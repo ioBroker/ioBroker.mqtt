@@ -137,7 +137,6 @@ describe('Test MQTT client', function () {
         let _done: Mocha.Done | null = done;
         let clientConnected = false;
         let brokerStarted = false;
-        setup.adapterStarted = false;
 
         setup.setupController(async (systemConfig: { native: { secret: string } }) => {
             const config = await setup.getAdapterConfig();
@@ -150,7 +149,10 @@ describe('Test MQTT client', function () {
             config.native.debug = true;
             await setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController((_objects: any, _states: any) => {
+            // @iobroker/legacy-testing v3 dropped the single-callback overload: a lone function
+            // is taken as an object-change handler and the completion callback stays undefined,
+            // so the "before" hook would wait forever. The first argument says "start the adapter".
+            setup.startController(true, (_objects: any, _states: any) => {
                 objects = _objects;
                 states = _states;
                 brokerStarted = true;
