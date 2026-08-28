@@ -45,8 +45,10 @@
     "@iobroker/legacy-testing": "^3.0.1",
     "@iobroker/testing": "^5.3.0",
     "@types/mocha": "^10.0.10",
-    "node.extend": "^2.0.3",
+    "blockly": "^13.2.1",
+    "esbuild": "^0.25.12",
     "globals": "^17.11.0",
+    "node.extend": "^2.0.3",
     "typescript": "^6.0.3"
   },
   "bugs": {
@@ -67,12 +69,15 @@
     "test:integration": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/integration.js --exit",
     "test": "npm run test:package && npm run test:unit && npm run test:legacy && npm run test:integration",
     "release": "release-script",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run build:ts && npm run build:blockly",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "build:blockly": "tsc -p src-blockly/tsconfig.json && node src-blockly/build.mjs",
     "release-patch": "release-script patch --yes",
     "release-minor": "release-script minor --yes",
     "release-major": "release-script major --yes",
     "lint": "eslint -c eslint.config.mjs",
     "translate": "translate-adapter",
+    "translate:blockly": "translate-adapter -b src-blockly/i18n/en.json",
     "update-packages": "npx -y npm-check-updates --upgrade"
   },
   "engines": {
