@@ -34,6 +34,11 @@ class MqttConnection extends node_events_1.EventEmitter {
     stream;
     /** Protocol level of this connection, taken from its CONNECT packet. Defaults to MQTT 3.1.1. */
     protocolVersion = 4;
+    /**
+     * Largest packet the peer accepts (MQTT 5 "Maximum Packet Size", MQTT-5.0 3.1.2.11.4).
+     * `undefined` means no limit was announced.
+     */
+    maximumPacketSize;
     parser;
     destroyed = false;
     closeEmitted = false;
@@ -45,10 +50,9 @@ class MqttConnection extends node_events_1.EventEmitter {
         this.parser = (0, mqtt_packet_1.parser)({ protocolVersion: 4 });
         this.parser.on('packet', (packet) => {
             if (packet.cmd === 'connect') {
-                const version = packet.protocolVersion;
-                if (version === 3 || version === 4 || version === 5) {
-                    this.protocolVersion = version;
-                }
+                const connect = packet;
+                this.setProtocolVersion(connect.protocolVersion);
+                this.maximumPacketSize = connect.properties?.maximumPacketSize || undefined;
             }
             this.emit(packet.cmd, packet);
         });
@@ -69,6 +73,22 @@ class MqttConnection extends node_events_1.EventEmitter {
                 });
             }
         });
+    }
+    /**
+     * Applies the protocol level of this connection to the parser as well, so incoming packets are
+     * read with the same version they are written with.
+     *
+     * @param version The protocol level from a CONNECT packet
+     */
+    setProtocolVersion(version) {
+        if (version !== 3 && version !== 4 && version !== 5) {
+            return;
+        }
+        this.protocolVersion = version;
+        const settings = this.parser.settings;
+        if (settings) {
+            settings.protocolVersion = version;
+        }
     }
     onClose(hadError) {
         this.destroyed = true;
@@ -92,12 +112,42 @@ class MqttConnection extends node_events_1.EventEmitter {
             return;
         }
         packet.cmd = cmd;
+        if (this.exceedsMaximumPacketSize(packet)) {
+            // The peer announced a limit and told us to drop anything above it, so this is not an
+            // error but the agreed behaviour (MQTT-5.0 3.1.2.11.4).
+            this.emit('packetTooLarge', packet);
+            return;
+        }
         try {
-            (0, mqtt_packet_1.writeToStream)(packet, this.stream, { protocolVersion: this.protocolVersion });
+            (0, mqtt_packet_1.writeToStream)(packet, this.stream, {
+                protocolVersion: this.protocolVersion,
+                // mqtt-packet uses this to drop optional properties that would not fit
+                properties: this.maximumPacketSize ? { maximumPacketSize: this.maximumPacketSize } : undefined,
+            });
         }
         catch (error) {
             this.emit('error', error);
         }
+    }
+    /**
+     * Estimates whether a packet would be larger than what the peer announced it accepts.
+     *
+     * `mqtt-packet` only drops optional properties to stay below the limit and ignores the payload,
+     * so the payload has to be checked here. The estimate is deliberately generous: rejecting a
+     * message that would have fit is worse than sending one slightly over a limit nobody enforces.
+     *
+     * @param packet The packet that is about to be written
+     * @returns Whether it must not be sent
+     */
+    exceedsMaximumPacketSize(packet) {
+        if (!this.maximumPacketSize || packet.cmd !== 'publish') {
+            return false;
+        }
+        const payload = packet.payload;
+        const payloadLength = typeof payload === 'string' ? Buffer.byteLength(payload) : Buffer.isBuffer(payload) ? payload.length : 0;
+        // fixed header + remaining length + topic length prefix + topic + message id
+        const overhead = 5 + 2 + Buffer.byteLength(`${packet.topic ?? ''}`) + (packet.qos ? 2 : 0);
+        return overhead + payloadLength > this.maximumPacketSize;
     }
     // --- broker → client -------------------------------------------------------------------
     /**
@@ -175,7 +225,16 @@ class MqttConnection extends node_events_1.EventEmitter {
         this.send('auth', packet);
     }
     // --- client → broker (used by the test broker emulator and the connection tests) ---------
+    /**
+     * Sends a CONNECT. Used when this class acts as a client — the test broker emulator and the
+     * protocol level tests do. The protocol level of a connection normally comes from the CONNECT
+     * that is *received*, so when we send one it has to be adopted from there instead, otherwise
+     * everything that follows would be parsed and written as MQTT 3.1.1.
+     *
+     * @param packet The CONNECT to send
+     */
     connect(packet) {
+        this.setProtocolVersion(packet.protocolVersion);
         this.send('connect', packet);
     }
     subscribe(packet) {
@@ -187,7 +246,26 @@ class MqttConnection extends node_events_1.EventEmitter {
     pingreq() {
         this.send('pingreq', {});
     }
-    /** Closes the connection. */
+    /**
+     * Closes the connection after everything that was written has left the socket.
+     *
+     * `destroy()` tears the socket down immediately and throws away whatever is still buffered, so
+     * a rejection that was just written would never reach the peer. Whenever a last packet has to
+     * arrive — a CONNACK with an error, a DISCONNECT with a reason code — this is the way to close.
+     */
+    close() {
+        if (this.destroyed) {
+            return;
+        }
+        this.destroyed = true;
+        if (typeof this.stream.end === 'function') {
+            this.stream.end(() => this.stream.destroy?.());
+        }
+        else {
+            this.stream.destroy?.();
+        }
+    }
+    /** Closes the connection immediately, dropping anything that is still buffered. */
     destroy() {
         if (this.destroyed) {
             return;

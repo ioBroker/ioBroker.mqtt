@@ -1063,7 +1063,12 @@ describe('MQTT server with MQTT 5 clients', function () {
         assert.strictEqual(properties.topicAliasMaximum, 32, 'the broker must announce its topic alias maximum');
         // "Maximum QoS" must not be sent at all when it is 2 (MQTT-5.0 3.2.2.3.4)
         assert.strictEqual(properties.maximumQoS, undefined, 'maximumQoS must be omitted');
-        assert.strictEqual(properties.sharedSubscriptionAvailable, false, 'shared subscriptions are not implemented');
+        // absent means supported (MQTT-5.0 3.2.2.3.11), the broker only announces what it lacks
+        assert.strictEqual(
+            properties.sharedSubscriptionAvailable,
+            undefined,
+            'shared subscriptions must be announced as available',
+        );
     });
 
     it('MQTT 5: a v3.1.1 client is still served next to it', async () => {
@@ -1171,5 +1176,817 @@ describe('MQTT server with MQTT 5 clients', function () {
         const state = await adapter.getForeignStateAsync('mqtt.0.v5qos.a');
         assert.ok(state, 'the QoS 2 message must have been stored');
         assert.strictEqual(state.val, 'q2');
+    });
+});
+
+// "Retain As Published" (MQTT-5.0 3.8.3.1) decides the RETAIN flag of a forwarded message, and
+// MQTT 5 separates that from the retained delivery a subscription triggers. MQTT 3.1.1 clients are
+// not affected at all and keep the behaviour the adapter always had.
+describe('MQTT server: Retain As Published', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(20000);
+    let suitePort: number;
+    const open: any[] = [];
+
+    function wait(ms: number): Promise<void> {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Connects a real mqtt.js client and remembers it for the cleanup.
+     *
+     * @param clientId The client id
+     * @param version The protocol level to announce
+     * @returns The connected client
+     */
+    function connect(clientId: string, version: 4 | 5): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+                protocolId: 'MQTT',
+                protocolVersion: version,
+                clientId,
+                clean: true,
+                reconnectPeriod: 0,
+                connectTimeout: 5000,
+            });
+            open.push(client);
+            const timer = setTimeout(() => reject(new Error(`${clientId} did not connect`)), 8000);
+            client.on('connect', () => {
+                clearTimeout(timer);
+                resolve(client);
+            });
+            client.on('error', (e: Error) => {
+                clearTimeout(timer);
+                reject(e);
+            });
+        });
+    }
+
+    /**
+     * Records topic and RETAIN flag of everything a client receives.
+     *
+     * @param client The receiving client
+     * @returns The (growing) list of received messages
+     */
+    function collect(client: any): { topic: string; retain: boolean }[] {
+        const seen: { topic: string; retain: boolean }[] = [];
+        client.on('message', (topic: string, _payload: Buffer, packet: any) =>
+            seen.push({ topic, retain: !!packet.retain }),
+        );
+        return seen;
+    }
+
+    before('MQTT server (rap): Start server', async () => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true, publishOnSubscribe: true });
+        server = new Server(adapter, states);
+        await wait(300);
+    });
+
+    after('MQTT server (rap): Stop server', done => {
+        for (const client of open) {
+            try {
+                client.end(true);
+            } catch {
+                /* ignore */
+            }
+        }
+        server.destroy(done);
+    });
+
+    it('MQTT 5: the value delivered on subscribe is retained even without "Retain As Published"', async () => {
+        const id = 'mqtt.0.rap.known';
+        states[id] = { val: 'stored', ack: true };
+        await adapter.setForeignObjectAsync(id, {
+            type: 'state',
+            common: { name: 'known', type: 'string', read: true, write: true, role: 'variable' },
+            native: { topic: 'rap/known' },
+        });
+        await adapter.setForeignStateAsync(id, 'stored');
+
+        const client = await connect('rapRetained', 5);
+        const seen = collect(client);
+        await client.subscribeAsync({ 'rap/known': { qos: 0, rap: false } });
+        await wait(900);
+
+        const message = seen.find(m => m.topic === 'rap/known');
+        assert.ok(message, 'the known value must be delivered');
+        assert.strictEqual(message.retain, true, 'retained delivery always carries RETAIN 1');
+    });
+
+    it('MQTT 5: a forwarded message without "Retain As Published" has RETAIN 0', async () => {
+        const subscriber = await connect('rapOff', 5);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync({ 'rap/live': { qos: 0, rap: false } });
+        // let the publish-on-subscribe timer pass, it is not a forwarded message
+        await wait(700);
+        seen.length = 0;
+
+        const publisher = await connect('rapPublisher1', 5);
+        await publisher.publishAsync('rap/live', 'v', { retain: true });
+        await wait(900);
+
+        const message = seen.find(m => m.topic === 'rap/live');
+        assert.ok(message, 'the message must be forwarded');
+        assert.strictEqual(message.retain, false, 'without rap the forwarded message must not be retained');
+    });
+
+    it('MQTT 5: a forwarded message with "Retain As Published" keeps the published flag', async () => {
+        const subscriber = await connect('rapOn', 5);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync({ 'rap/live2': { qos: 0, rap: true } });
+        await wait(700);
+        seen.length = 0;
+
+        const publisher = await connect('rapPublisher2', 5);
+        await publisher.publishAsync('rap/live2', 'v', { retain: true });
+        await wait(900);
+
+        const message = seen.find(m => m.topic === 'rap/live2');
+        assert.ok(message, 'the message must be forwarded');
+        assert.strictEqual(message.retain, true, 'with rap the published flag is kept');
+    });
+
+    it('MQTT 3.1.1: the flag of the publisher is passed through as before', async () => {
+        const subscriber = await connect('rapV4', 4);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync('rap/v4a');
+        await subscriber.subscribeAsync('rap/v4b');
+        await wait(700);
+        seen.length = 0;
+
+        const publisher = await connect('rapPublisher3', 4);
+        await publisher.publishAsync('rap/v4a', 'v', { retain: false });
+        await publisher.publishAsync('rap/v4b', 'v', { retain: true });
+        await wait(900);
+
+        const plain = seen.find(m => m.topic === 'rap/v4a');
+        const retained = seen.find(m => m.topic === 'rap/v4b');
+        assert.ok(plain && retained, 'both messages must be forwarded');
+        assert.strictEqual(plain.retain, false, 'MQTT 3.1.1 must not be touched by the MQTT 5 rules');
+        assert.strictEqual(retained.retain, true, 'MQTT 3.1.1 must not be touched by the MQTT 5 rules');
+    });
+});
+
+// The smaller MQTT 5 features: subscription identifiers, message expiry, will delay,
+// maximum packet size and receive maximum.
+describe('MQTT server: the smaller MQTT 5 features', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(30000);
+    let suitePort: number;
+    const open: any[] = [];
+
+    function wait(ms: number): Promise<void> {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Connects a real mqtt.js client and remembers it for the cleanup.
+     *
+     * @param clientId The client id
+     * @param version The protocol level to announce
+     * @param options Extra connection options, e.g. a will or MQTT 5 properties
+     * @returns The connected client
+     */
+    function connect(clientId: string, version: 4 | 5, options?: Record<string, any>): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+                protocolId: 'MQTT',
+                protocolVersion: version,
+                clientId,
+                clean: true,
+                reconnectPeriod: 0,
+                connectTimeout: 5000,
+                ...(options || {}),
+            });
+            open.push(client);
+            const timer = setTimeout(() => reject(new Error(`${clientId} did not connect`)), 8000);
+            client.on('connect', () => {
+                clearTimeout(timer);
+                resolve(client);
+            });
+            client.on('error', (e: Error) => {
+                clearTimeout(timer);
+                reject(e);
+            });
+        });
+    }
+
+    /**
+     * Records topic and MQTT 5 properties of everything a client receives.
+     *
+     * @param client The receiving client
+     * @returns The (growing) list of received messages
+     */
+    function collect(client: any): { topic: string; properties?: any; length: number }[] {
+        const seen: { topic: string; properties?: any; length: number }[] = [];
+        client.on('message', (topic: string, payload: Buffer, packet: any) =>
+            seen.push({ topic, properties: packet.properties, length: payload.length }),
+        );
+        return seen;
+    }
+
+    let publisher: any;
+
+    before('MQTT server (MQTT 5 extras): Start server', async () => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true, publishOnSubscribe: true });
+        server = new Server(adapter, states);
+        await wait(300);
+        publisher = await connect('extrasPublisher', 5);
+    });
+
+    after('MQTT server (MQTT 5 extras): Stop server', done => {
+        for (const client of open) {
+            try {
+                client.end(true);
+            } catch {
+                /* ignore */
+            }
+        }
+        server.destroy(done);
+    });
+
+    it('MQTT 5: the subscription identifier is echoed on a forwarded message', async () => {
+        const subscriber = await connect('extrasSubId', 5);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync({ 'subid/topic': { qos: 0 } }, { properties: { subscriptionIdentifier: 77 } });
+        await wait(600);
+        seen.length = 0;
+
+        await publisher.publishAsync('subid/topic', 'v');
+        await wait(800);
+
+        const message = seen.find(m => m.topic === 'subid/topic');
+        assert.ok(message, 'the message must be forwarded');
+        assert.strictEqual(message.properties?.subscriptionIdentifier, 77);
+    });
+
+    it('MQTT 3.1.1: a forwarded message carries no properties', async () => {
+        const subscriber = await connect('extrasSubIdV4', 4);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync('subid/v4');
+        await wait(600);
+        seen.length = 0;
+
+        await publisher.publishAsync('subid/v4', 'v');
+        await wait(800);
+
+        const message = seen.find(m => m.topic === 'subid/v4');
+        assert.ok(message, 'the message must be forwarded');
+        assert.strictEqual(message.properties, undefined, 'MQTT 3.1.1 has no properties');
+    });
+
+    it('MQTT 5: an expired value is not delivered on subscribe', async () => {
+        await publisher.publishAsync('expiry/short', 'gone', { properties: { messageExpiryInterval: 1 } });
+        // wait until the announced lifetime has passed
+        await wait(1600);
+
+        const subscriber = await connect('extrasExpired', 5);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync({ 'expiry/short': { qos: 0 } });
+        await wait(900);
+
+        assert.ok(
+            !seen.some(m => m.topic === 'expiry/short'),
+            'a value whose message expiry interval has passed must not be handed out',
+        );
+    });
+
+    it('MQTT 5: a living value is delivered with its remaining lifetime', async () => {
+        await publisher.publishAsync('expiry/long', 'here', { properties: { messageExpiryInterval: 120 } });
+        await wait(400);
+
+        const subscriber = await connect('extrasAlive', 5);
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync({ 'expiry/long': { qos: 0 } });
+        await wait(900);
+
+        const message = seen.find(m => m.topic === 'expiry/long');
+        assert.ok(message, 'the value must still be delivered');
+        const remaining = message.properties?.messageExpiryInterval;
+        assert.ok(remaining > 0 && remaining <= 120, `the remaining lifetime must be sent along, got ${remaining}`);
+    });
+
+    it('MQTT 5: the will is held back until its delay passed', async () => {
+        const topic = 'will/delayed';
+        const watcher = await connect('extrasWillWatcher', 5);
+        const seen = collect(watcher);
+        await watcher.subscribeAsync({ [topic]: { qos: 0 } });
+        await wait(500);
+        seen.length = 0;
+
+        const dying = await connect('extrasWillDying', 5, {
+            will: { topic, payload: 'bye', qos: 0, retain: false, properties: { willDelayInterval: 2 } },
+            properties: { sessionExpiryInterval: 60 },
+        });
+        await wait(400);
+        // a hard drop, not a clean DISCONNECT, so the will applies
+        dying.stream.destroy();
+
+        await wait(900);
+        assert.ok(!seen.some(m => m.topic === topic), 'the will must not be published before its delay passed');
+
+        await wait(2200);
+        assert.ok(
+            seen.some(m => m.topic === topic),
+            'the will must be published once the delay passed',
+        );
+    });
+
+    it('MQTT 5: a message above the announced maximum packet size is dropped', async () => {
+        const subscriber = await connect('extrasSmall', 5, { properties: { maximumPacketSize: 200 } });
+        const seen = collect(subscriber);
+        await subscriber.subscribeAsync({ 'size/#': { qos: 0 } });
+        await wait(600);
+        seen.length = 0;
+
+        await publisher.publishAsync('size/small', 'x'.repeat(20));
+        await publisher.publishAsync('size/big', 'y'.repeat(4000));
+        await wait(900);
+
+        assert.ok(
+            seen.some(m => m.topic === 'size/small'),
+            'a message below the limit must still arrive',
+        );
+        assert.ok(!seen.some(m => m.topic === 'size/big'), 'a message above the limit must not be sent');
+        assert.ok(subscriber.connected, 'dropping it must not break the connection');
+    });
+
+    it('MQTT 5: "Receive Maximum" limits how many QoS 1 messages are in flight', async () => {
+        const subscriber = await connect('extrasSlow', 5, { properties: { receiveMaximum: 1 } });
+        const seen = collect(subscriber);
+
+        // never acknowledge anything, so the single slot stays occupied
+        const sendPacket = subscriber._sendPacket.bind(subscriber);
+        subscriber._sendPacket = (packet: any, cb: any, cbStorePut: any) => {
+            if (packet.cmd === 'puback') {
+                cb?.();
+                return;
+            }
+            return sendPacket(packet, cb, cbStorePut);
+        };
+
+        await subscriber.subscribeAsync({ 'flow/#': { qos: 1 } });
+        await wait(600);
+        seen.length = 0;
+
+        await publisher.publishAsync('flow/a', '1', { qos: 1 });
+        await wait(400);
+        await publisher.publishAsync('flow/b', '2', { qos: 1 });
+        await wait(900);
+
+        assert.strictEqual(
+            seen.length,
+            1,
+            `only one message may be in flight, got ${JSON.stringify(seen.map(m => m.topic))}`,
+        );
+    });
+});
+
+// MQTT 5 shared subscriptions (MQTT-5.0 4.8.2): every message matching the filter goes to exactly
+// one member of the group, while normal subscriptions and other groups are unaffected.
+describe('MQTT server: shared subscriptions', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(30000);
+    let suitePort: number;
+    const open: any[] = [];
+    let publisher: any;
+
+    function wait(ms: number): Promise<void> {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Connects a real mqtt.js client and remembers it for the cleanup.
+     *
+     * @param clientId The client id
+     * @returns The connected client
+     */
+    function connect(clientId: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+                protocolId: 'MQTT',
+                protocolVersion: 5,
+                clientId,
+                clean: true,
+                reconnectPeriod: 0,
+                connectTimeout: 5000,
+            });
+            open.push(client);
+            const timer = setTimeout(() => reject(new Error(`${clientId} did not connect`)), 8000);
+            client.on('connect', () => {
+                clearTimeout(timer);
+                resolve(client);
+            });
+            client.on('error', (e: Error) => {
+                clearTimeout(timer);
+                reject(e);
+            });
+        });
+    }
+
+    /**
+     * Records the topics a client receives.
+     *
+     * @param client The receiving client
+     * @returns The (growing) list of received topics
+     */
+    function collect(client: any): string[] {
+        const seen: string[] = [];
+        client.on('message', (topic: string) => seen.push(topic));
+        return seen;
+    }
+
+    before('MQTT server (shared): Start server', async () => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true, publishOnSubscribe: true });
+        server = new Server(adapter, states);
+        await wait(300);
+        publisher = await connect('sharePublisher');
+    });
+
+    after('MQTT server (shared): Stop server', done => {
+        for (const client of open) {
+            try {
+                client.end(true);
+            } catch {
+                /* ignore */
+            }
+        }
+        server.destroy(done);
+    });
+
+    it('a group splits the messages, each one delivered exactly once', async () => {
+        const a = await connect('shareA');
+        const b = await connect('shareB');
+        const seenA = collect(a);
+        const seenB = collect(b);
+
+        await a.subscribeAsync({ '$share/grp/share/work': { qos: 0 } });
+        await b.subscribeAsync({ '$share/grp/share/work': { qos: 0 } });
+        await wait(600);
+        seenA.length = 0;
+        seenB.length = 0;
+
+        for (let i = 0; i < 6; i++) {
+            await publisher.publishAsync('share/work', `m${i}`);
+            await wait(220);
+        }
+        await wait(700);
+
+        assert.strictEqual(seenA.length + seenB.length, 6, 'every message must be delivered exactly once');
+        assert.ok(seenA.length > 0 && seenB.length > 0, 'both members must get a share');
+    });
+
+    it('a normal subscription is not affected by the group', async () => {
+        const a = await connect('shareNormalA');
+        const b = await connect('shareNormalB');
+        const plain = await connect('sharePlain');
+        const seenA = collect(a);
+        const seenB = collect(b);
+        const seenPlain = collect(plain);
+
+        await a.subscribeAsync({ '$share/grp2/share/mixed': { qos: 0 } });
+        await b.subscribeAsync({ '$share/grp2/share/mixed': { qos: 0 } });
+        await plain.subscribeAsync({ 'share/mixed': { qos: 0 } });
+        await wait(600);
+        seenA.length = 0;
+        seenB.length = 0;
+        seenPlain.length = 0;
+
+        await publisher.publishAsync('share/mixed', 'x');
+        await wait(800);
+
+        assert.strictEqual(seenPlain.length, 1, 'the normal subscriber must get the message');
+        assert.strictEqual(seenA.length + seenB.length, 1, 'the group must get it exactly once');
+    });
+
+    it('two groups each receive their own copy', async () => {
+        const a = await connect('shareTwoA');
+        const b = await connect('shareTwoB');
+        const seenA = collect(a);
+        const seenB = collect(b);
+
+        await a.subscribeAsync({ '$share/left/share/two': { qos: 0 } });
+        await b.subscribeAsync({ '$share/right/share/two': { qos: 0 } });
+        await wait(600);
+        seenA.length = 0;
+        seenB.length = 0;
+
+        await publisher.publishAsync('share/two', 'x');
+        await wait(800);
+
+        assert.strictEqual(seenA.length, 1, 'the first group must get a copy');
+        assert.strictEqual(seenB.length, 1, 'the second group must get its own copy');
+    });
+
+    it('unsubscribing leaves the group', async () => {
+        const a = await connect('shareLeaveA');
+        const b = await connect('shareLeaveB');
+        const seenA = collect(a);
+        const seenB = collect(b);
+
+        await a.subscribeAsync({ '$share/grp3/share/leave': { qos: 0 } });
+        await b.subscribeAsync({ '$share/grp3/share/leave': { qos: 0 } });
+        await wait(600);
+
+        await b.unsubscribeAsync('$share/grp3/share/leave');
+        await wait(500);
+        seenA.length = 0;
+        seenB.length = 0;
+
+        for (let i = 0; i < 4; i++) {
+            await publisher.publishAsync('share/leave', `n${i}`);
+            await wait(200);
+        }
+        await wait(700);
+
+        assert.strictEqual(seenB.length, 0, 'the client that left must not get anything any more');
+        assert.strictEqual(seenA.length, 4, 'the remaining member must get everything');
+    });
+
+    it('a shared subscribe does not deliver the stored value', async () => {
+        const id = 'mqtt.0.share.known';
+        states[id] = { val: 'stored', ack: true };
+        await adapter.setForeignObjectAsync(id, {
+            type: 'state',
+            common: { name: 'known', type: 'string', read: true, write: true, role: 'variable' },
+            native: { topic: 'share/known' },
+        });
+        await adapter.setForeignStateAsync(id, 'stored');
+
+        const client = await connect('shareRetained');
+        const seen = collect(client);
+        await client.subscribeAsync({ '$share/grp4/share/known': { qos: 0 } });
+        await wait(900);
+
+        assert.deepStrictEqual(seen, [], 'a shared subscription must not get the value on subscribe');
+    });
+
+    it('"No Local" on a shared subscription is a protocol error', async () => {
+        const client = await connect('shareNoLocal');
+        client.subscribe({ '$share/grp5/share/nl': { qos: 0, nl: true } }, () => {
+            /* the broker closes the connection instead of answering */
+        });
+        await wait(900);
+
+        assert.strictEqual(client.connected, false, 'the connection must be closed');
+    });
+});
+
+// MQTT 5 enhanced authentication (MQTT-5.0 4.12) with SCRAM-SHA-256: the password never travels
+// over the wire, both sides prove to each other that they know it.
+describe('MQTT server: enhanced authentication', function () {
+    const net = require('node:net');
+    const crypto = require('node:crypto');
+    const Connection = require('../build/lib/MqttConnection').default;
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(30000);
+    let suitePort: number;
+
+    const USER = 'user';
+    const PASS = 'pass!?#1';
+
+    const hmac = (key: Buffer, data: string): Buffer => crypto.createHmac('sha256', key).update(data).digest();
+    const sha256 = (data: Buffer): Buffer => crypto.createHash('sha256').update(data).digest();
+    const xor = (a: Buffer, b: Buffer): Buffer => Buffer.from(a.map((value: number, i: number) => value ^ b[i]));
+
+    /**
+     * A SCRAM-SHA-256 client, written from the RFC rather than reusing the server code.
+     *
+     * @param username The user name to authenticate as
+     * @param password The password to prove
+     * @returns The first message, the final message builder and the expected server signature
+     */
+    function scramClient(
+        username: string,
+        password: string,
+    ): { first: Buffer; final: (serverFirst: Buffer) => Buffer; serverSignature: () => string } {
+        const gs2 = 'n,,';
+        const clientFirstBare = `n=${username},r=${crypto.randomBytes(18).toString('base64')}`;
+        let expected = '';
+        return {
+            first: Buffer.from(gs2 + clientFirstBare, 'utf8'),
+            final(serverFirstBuffer: Buffer): Buffer {
+                const serverFirst = serverFirstBuffer.toString('utf8');
+                const attrs: Record<string, string> = {};
+                for (const part of serverFirst.split(',')) {
+                    attrs[part[0]] = part.substring(2);
+                }
+                const salted = crypto.pbkdf2Sync(
+                    Buffer.from(password, 'utf8'),
+                    Buffer.from(attrs.s, 'base64'),
+                    parseInt(attrs.i, 10),
+                    32,
+                    'sha256',
+                );
+                const clientKey = hmac(salted, 'Client Key');
+                const withoutProof = `c=${Buffer.from(gs2).toString('base64')},r=${attrs.r}`;
+                const authMessage = `${clientFirstBare},${serverFirst},${withoutProof}`;
+                const proof = xor(clientKey, hmac(sha256(clientKey), authMessage));
+                expected = hmac(hmac(salted, 'Server Key'), authMessage).toString('base64');
+                return Buffer.from(`${withoutProof},p=${proof.toString('base64')}`, 'utf8');
+            },
+            serverSignature: () => expected,
+        };
+    }
+
+    /**
+     * Runs a complete CONNECT + AUTH exchange against the broker.
+     *
+     * @param clientId The client id
+     * @param username The user name to authenticate as
+     * @param password The password to prove
+     * @param method The authentication method to announce
+     * @returns What the broker answered
+     */
+    function authenticate(
+        clientId: string,
+        username: string,
+        password: string,
+        method = 'SCRAM-SHA-256',
+    ): Promise<{ reasonCode: number | null; serverVerified: boolean }> {
+        return new Promise(resolve => {
+            const stream = net.createConnection(suitePort, '127.0.0.1');
+            const connection = new Connection(stream);
+            const scram = scramClient(username, password);
+            const result: { reasonCode: number | null; serverVerified: boolean } = {
+                reasonCode: null,
+                serverVerified: false,
+            };
+            let done = false;
+            const finish = (): void => {
+                if (!done) {
+                    done = true;
+                    try {
+                        stream.destroy();
+                    } catch {
+                        /* ignore */
+                    }
+                    resolve(result);
+                }
+            };
+
+            stream.on('connect', () =>
+                connection.connect({
+                    clientId,
+                    protocolId: 'MQTT',
+                    protocolVersion: 5,
+                    clean: true,
+                    keepalive: 0,
+                    properties: { authenticationMethod: method, authenticationData: scram.first },
+                }),
+            );
+
+            connection.on('auth', (packet: any) => {
+                try {
+                    connection.auth({
+                        reasonCode: 0x18,
+                        properties: {
+                            authenticationMethod: method,
+                            authenticationData: scram.final(packet.properties.authenticationData),
+                        },
+                    });
+                } catch {
+                    finish();
+                }
+            });
+
+            connection.on('connack', (packet: any) => {
+                result.reasonCode = packet.reasonCode;
+                const data = packet.properties?.authenticationData;
+                if (data && scram.serverSignature()) {
+                    result.serverVerified = data.toString('utf8') === `v=${scram.serverSignature()}`;
+                }
+                setTimeout(finish, 150);
+            });
+
+            connection.on('close', finish);
+            stream.on('error', finish);
+            setTimeout(finish, 8000);
+        });
+    }
+
+    before('MQTT server (auth): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, user: USER, pass: PASS });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (auth): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('accepts the correct credentials and proves itself in return', async () => {
+        const result = await authenticate('scramGood', USER, PASS);
+        assert.strictEqual(result.reasonCode, 0, 'the connection must be accepted');
+        assert.ok(result.serverVerified, 'the CONNACK must carry a valid server-final message');
+    });
+
+    it('rejects a wrong password with "not authorized"', async () => {
+        const result = await authenticate('scramBadPassword', USER, 'wrong');
+        assert.strictEqual(result.reasonCode, 0x87);
+    });
+
+    it('rejects a wrong user name the same way', async () => {
+        const result = await authenticate('scramBadUser', 'nobody', PASS);
+        assert.strictEqual(result.reasonCode, 0x87, 'a wrong user must not be distinguishable from a wrong password');
+    });
+
+    it('answers an unsupported method with "bad authentication method"', async () => {
+        const result = await authenticate('scramBadMethod', USER, PASS, 'SCRAM-SHA-1');
+        assert.strictEqual(result.reasonCode, 0x8c);
+    });
+
+    it('still accepts a plain MQTT 3.1.1 login', done => {
+        const stream = net.createConnection(suitePort, '127.0.0.1');
+        const connection = new Connection(stream);
+        let finished = false;
+        const finish = (err?: any): void => {
+            if (!finished) {
+                finished = true;
+                try {
+                    stream.destroy();
+                } catch {
+                    /* ignore */
+                }
+                done(err);
+            }
+        };
+
+        stream.on('connect', () =>
+            connection.connect({
+                clientId: 'plainLogin',
+                protocolId: 'MQTT',
+                protocolVersion: 4,
+                clean: true,
+                keepalive: 0,
+                username: USER,
+                password: Buffer.from(PASS),
+            }),
+        );
+        connection.on('connack', (packet: any) => {
+            try {
+                assert.strictEqual(packet.returnCode, 0, 'username and password must keep working');
+                finish();
+            } catch (e) {
+                finish(e);
+            }
+        });
+        stream.on('error', finish);
+        setTimeout(() => finish(new Error('no CONNACK')), 8000);
+    });
+
+    it('rejects a plain login with a wrong password', done => {
+        const stream = net.createConnection(suitePort, '127.0.0.1');
+        const connection = new Connection(stream);
+        let finished = false;
+        const finish = (err?: any): void => {
+            if (!finished) {
+                finished = true;
+                try {
+                    stream.destroy();
+                } catch {
+                    /* ignore */
+                }
+                done(err);
+            }
+        };
+
+        stream.on('connect', () =>
+            connection.connect({
+                clientId: 'plainWrong',
+                protocolId: 'MQTT',
+                protocolVersion: 4,
+                clean: true,
+                keepalive: 0,
+                username: USER,
+                password: Buffer.from('nope'),
+            }),
+        );
+        connection.on('connack', (packet: any) => {
+            try {
+                // the rejection has to reach the client, not be cut off by the closing socket
+                assert.strictEqual(packet.returnCode, 4, 'bad user name or password');
+                finish();
+            } catch (e) {
+                finish(e);
+            }
+        });
+        stream.on('error', finish);
+        setTimeout(() => finish(new Error('no CONNACK')), 8000);
     });
 });

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertID2topic = convertID2topic;
 exports.findIdForTopic = findIdForTopic;
+exports.parseSharedTopic = parseSharedTopic;
 exports.pattern2RegEx = pattern2RegEx;
 exports.isIgnoredTopic = isIgnoredTopic;
 exports.isBinaryTopic = isBinaryTopic;
@@ -69,6 +70,33 @@ function findIdForTopic(topic, states, prefix, namespace, removePrefix) {
         }
     }
     return undefined;
+}
+/**
+ * Splits a MQTT 5 shared subscription filter into its share name and the real topic filter.
+ *
+ * A shared subscription looks like `$share/{ShareName}/{filter}`; every message matching `filter`
+ * goes to exactly one member of the group `ShareName` (MQTT-5.0 4.8.2). The share name must not be
+ * empty and must not contain a wildcard or a level separator, otherwise the filter is not a valid
+ * shared subscription.
+ *
+ * @param topic The topic filter of a SUBSCRIBE or UNSUBSCRIBE packet
+ * @returns The share name (undefined for a normal subscription) and the filter to match against
+ */
+function parseSharedTopic(topic) {
+    if (!topic?.startsWith('$share/')) {
+        return { filter: topic };
+    }
+    const rest = topic.substring('$share/'.length);
+    const separator = rest.indexOf('/');
+    // "$share/group" without a filter, or an empty share name, is not a shared subscription
+    if (separator <= 0 || separator === rest.length - 1) {
+        return { filter: topic };
+    }
+    const shareName = rest.substring(0, separator);
+    if (shareName.includes('+') || shareName.includes('#')) {
+        return { filter: topic };
+    }
+    return { shareName, filter: rest.substring(separator + 1) };
 }
 /*4.7.1.3 Single level wildcard
 

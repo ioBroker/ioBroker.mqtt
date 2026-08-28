@@ -62,7 +62,7 @@
   ],
   "scripts": {
     "test:package": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/package.js --exit",
-    "test:unit": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/testConvert.js ./test/testSimClient.js ./test/testSimServer.js --exit",
+    "test:unit": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/testConvert.js ./test/testScram.js ./test/testSimClient.js ./test/testSimServer.js --exit",
     "test:legacy": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/testClient.js ./test/testServer.js --exit",
     "test:integration": "cd test && tsc -p tsconfig.build.json && cd .. && mocha ./test/integration.js --exit",
     "test": "npm run test:package && npm run test:unit && npm run test:legacy && npm run test:integration",

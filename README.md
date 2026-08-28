@@ -74,15 +74,41 @@ Supported MQTT 5 features:
 - **Topic aliases** - up to 32 per connection, announced in the CONNACK
 - **Subscription option "No Local"** - a client does not get back what it published itself, even when "Use different topic names for set and get" is active
 - **Subscription option "Retain Handling"** - `2` tells the broker not to send the value it already has on subscribe, which otherwise happens when "Publish own states on connect" is enabled
+- **Subscription option "Retain As Published"** - the RETAIN flag of a message forwarded to a MQTT 5 subscriber follows the standard: a value the broker delivers because the subscription was just established is retained, everything forwarded afterwards has RETAIN `0` unless the subscription asked to keep the flag it was published with
 - **Session Expiry Interval** - replaces the "clean session" flag: `0` (or no value) ends the session with the connection, a larger value keeps it. The "Force clean session" setting still overrules it.
+- **Subscription identifiers** - a client learns on every message which of its subscriptions matched
+- **Message Expiry Interval** - a value whose lifetime has passed is no longer handed out on subscribe and is dropped from the queue of an offline client instead of being delivered late. Messages that are still alive carry their remaining lifetime. The ioBroker state itself is never deleted, only the delivery stops
+- **Will Delay Interval** - the last will is only published once the delay has passed and the client did not come back, so a short network hiccup does not announce a device as offline. The delay never outlives the session expiry interval
+- **Maximum Packet Size** - a message larger than what the client announced it accepts is dropped instead of being sent
+- **Receive Maximum** - the broker keeps at most as many QoS 1/2 messages unacknowledged as the client allows and sends the rest once a slot becomes free
+- **Shared subscriptions** - several clients subscribe to `$share/<group>/<filter>` and the broker hands every matching message to exactly one of them, round robin. Useful to spread the load over several instances of the same consumer. Groups are independent of each other and of normal subscriptions, so a message can reach one member of every group plus every normal subscriber. A shared subscription never receives the stored value on subscribe, and combining it with "No Local" is a protocol error, both as the standard requires
+- **Enhanced authentication with SCRAM-SHA-256** - see below
 
-Not implemented: shared subscriptions, subscription identifiers, enhanced authentication (AUTH),
-flow control (Receive Maximum) and message expiry. The broker announces this honestly in its CONNACK,
-so a client knows what it can use.
+### Enhanced authentication (SCRAM-SHA-256)
 
-The subscription option "Retain As Published" is accepted but cannot change anything: the ioBroker
-broker stores every value in the States DB and therefore publishes with the retain flag that the
-`Publish messages without "retain" flag` setting defines, for every client alike.
+A MQTT 5 client can authenticate with `SCRAM-SHA-256` (RFC 7677) instead of sending its password.
+Nothing has to be configured for it: the method uses the same user name and password as the normal
+login, and is offered as soon as those are set. Clients that send user name and password the usual
+way keep working unchanged, MQTT 3.1.1 clients included.
+
+Why it is worth using: the password never travels over the connection. The client proves that it
+knows the password by signing the whole exchange, and the broker answers with a signature of its
+own — so a client also notices when it is talking to a broker that does not know the password, and
+a recorded exchange cannot be replayed against the broker later. This is useful whenever the
+connection is not TLS protected.
+
+The client only has to set the authentication method to `SCRAM-SHA-256` and put its
+`client-first-message` into the authentication data of the CONNECT packet; the adapter answers with
+an AUTH packet and completes the exchange. Re-authentication of a connected client is supported too.
+
+Channel binding (`p=...`) is not offered, and a wrong user name is answered exactly like a wrong
+password, so the exchange does not reveal which of the two was wrong.
+
+Note the different RETAIN handling per protocol level. MQTT 3.1.1 clients are unchanged: the broker
+stores every value in the States DB and publishes with the flag the `Publish messages without
+"retain" flag` setting defines, so a reconnecting client finds the last value. MQTT 5 clients get
+what the standard prescribes instead, which they can control themselves through "Retain Handling"
+and "Retain As Published".
 
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like `localhost`.
@@ -194,8 +220,10 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ## Changelog
 ### **WORK IN PROGRESS**
-* (@GermanBluefox) Added MQTT 5.0 support. In server mode every client is answered with the protocol level it announced, so MQTT 5 and MQTT 3.1.1 clients can share one instance. Includes reason codes, topic aliases, the subscription options "No Local" and "Retain Handling", and the session expiry interval
+* (@GermanBluefox) Added MQTT 5.0 support. In server mode every client is answered with the protocol level it announced, so MQTT 5 and MQTT 3.1.1 clients can share one instance. Includes reason codes, topic aliases, the subscription options "No Local", "Retain Handling" and "Retain As Published", subscription identifiers, message expiry, will delay, maximum packet size, receive maximum, shared subscriptions and the session expiry interval. MQTT 3.1.1 clients are not affected by the new rules
 * (@GermanBluefox) Client mode: the MQTT version (3.1 / 3.1.1 / 5.0) can now be selected. If the broker refuses it, the adapter falls back to MQTT 3.1.1
+* (@GermanBluefox) Added MQTT 5 enhanced authentication with SCRAM-SHA-256 (RFC 7677) in server mode. The password is no longer sent over the connection; both sides prove that they know it. It uses the configured user name and password, needs no configuration and does not change anything for clients that log in the usual way
+* (@GermanBluefox) Fixed: a rejected login could lose its CONNACK, because the socket was torn down before the answer had left it. The client saw a closed connection instead of the reason
 * (@GermanBluefox) Replaced the unmaintained `mqtt-connection` package with an own connection layer on `mqtt-packet`, which removes a second, outdated copy of `mqtt-packet` from the dependency tree
 
 ### 7.1.3 (2026-08-28)
