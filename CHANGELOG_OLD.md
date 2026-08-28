@@ -1,4 +1,13 @@
 # Older changes
+## 7.0.1 (2026-07-01)
+* (@Apollon77) Optimized client state generation logic to prevent load issues
+* (@Apollon77) Optimized detection of incoming data as ioBroker states 
+* (@GermanBluefox) Breaking change: removed binary states
+* (@GermanBluefox) Migrated to TypeScript
+* (@GermanBluefox) Breaking change: a minimal supported Node.js version is 22
+* (@Marc-Berg) Fixed some errors
+* (@driemekasten) Fixed the reject unresolved topic ids with SUBACK failure
+
 ## 6.1.4 (2025-05-07)
 * (@GermanBluefox) Allowed disabling the client objects creation
 * (@GermanBluefox) Create client objects with timeout (1s) to prevent memory leaks

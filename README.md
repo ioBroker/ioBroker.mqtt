@@ -172,7 +172,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 7.1.3 (2026-08-28)
 * (@Tarvion) Fixed: a value received for a topic that was published from a state ID containing "#", "+" or a space (e.g. the Shelly IDs like `shelly.0.SHCB-1#3494546B9BEC#1`) is now written back to that state instead of creating a new state in the adapter's own namespace
 * (@GermanBluefox) Fixed: the resolution above now also corrects an instance that already carries the wrongly created `mqtt.<n>.*` state from an earlier version. Such a state was published on start and claimed the topic before any message arrived. It is logged once as a leftover and can be deleted
 
@@ -189,15 +189,6 @@ Note: If you have some client that connects and disconnects very often, the list
 ### 7.0.2 (2026-07-02)
 * (@Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
 * (@GermanBluefox) Migrated the test suite to TypeScript
-
-### 7.0.1 (2026-07-01)
-* (@Apollon77) Optimized client state generation logic to prevent load issues
-* (@Apollon77) Optimized detection of incoming data as ioBroker states 
-* (@GermanBluefox) Breaking change: removed binary states
-* (@GermanBluefox) Migrated to TypeScript
-* (@GermanBluefox) Breaking change: a minimal supported Node.js version is 22
-* (@Marc-Berg) Fixed some errors
-* (@driemekasten) Fixed the reject unresolved topic ids with SUBACK failure
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
