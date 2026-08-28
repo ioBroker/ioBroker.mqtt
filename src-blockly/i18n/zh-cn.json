@@ -1,0 +1,8 @@
+{
+    "mqtt_anyInstance": "所有案件",
+    "mqtt_message": "导 言",
+    "mqtt_retain": "Retain",
+    "mqtt_sendmessage": "MQTT信息",
+    "mqtt_tooltip": "关于用户界定专题的信息",
+    "mqtt_topic": "议题 (Topic)"
+}

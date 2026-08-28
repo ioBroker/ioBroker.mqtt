@@ -1,0 +1,8 @@
+{
+    "mqtt_anyInstance": "Всі екземпляри",
+    "mqtt_message": "Новини",
+    "mqtt_retain": "Retain",
+    "mqtt_sendmessage": "MQTT повідомлення",
+    "mqtt_tooltip": "Надіслати повідомлення на певну тему користувача",
+    "mqtt_topic": "Головна (Topic)"
+}

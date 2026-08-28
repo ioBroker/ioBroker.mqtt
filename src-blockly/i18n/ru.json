@@ -1,0 +1,8 @@
+{
+    "mqtt_anyInstance": "Все экземпляры",
+    "mqtt_message": "Сообщение",
+    "mqtt_retain": "Retain",
+    "mqtt_sendmessage": "MQTT сообщение",
+    "mqtt_tooltip": "Отправить сообщение на определенную тему пользователя",
+    "mqtt_topic": "Тема (Topic)"
+}

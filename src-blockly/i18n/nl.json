@@ -1,0 +1,8 @@
+{
+    "mqtt_anyInstance": "Alle instanties",
+    "mqtt_message": "Bericht",
+    "mqtt_retain": "Retain",
+    "mqtt_sendmessage": "MQT",
+    "mqtt_tooltip": "Stuur een bericht naar een gebruiker",
+    "mqtt_topic": "Ondertiteling (Topic)"
+}

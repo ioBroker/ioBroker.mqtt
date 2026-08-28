@@ -1,0 +1,8 @@
+{
+    "mqtt_anyInstance": "Tutte le istanze",
+    "mqtt_message": "Messaggio",
+    "mqtt_retain": "Retain",
+    "mqtt_sendmessage": "Messaggio MQTT",
+    "mqtt_tooltip": "Invia un messaggio su un argomento definito dall'utente",
+    "mqtt_topic": "Argomento (Topic)"
+}
