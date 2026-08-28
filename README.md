@@ -219,7 +219,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.1 (2026-08-28)
 * (@GermanBluefox) The Blockly block is now built from TypeScript sources in `src-blockly/` into `admin/blockly.js`, with the translations in `src-blockly/i18n/`
 * (@GermanBluefox) Fixed: the Blockly block produced no code at all in newer Blockly editors. Since Blockly 10 a generator has to be registered in `Blockly.JavaScript.forBlock`, and the editor migrates its own generators there before it loads an adapter's block
 
@@ -240,9 +240,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 7.1.1 (2026-07-08)
 * (@Marc-Berg) Fixed: Publish only on change issue
-
-### 7.1.0 (2026-07-03)
-* (@GermanBluefox) Added a "Binary topics" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

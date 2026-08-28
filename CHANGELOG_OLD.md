@@ -1,4 +1,7 @@
 # Older changes
+## 7.1.0 (2026-07-03)
+* (@GermanBluefox) Added a "Binary topics" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)
+
 ## 7.0.2 (2026-07-02)
 * (@Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
 * (@GermanBluefox) Migrated the test suite to TypeScript
