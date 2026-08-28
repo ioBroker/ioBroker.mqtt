@@ -219,7 +219,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.0.0 (2026-08-28)
 * (@GermanBluefox) Added MQTT 5.0 support. In server mode every client is answered with the protocol level it announced, so MQTT 5 and MQTT 3.1.1 clients can share one instance. Includes reason codes, topic aliases, the subscription options "No Local", "Retain Handling" and "Retain As Published", subscription identifiers, message expiry, will delay, maximum packet size, receive maximum, shared subscriptions and the session expiry interval. MQTT 3.1.1 clients are not affected by the new rules
 * (@GermanBluefox) Client mode: the MQTT version (3.1 / 3.1.1 / 5.0) can now be selected. If the broker refuses it, the adapter falls back to MQTT 3.1.1
 * (@GermanBluefox) Added MQTT 5 enhanced authentication with SCRAM-SHA-256 (RFC 7677) in server mode. The password is no longer sent over the connection; both sides prove that they know it. It uses the configured user name and password, needs no configuration and does not change anything for clients that log in the usual way
@@ -239,10 +239,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 7.1.0 (2026-07-03)
 * (@GermanBluefox) Added a "Binary topics" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)
-
-### 7.0.2 (2026-07-02)
-* (@Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
-* (@GermanBluefox) Migrated the test suite to TypeScript
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

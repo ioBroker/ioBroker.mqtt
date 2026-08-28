@@ -1,4 +1,8 @@
 # Older changes
+## 7.0.2 (2026-07-02)
+* (@Apollon77) Added an optional "Parse comma-separated numbers as character codes" setting (disabled by default) to prevent garbled values from devices like NUKI locks
+* (@GermanBluefox) Migrated the test suite to TypeScript
+
 ## 7.0.1 (2026-07-01)
 * (@Apollon77) Optimized client state generation logic to prevent load issues
 * (@Apollon77) Optimized detection of incoming data as ioBroker states 
