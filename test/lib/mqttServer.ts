@@ -1,5 +1,5 @@
-// @ts-expect-error no types
-import mqtt from 'mqtt-connection';
+// The compiled adapter under test (build/) ships no type declarations, so load it untyped.
+const MqttConnection = require('../../build/lib/MqttConnection').default;
 import * as net from 'node:net';
 import * as tls from 'node:tls';
 import * as http from 'node:http';
@@ -31,7 +31,7 @@ interface SubscribePacket {
     messageId: number;
 }
 
-/** Minimal shape of a `mqtt-connection` connection (the package ships no types). */
+/** Minimal shape of the adapter's own MqttConnection, as this helper uses it. */
 interface MqttConnection {
     id: string;
     stream: { end: () => void };
@@ -88,7 +88,7 @@ export default class MqttServerEmulator {
         const clients = this.#clients;
 
         socket.on('connection', stream => {
-            const client: MqttConnection = ws ? mqtt(wsStream(stream)) : mqtt(stream);
+            const client: MqttConnection = ws ? new MqttConnection(wsStream(stream)) : new MqttConnection(stream);
 
             client.on('connect', packet => {
                 client.id = packet.clientId;

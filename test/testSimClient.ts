@@ -385,3 +385,65 @@ describe('MQTT client with a leftover state from the old ID conversion', functio
         client.destroy();
     });
 });
+
+// The adapter as a MQTT 5 client. The protocol level is configurable; everything the adapter does
+// (subscribe, store, publish back) has to keep working on it.
+describe('MQTT client speaking MQTT 5', function () {
+    let adapter: Adapter;
+    let simulatedServer: SimulatedServer;
+    let client: any;
+    const states: Record<string, ioBroker.State> = {};
+    this.timeout(10000);
+
+    before('MQTT client (v5): Start MQTT simulatedServer', done => {
+        adapter = new Adapter({
+            port: ++port,
+            url: '127.0.0.1',
+            onchange: true,
+            clientId: 'testAdapterV5',
+            protocolVersion: 5,
+        });
+        simulatedServer = new SimulatedServer({ port, dontSend: true });
+        client = new Client(adapter, states);
+        done();
+    });
+
+    it('MQTT client: connects to the broker with MQTT 5', done => {
+        setTimeout(async () => {
+            const data = await adapter.getStateAsync('info.connection');
+            assert.ok(data, 'the connection state must exist');
+            assert.strictEqual(data.val, true, 'the adapter must be connected using MQTT 5');
+            done();
+        }, 400);
+    }).timeout(3000);
+
+    it('MQTT client: a message received over MQTT 5 is stored', done => {
+        const topic = 'v5client/value';
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish(topic, '42');
+                    setTimeout(async () => {
+                        const state = await adapter.getForeignStateAsync('mqtt.0.v5client.value');
+                        publisher.destroy();
+                        try {
+                            assert.ok(state, 'the value must be stored');
+                            assert.strictEqual(state.val, 42);
+                            assert.strictEqual(state.ack, true);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    }, 600);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'v5Publisher', subscribe: false },
+        );
+    }).timeout(4000);
+
+    after('MQTT client (v5): Stop MQTT simulatedServer', done => {
+        simulatedServer.stop(done);
+        client.destroy();
+    });
+});

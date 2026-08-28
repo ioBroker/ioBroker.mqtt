@@ -64,6 +64,26 @@ await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set',
 await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set', '', true); // ack=true to clear the command
 ```
 
+### MQTT 5 in server mode
+
+The broker answers every client with the protocol level that client announced, so MQTT 5.0 and
+MQTT 3.1.1 clients can use the same instance at the same time. Nothing has to be configured for it.
+
+Supported MQTT 5 features:
+- Reason codes on CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBACK and UNSUBACK
+- **Topic aliases** - up to 32 per connection, announced in the CONNACK
+- **Subscription option "No Local"** - a client does not get back what it published itself, even when "Use different topic names for set and get" is active
+- **Subscription option "Retain Handling"** - `2` tells the broker not to send the value it already has on subscribe, which otherwise happens when "Publish own states on connect" is enabled
+- **Session Expiry Interval** - replaces the "clean session" flag: `0` (or no value) ends the session with the connection, a larger value keeps it. The "Force clean session" setting still overrules it.
+
+Not implemented: shared subscriptions, subscription identifiers, enhanced authentication (AUTH),
+flow control (Receive Maximum) and message expiry. The broker announces this honestly in its CONNACK,
+so a client knows what it can use.
+
+The subscription option "Retain As Published" is accepted but cannot change anything: the ioBroker
+broker stores every value in the States DB and therefore publishes with the retain flag that the
+`Publish messages without "retain" flag` setting defines, for every client alike.
+
 ### Client settings
 - **URL** - name or ip address of the broker/server. Like `localhost`.
 - **Port** - Port of the MQTT broker. By default, 1883
@@ -71,6 +91,7 @@ await setStateAsync('mqtt.0.valetudo.vale.BasicControlCapability.operation.set',
 - **User** - if broker required authentication, define here the username.
 - **Password** - if the username is not empty, the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
+- **MQTT version** - Protocol level used to connect to the broker: MQTT 3.1.1 (default), MQTT 5.0 or the legacy MQTT 3.1. If the broker refuses the selected version, the adapter logs a warning and falls back to MQTT 3.1.1.
 - **Subscribe Patterns** - Subscribe by the pattern. See the chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. `mqtt/0/#,javascript/#` to subscribe for states of `mqtt.0` and `javascript`
 - **Publish only on change** - Store incoming messages only if the payload differs from the actual stored.
 - **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter.  
@@ -172,6 +193,11 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Added MQTT 5.0 support. In server mode every client is answered with the protocol level it announced, so MQTT 5 and MQTT 3.1.1 clients can share one instance. Includes reason codes, topic aliases, the subscription options "No Local" and "Retain Handling", and the session expiry interval
+* (@GermanBluefox) Client mode: the MQTT version (3.1 / 3.1.1 / 5.0) can now be selected. If the broker refuses it, the adapter falls back to MQTT 3.1.1
+* (@GermanBluefox) Replaced the unmaintained `mqtt-connection` package with an own connection layer on `mqtt-packet`, which removes a second, outdated copy of `mqtt-packet` from the dependency tree
+
 ### 7.1.3 (2026-08-28)
 * (@Tarvion) Fixed: a value received for a topic that was published from a state ID containing "#", "+" or a space (e.g. the Shelly IDs like `shelly.0.SHCB-1#3494546B9BEC#1`) is now written back to that state instead of creating a new state in the adapter's own namespace
 * (@GermanBluefox) Fixed: the resolution above now also corrects an instance that already carries the wrongly created `mqtt.<n>.*` state from an earlier version. Such a state was published on start and claimed the topic before any message arrived. It is logged once as a leftover and can be deleted

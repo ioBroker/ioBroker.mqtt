@@ -20,6 +20,7 @@ export interface AdapterConfig {
     ignoredTopics?: string;
     binaryTopics?: string;
     publishAllOnStart?: boolean;
+    protocolVersion?: 3 | 4 | 5;
 }
 
 export default class AdapterSimulator {

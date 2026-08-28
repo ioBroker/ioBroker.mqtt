@@ -1,6 +1,5 @@
 import type { MqttAdapterConfig, MqttPattern, MqttTopic } from './types';
-// @ts-expect-error no types
-import mqtt from 'mqtt-connection';
+import MqttConnection from './MqttConnection';
 import {
     state2string,
     convertTopic2id,
@@ -41,30 +40,40 @@ type MqttMessage = {
     binary?: boolean;
 };
 
+/**
+ * One subscription of a client.
+ *
+ * `nl`, `rap` and `rh` are the MQTT 5 subscription options (MQTT-5.0 3.8.3.1). They are absent for
+ * MQTT 3.1.1 clients, where the defaults (send everything, force our own retain flag, always send
+ * the known value on subscribe) match the behaviour the adapter always had.
+ */
+type MqttSubscription = {
+    regex: RegExp;
+    qos: 0 | 1 | 2;
+    pattern: MqttPattern;
+    /** No Local: do not send a message back to the client that published it */
+    nl?: boolean;
+    /** Retain As Published: forward the retain flag of the incoming message instead of ours */
+    rap?: boolean;
+    /** Retain Handling: 0/1 = send the known value on subscribe, 2 = do not */
+    rh?: 0 | 1 | 2;
+};
+
 interface PersistentSession {
     id: string;
-    _subsID?: {
-        [id: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
-    _subs?: {
-        [topic: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
+    _subsID?: Record<string, MqttSubscription>;
+    _subs?: Record<string, MqttSubscription>;
     _messages: MqttMessage[];
     connected?: boolean;
     lastSeen: number;
 }
 
-interface MqttConnection {
+/**
+ * A connection plus the per-client bookkeeping the broker attaches to it: its id, the pending
+ * QoS 1/2 messages, its subscriptions and its session flags.
+ */
+type MqttClientConnection = MqttConnection & {
     id: string;
-    stream: any;
     _messages: MqttMessage[];
     _sendOnStart?: NodeJS.Timeout | null;
     _resendonStart?: NodeJS.Timeout | null;
@@ -75,53 +84,36 @@ interface MqttConnection {
         qos: 0 | 1 | 2;
         retain: boolean;
     };
-    destroy: () => void;
-    _subsID?: {
-        [id: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
-    _subs?: {
-        [topic: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
+    _subsID?: Record<string, MqttSubscription>;
+    _subs?: Record<string, MqttSubscription>;
     cleanSession?: boolean;
     _keepalive: number;
     authenticated?: boolean;
-
-    publish: (message: MqttMessage) => void;
-    pubrec: (message: { messageId: number }) => void;
-    connack: (message: { returnCode: number; sessionPresent?: boolean }) => void;
-    puback: (message: { messageId: number }) => void;
-    unsuback: (message: { messageId: number }) => void;
-    pingresp: () => void;
-    suback: (message: { messageId: number; granted: number[] }) => void;
-    pubrel: (message: { messageId: number }) => void;
-    pubcomp: (message: { messageId: number }) => void;
-    on(
-        event:
-            | 'publish'
-            | 'connect'
-            | 'pubrec'
-            | 'pubcomp'
-            | 'pubrel'
-            | 'puback'
-            | 'subscribe'
-            | 'unsubscribe'
-            | 'close'
-            | 'disconnect'
-            | 'error'
-            | 'pingreq',
-        callback: (message: any) => void,
-    ): void;
-}
+    /** MQTT 5 topic aliases the client established on this connection (alias to topic) */
+    _topicAliases?: Map<number, MqttTopic>;
+    /** MQTT 5 session expiry interval in seconds, 0 = end the session with the connection */
+    _sessionExpiryInterval?: number;
+};
 
 const messageboxRegex = new RegExp('\\.messagebox$');
+
+/**
+ * How many MQTT 5 topic aliases a client may use. Announced in the CONNACK; a client must not use
+ * an alias above this value, and none at all if we announce 0 (MQTT-5.0 3.1.2.11.3).
+ */
+const TOPIC_ALIAS_MAXIMUM = 32;
+
+/**
+ * How long a state change is still attributed to the client that published it, so a "No Local"
+ * subscriber does not get its own message back through the state change fan-out.
+ */
+const NO_LOCAL_WINDOW = 2000;
+
+/** The part of an incoming PUBLISH the topic alias handling needs. */
+type IncomingPublish = {
+    topic: string;
+    properties?: { topicAlias?: number };
+};
 
 export default class MQTTServer {
     private readonly adapter: ioBroker.Adapter;
@@ -130,7 +122,7 @@ export default class MQTTServer {
     private server: Server | null = null;
     private serverWs: WsServer | null = null;
     private serverForWs: HttpHttpsServer | null = null;
-    private readonly clients: { [clientID: string]: MqttConnection } = {};
+    private readonly clients: { [clientID: string]: MqttClientConnection } = {};
     private readonly topic2id: Record<
         MqttTopic,
         {
@@ -147,6 +139,10 @@ export default class MQTTServer {
     // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
     // at most once per topic.
     private readonly resolvedTopics: Record<MqttTopic, true> = {};
+    // Which client last published a state and when. `onStateChange` fans a state change out to
+    // every client without knowing where it came from, so the MQTT 5 "No Local" option needs this
+    // to recognise the publisher. Entries are only consulted for a short moment (see NO_LOCAL_WINDOW).
+    private readonly lastPublisher: Record<string, { secret: string; ts: number }> = {};
     private messageId = 1;
     private persistentSessions: {
         [clientId: string]: PersistentSession;
@@ -316,9 +312,12 @@ export default class MQTTServer {
         }
 
         setImmediate(() => {
-            Object.keys(this.clients).forEach(k =>
-                this.sendState2Client(this.clients[k], id, state, this.config.defaultQoS, !this.config.noRetain),
-            );
+            Object.keys(this.clients).forEach(k => {
+                if (this.publishedItself(this.clients[k], id)) {
+                    return;
+                }
+                this.sendState2Client(this.clients[k], id, state, this.config.defaultQoS, !this.config.noRetain);
+            });
 
             Object.keys(this.persistentSessions).forEach(clientId => {
                 if (!this.clients[clientId]) {
@@ -420,23 +419,126 @@ export default class MQTTServer {
         });
     }
 
+    /**
+     * Decides whether a state change may be forwarded to a client.
+     *
+     * `extraSet` normally lets the publisher receive its own message back, because "get" and "set"
+     * then use different topics. An MQTT 5 client that subscribed with the "No Local" option has
+     * explicitly asked not to get its own messages, and that wins (MQTT-5.0 3.8.3.1).
+     *
+     * @param client The client the message would be sent to
+     * @param ignoreClient The client the message came from
+     * @param id The state id that changed
+     * @returns Whether the message may be sent
+     */
+    private mayReceiveOwnMessage(
+        client: MqttClientConnection,
+        ignoreClient: MqttClientConnection,
+        id: string,
+    ): boolean {
+        if (client !== ignoreClient) {
+            return true;
+        }
+        if (!this.config.extraSet) {
+            return false;
+        }
+        return !this.isNoLocal(client, id);
+    }
+
+    /**
+     * Checks whether this client just published the state itself and subscribed with "No Local",
+     * so the state change must not be sent back to it.
+     *
+     * @param client The client the message would be sent to
+     * @param id The state id that changed
+     * @returns Whether the message has to be suppressed for this client
+     */
+    private publishedItself(client: MqttClientConnection, id: string): boolean {
+        const publisher = this.lastPublisher[id];
+        if (!publisher || !client.__secret || publisher.secret !== client.__secret) {
+            return false;
+        }
+        if (Date.now() - publisher.ts > NO_LOCAL_WINDOW) {
+            delete this.lastPublisher[id];
+            return false;
+        }
+        return this.isNoLocal(client, id);
+    }
+
+    /**
+     * Checks whether the subscription that matches `id` was made with the MQTT 5 "No Local" option.
+     *
+     * @param client The subscribing client
+     * @param id The state id
+     * @returns Whether the client asked not to receive its own messages for this topic
+     */
+    private isNoLocal(client: MqttClientConnection, id: string): boolean {
+        if (client._subsID?.[id]) {
+            return !!client._subsID[id].nl;
+        }
+        if (client._subs) {
+            for (const topic of Object.keys(client._subs)) {
+                if (client._subs[topic].regex.test(id)) {
+                    return !!client._subs[topic].nl;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Applies the MQTT 5 topic alias of an incoming PUBLISH (MQTT-5.0 3.3.2.3.4).
+     *
+     * A packet that carries a topic name together with an alias establishes the mapping for the
+     * rest of the connection; a packet with an empty topic name refers back to it. An alias the
+     * client never established, or one above the maximum we announced, is a protocol error.
+     *
+     * @param client The publishing client
+     * @param packet The received PUBLISH; its `topic` is filled in from the alias when needed
+     * @returns Whether the packet may be processed
+     */
+    private resolveTopicAlias(client: MqttClientConnection, packet: IncomingPublish): boolean {
+        const alias = packet.properties?.topicAlias;
+        if (alias === undefined) {
+            return true;
+        }
+
+        if (!alias || alias > TOPIC_ALIAS_MAXIMUM) {
+            this.adapter.log.warn(
+                `Client [${client.id}] used the invalid topic alias ${alias} (maximum is ${TOPIC_ALIAS_MAXIMUM})`,
+            );
+            client.disconnect({ reasonCode: 0x94 }); // topic alias invalid
+            client.destroy();
+            return false;
+        }
+
+        client._topicAliases ||= new Map<number, MqttTopic>();
+
+        if (packet.topic) {
+            client._topicAliases.set(alias, packet.topic);
+            return true;
+        }
+
+        const topic = client._topicAliases.get(alias);
+        if (!topic) {
+            this.adapter.log.warn(`Client [${client.id}] used the unknown topic alias ${alias}`);
+            client.disconnect({ reasonCode: 0x94 }); // topic alias invalid
+            client.destroy();
+            return false;
+        }
+
+        packet.topic = topic;
+        if (this.config.debug) {
+            this.adapter.log.debug(`Client [${client.id}] topic alias ${alias} resolved to "${topic}"`);
+        }
+        return true;
+    }
+
     private getMqttMessage<
         T extends {
             id: string;
-            _subsID?: {
-                [id: string]: {
-                    regex: RegExp;
-                    qos: 0 | 1 | 2;
-                    pattern: MqttPattern;
-                };
-            };
-            _subs?: {
-                [topic: string]: {
-                    regex: RegExp;
-                    qos: 0 | 1 | 2;
-                    pattern: MqttPattern;
-                };
-            };
+            _subsID?: Record<string, MqttSubscription>;
+            _subs?: Record<string, MqttSubscription>;
         },
     >(
         client: T,
@@ -584,7 +686,7 @@ export default class MQTTServer {
     }
 
     private sendMessage2Client(
-        client: MqttConnection,
+        client: MqttClientConnection,
         topic: MqttTopic,
         payload: ioBroker.State | ioBroker.StateValue,
         retain: boolean,
@@ -619,7 +721,7 @@ export default class MQTTServer {
     }
 
     private sendState2Client(
-        client: MqttConnection,
+        client: MqttClientConnection,
         id: string,
         state: ioBroker.State | null | undefined,
         qos?: 0 | 1 | 2,
@@ -637,7 +739,7 @@ export default class MQTTServer {
             return;
         }
 
-        this.getMqttMessage<MqttConnection>(client, id, state, qos, retain, (_err, message, client) => {
+        this.getMqttMessage<MqttClientConnection>(client, id, state, qos, retain, (_err, message, client) => {
             if (message) {
                 if (this.config.debug) {
                     this.adapter.log.debug(
@@ -662,7 +764,7 @@ export default class MQTTServer {
      * storage (the state value itself only holds the file URL).
      */
     private sendBinaryState2Client(
-        client: MqttConnection,
+        client: MqttClientConnection,
         id: string,
         qos?: 0 | 1 | 2,
         retain?: boolean,
@@ -733,7 +835,7 @@ export default class MQTTServer {
             });
     }
 
-    private sendStates2Client(client: MqttConnection, list: string[]): void {
+    private sendStates2Client(client: MqttClientConnection, list: string[]): void {
         if (list?.length) {
             const id = list.shift() || '';
             this.sendState2Client(client, id, this.states[id], 0, !this.config.noRetain, () =>
@@ -744,7 +846,7 @@ export default class MQTTServer {
         }
     }
 
-    private resendMessages2Client(client: MqttConnection, messages: MqttMessage[], i?: number): void {
+    private resendMessages2Client(client: MqttClientConnection, messages: MqttMessage[], i?: number): void {
         i ||= 0;
         if (messages && i < messages.length) {
             try {
@@ -816,11 +918,15 @@ export default class MQTTServer {
         qos: 0 | 1 | 2,
         retain: boolean,
         isAck: boolean,
-        ignoreClient: MqttConnection,
+        ignoreClient: MqttClientConnection,
     ): Promise<void> {
         if (id === `${this.adapter.namespace}.info.connection`) {
             this.adapter.log.debug(`Ignore State update for ${id} because adapter internal state.`);
             return;
+        }
+
+        if (ignoreClient.__secret) {
+            this.lastPublisher[id] = { secret: ignoreClient.__secret, ts: Date.now() };
         }
 
         // expand an old version of objects
@@ -944,7 +1050,7 @@ export default class MQTTServer {
 
                 Object.keys(this.clients).forEach(k => {
                     // if 'get' and 'set' have different topic names, send state to issuing a client too.
-                    if (this.clients[k] !== ignoreClient || this.config.extraSet) {
+                    if (this.mayReceiveOwnMessage(this.clients[k], ignoreClient, id)) {
                         this.sendState2Client(this.clients[k], id, state, qos, retain);
                     }
                 });
@@ -1149,7 +1255,7 @@ export default class MQTTServer {
         isAck: boolean,
         qos: 0 | 1 | 2,
         retain: boolean,
-        ignoreClient: MqttConnection,
+        ignoreClient: MqttClientConnection,
     ): Promise<void> {
         const file = topic2filename(topic);
 
@@ -1257,7 +1363,7 @@ export default class MQTTServer {
         if (this.config.onchange && this.server) {
             setImmediate(() => {
                 Object.keys(this.clients).forEach(k => {
-                    if (this.clients[k] !== ignoreClient || this.config.extraSet) {
+                    if (this.mayReceiveOwnMessage(this.clients[k], ignoreClient, entry.id)) {
                         this.sendState2Client(this.clients[k], entry.id, state, qos, retain);
                     }
                 });
@@ -1265,7 +1371,7 @@ export default class MQTTServer {
         }
     }
 
-    private async receivedTopic(packet: MqttMessage, client: MqttConnection): Promise<void> {
+    private async receivedTopic(packet: MqttMessage, client: MqttClientConnection): Promise<void> {
         let isAck = true;
         let topic = packet.topic;
         const message = packet.payload;
@@ -1398,7 +1504,7 @@ export default class MQTTServer {
         arr.push(message);
     }
 
-    private clientClose(client: MqttConnection, reason?: string): void {
+    private clientClose(client: MqttClientConnection, reason?: string): void {
         if (!client) {
             return;
         }
@@ -1438,7 +1544,7 @@ export default class MQTTServer {
 
     private validateRequest(
         type: 'publish' | 'pubrec' | 'pubcomp' | 'pubrel' | 'subscribe' | 'unsubscribe' | 'pingreq' | 'puback',
-        client: MqttConnection,
+        client: MqttClientConnection,
     ): boolean {
         if (this.config.user && !client.authenticated) {
             this.adapter.log.warn(`Client [${client.id}] sends ${type} after unsuccessful authentication. Ignore!`);
@@ -1477,12 +1583,7 @@ export default class MQTTServer {
 
         // Use event variable to start the connection
         socket.on(connectionEvent, (stream: any) => {
-            let client: MqttConnection;
-            if (ws) {
-                client = mqtt(wsStream(stream));
-            } else {
-                client = mqtt(stream);
-            }
+            const client = new MqttConnection(ws ? wsStream(stream) : stream) as MqttClientConnection;
 
             // Store unique connection identifier
             client.__secret = `${Date.now()}_${Math.round(Math.random() * 10000)}`;
@@ -1502,13 +1603,24 @@ export default class MQTTServer {
                         qos: 0 | 1 | 2;
                         retain: boolean;
                     };
+                    properties?: { sessionExpiryInterval?: number };
                 }): void => {
                     // set client id
                     client.id = options.clientId;
+
+                    // MQTT 5 replaced the "clean session" flag: "clean start" only says whether an
+                    // existing session is resumed, while the session expiry interval decides whether
+                    // it survives the connection at all (MQTT-5.0 3.1.2.11.2). An interval of 0 —
+                    // and the absence of the property — means the session ends with the connection.
+                    client._sessionExpiryInterval =
+                        client.protocolVersion === 5 ? (options.properties?.sessionExpiryInterval ?? 0) : undefined;
+
                     if (this.config.forceCleanSession === 'clean') {
                         client.cleanSession = true;
                     } else if (this.config.forceCleanSession === 'keep') {
                         client.cleanSession = false;
+                    } else if (client._sessionExpiryInterval !== undefined) {
+                        client.cleanSession = client._sessionExpiryInterval === 0;
                     } else {
                         // The old logic always resulted in 'undefined' when cleanSession was not active,
                         // because options.cleanSession was undefined. This led to client.cleanSession being set to undefined.
@@ -1585,7 +1697,18 @@ export default class MQTTServer {
                     }
                     client._messages ||= [];
 
-                    client.connack({ returnCode: 0, sessionPresent });
+                    client.connack({
+                        returnCode: 0,
+                        sessionPresent,
+                        // Only MQTT 5 has CONNACK properties; MqttConnection drops them otherwise.
+                        // Only what differs from the defaults is announced — "maximum QoS" for
+                        // example must not be sent at all when it is 2 (MQTT-5.0 3.2.2.3.4).
+                        properties: {
+                            topicAliasMaximum: TOPIC_ALIAS_MAXIMUM,
+                            sharedSubscriptionAvailable: false,
+                            subscriptionIdentifiersAvailable: false,
+                        },
+                    });
                     this.clients[client.id] = client;
                     this.updateClients();
 
@@ -1686,8 +1809,13 @@ export default class MQTTServer {
                     topic: string;
                     payload: string;
                     retain: boolean;
+                    properties?: { topicAlias?: number };
                 }): Promise<void> => {
                     if (!this.validateRequest('publish', client)) {
+                        return;
+                    }
+
+                    if (!this.resolveTopicAlias(client, packet)) {
                         return;
                     }
 
@@ -1872,7 +2000,7 @@ export default class MQTTServer {
                 'subscribe',
                 async (packet: {
                     messageId: number;
-                    subscriptions: { qos: 0 | 1 | 2; topic: MqttTopic }[];
+                    subscriptions: { qos: 0 | 1 | 2; topic: MqttTopic; nl?: boolean; rap?: boolean; rh?: 0 | 1 | 2 }[];
                 }): Promise<void> => {
                     if (!this.validateRequest('subscribe', client)) {
                         return;
@@ -1897,6 +2025,12 @@ export default class MQTTServer {
                             `Client [${client.id}] Handle subscribe: ${JSON.stringify(packet.subscriptions[i])}`,
                         );
                         granted.push(packet.subscriptions[i].qos);
+
+                        // MQTT 5 subscription options; undefined for MQTT 3.1.1 clients
+                        const { nl, rap, rh } = packet.subscriptions[i];
+                        // Retain Handling 2 means the client does not want the value it already
+                        // missed, only what is published from now on
+                        const sendKnownValue = this.config.publishOnSubscribe && rh !== 2;
 
                         const topic = packet.subscriptions[i].topic;
                         let id;
@@ -1949,11 +2083,14 @@ export default class MQTTServer {
                                 pattern: id,
                                 regex: new RegExp(pattern2RegEx(id, this.adapter, this.config.prefix)),
                                 qos: packet.subscriptions[i].qos,
+                                nl,
+                                rap,
+                                rh,
                             };
 
                             this.adapter.log.info(`Client [${client.id}] subscribes on "${this.topic2id[topic].id}"`);
 
-                            if (this.config.publishOnSubscribe) {
+                            if (sendKnownValue) {
                                 setTimeout(() => {
                                     this.adapter.log.info(`Client [${client.id}] publishOnSubscribe`);
                                     this.sendState2Client(
@@ -1980,6 +2117,9 @@ export default class MQTTServer {
                                 regex: new RegExp(regText),
                                 qos: packet.subscriptions[i].qos,
                                 pattern: pattern,
+                                nl,
+                                rap,
+                                rh,
                             };
                             this.adapter.log.info(
                                 `Client [${client.id}] subscribes on "${topic}" with regex /${regText}/`,
@@ -1992,12 +2132,15 @@ export default class MQTTServer {
                                 regex: new RegExp(regText),
                                 qos: packet.subscriptions[i].qos,
                                 pattern,
+                                nl,
+                                rap,
+                                rh,
                             };
                             this.adapter.log.info(
                                 `Client [${client.id}] subscribes on "${topic}"  with regex /${regText}/`,
                             );
 
-                            if (this.config.publishOnSubscribe) {
+                            if (sendKnownValue) {
                                 setTimeout(() => {
                                     this.adapter.log.info(
                                         `Client [${client.id}] publishOnSubscribe send all known states`,
@@ -2096,7 +2239,8 @@ export default class MQTTServer {
                         }
                     }
                 }
-                client.unsuback({ messageId: packet.messageId });
+                // MQTT 5 wants one reason code per unsubscribed topic
+                client.unsuback({ messageId: packet.messageId, count: packet.unsubscriptions.length });
             });
 
             client.on('pingreq', (/*packet*/) => {

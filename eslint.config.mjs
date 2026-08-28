@@ -41,9 +41,9 @@ export default [
         },
     },
     {
-        // Test specs load the compiled adapter under test (build/, which ships no type
-        // declarations and lives outside the test rootDir) and untyped helpers via require().
-        files: ['test/*.ts'],
+        // Test specs and the broker emulator load the compiled adapter under test (build/, which
+        // ships no type declarations and lives outside the test rootDir) via require().
+        files: ['test/*.ts', 'test/lib/*.ts'],
         rules: {
             '@typescript-eslint/no-require-imports': 'off',
         },

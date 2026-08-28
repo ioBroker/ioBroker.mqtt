@@ -438,9 +438,9 @@ describe('MQTT server: QoS2 session lockup regression', function () {
 
     it('MQTT server: QoS2 lockup: Broker sends PUBREL for orphaned PUBREC messageId', done => {
         const net = require('net');
-        const mqttCon = require('mqtt-connection');
+        const mqttCon = require('../build/lib/MqttConnection').default;
         const stream = net.createConnection(port, '127.0.0.1');
-        const client = mqttCon(stream);
+        const client = new mqttCon(stream);
 
         let capturedMessageId: number | null = null;
         let firstPublishSeen = false;
@@ -570,7 +570,7 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
 
     it('MQTT server: retry/disconnect: broker disconnects unresponsive client and resends on reconnect', function (done) {
         const net = require('net');
-        const mqttCon = require('mqtt-connection');
+        const mqttCon = require('../build/lib/MqttConnection').default;
 
         const CLIENT_ID = 'retryExhaustionTest';
         const TOPIC = 'retryDisconnectTopic';
@@ -591,7 +591,7 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
             // Small delay to let the broker fully process the close before we reconnect
             setTimeout(() => {
                 const stream2 = net.createConnection(port, '127.0.0.1');
-                const client2 = mqttCon(stream2);
+                const client2 = new mqttCon(stream2);
 
                 stream2.on('error', (err: any) => done(err));
                 client2.on('error', (err: any) => done(err));
@@ -621,10 +621,10 @@ describe('MQTT server: retry exhaustion – disconnect and reconnect', function 
 
         // ── Phase 1: persistent-session client, subscribe, withhold PUBACK ───
         const stream1 = net.createConnection(port, '127.0.0.1');
-        const client1 = mqttCon(stream1);
+        const client1 = new mqttCon(stream1);
 
         // Catch RST/ECONNRESET emitted when the broker destroys the connection;
-        // both the raw stream and the mqtt-connection wrapper may surface it.
+        // both the raw stream and the MqttConnection wrapper may surface it.
         stream1.on('error', () => {});
         client1.on('error', () => {});
 
@@ -713,7 +713,7 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
 
     it('MQTT server: retry/keepalive: broker keeps retransmitting when keepalive>0', function (done) {
         const net = require('net');
-        const mqttCon = require('mqtt-connection');
+        const mqttCon = require('../build/lib/MqttConnection').default;
 
         const CLIENT_ID = 'keepaliveRetryTest';
         const TOPIC = 'keepaliveRetryTopic';
@@ -726,7 +726,7 @@ describe('MQTT server: retry exhaustion – keepalive>0 keeps retransmitting', f
         let testDone = false;
 
         const stream = net.createConnection(port, '127.0.0.1');
-        const client = mqttCon(stream);
+        const client = new mqttCon(stream);
 
         stream.on('error', (err: any) => {
             if (!testDone) {
@@ -839,9 +839,9 @@ describe('MQTT server: subscribe rejects unresolvable topic with SUBACK failure'
 
     it('MQTT server: suback-failure: returns 0x80 for an unresolvable topic and still sends SUBACK', done => {
         const net = require('net');
-        const mqttCon = require('mqtt-connection');
+        const mqttCon = require('../build/lib/MqttConnection').default;
         const stream = net.createConnection(port, '127.0.0.1');
-        const client = mqttCon(stream);
+        const client = new mqttCon(stream);
 
         let finished = false;
         const finish = (err?: any): void => {
@@ -977,5 +977,199 @@ describe('MQTT server with an ID that cannot be restored from its topic', functi
 
     after('MQTT server (lossy ID): Stop server', done => {
         server.destroy(done);
+    });
+});
+
+// MQTT 5.0 support. The broker speaks the protocol level each client announced in its CONNECT,
+// so a MQTT 5 and a MQTT 3.1.1 client can be served at the same time.
+describe('MQTT server with MQTT 5 clients', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(20000);
+    let suitePort: number;
+
+    /**
+     * Connects a real mqtt.js client with the given protocol level.
+     *
+     * @param clientId The client id
+     * @param version The protocol level to announce
+     * @returns The connected client together with the CONNACK packet
+     */
+    function connect(clientId: string, version: 4 | 5): Promise<{ client: any; connack: any }> {
+        return new Promise((resolve, reject) => {
+            const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+                protocolId: 'MQTT',
+                protocolVersion: version,
+                clientId,
+                clean: true,
+                reconnectPeriod: 0,
+                connectTimeout: 5000,
+            });
+            const timer = setTimeout(() => reject(new Error(`${clientId} did not connect`)), 8000);
+            client.on('connect', (connack: any) => {
+                clearTimeout(timer);
+                resolve({ client, connack });
+            });
+            client.on('error', (e: Error) => {
+                clearTimeout(timer);
+                reject(e);
+            });
+        });
+    }
+
+    const open: any[] = [];
+    async function connectTracked(clientId: string, version: 4 | 5): Promise<{ client: any; connack: any }> {
+        const c = await connect(clientId, version);
+        open.push(c.client);
+        return c;
+    }
+
+    function wait(ms: number): Promise<void> {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
+    before('MQTT server (MQTT 5): Start server', async () => {
+        suitePort = ++port;
+        adapter = new Adapter({
+            port: suitePort,
+            defaultQoS: 0,
+            onchange: true,
+            // "extraSet" normally lets a publisher receive its own message back, which is what
+            // makes the "No Local" option observable.
+            extraSet: true,
+            publishOnSubscribe: true,
+        });
+        server = new Server(adapter, states);
+        await wait(300);
+    });
+
+    after('MQTT server (MQTT 5): Stop server', done => {
+        for (const client of open) {
+            try {
+                client.end(true);
+            } catch {
+                /* ignore */
+            }
+        }
+        server.destroy(done);
+    });
+
+    it('MQTT 5: a v5 client connects and gets the announced capabilities', async () => {
+        const { connack } = await connectTracked('v5caps', 5);
+        const properties = connack.properties || {};
+
+        assert.strictEqual(properties.topicAliasMaximum, 32, 'the broker must announce its topic alias maximum');
+        // "Maximum QoS" must not be sent at all when it is 2 (MQTT-5.0 3.2.2.3.4)
+        assert.strictEqual(properties.maximumQoS, undefined, 'maximumQoS must be omitted');
+        assert.strictEqual(properties.sharedSubscriptionAvailable, false, 'shared subscriptions are not implemented');
+    });
+
+    it('MQTT 5: a v3.1.1 client is still served next to it', async () => {
+        const { client, connack } = await connectTracked('v4next', 4);
+        assert.ok(client.connected);
+        assert.strictEqual(connack.properties, undefined, 'MQTT 3.1.1 has no CONNACK properties');
+    });
+
+    it('MQTT 5: a topic alias is remembered and resolved', async () => {
+        const { client } = await connectTracked('v5alias', 5);
+
+        // the first publish carries topic and alias and establishes the mapping
+        await client.publishAsync('alias/deep/topic', 'first', { properties: { topicAlias: 1 } });
+        await wait(300);
+        // the second one refers to the alias with an empty topic name
+        await client.publishAsync('', 'second', { properties: { topicAlias: 1 } });
+        await wait(500);
+
+        const state = await adapter.getForeignStateAsync('mqtt.0.alias.deep.topic');
+        assert.ok(state, 'the aliased topic must have been resolved to its state');
+        assert.strictEqual(state.val, 'second');
+        assert.ok(client.connected, 'a valid alias must not close the connection');
+    });
+
+    it('MQTT 5: an unknown topic alias is rejected', async () => {
+        const { client } = await connectTracked('v5badalias', 5);
+        await client.publishAsync('', 'nope', { properties: { topicAlias: 7 } });
+        await wait(600);
+        assert.strictEqual(client.connected, false, 'an alias that was never established is a protocol error');
+    });
+
+    it('MQTT 5: "No Local" suppresses the own message', async () => {
+        const topic = 'nolocal/on';
+        const { client } = await connectTracked('v5nolocal', 5);
+        const received: string[] = [];
+        client.on('message', (t: string) => received.push(t));
+
+        await client.subscribeAsync({ [topic]: { qos: 0, nl: true } });
+        // let the "publish on subscribe" timer pass, it is not a forwarded message
+        await wait(700);
+        received.length = 0;
+
+        await client.publishAsync(topic, 'x');
+        await wait(800);
+
+        assert.deepStrictEqual(received, [], 'a "No Local" subscriber must not get its own message back');
+    });
+
+    it('MQTT 5: without "No Local" the own message still arrives', async () => {
+        const topic = 'nolocal/off';
+        const { client } = await connectTracked('v5local', 5);
+        const received: string[] = [];
+        client.on('message', (t: string) => received.push(t));
+
+        await client.subscribeAsync({ [topic]: { qos: 0 } });
+        await wait(700);
+        received.length = 0;
+
+        await client.publishAsync(topic, 'y');
+        await wait(800);
+
+        assert.ok(received.includes(topic), 'without "No Local" extraSet sends the message back');
+    });
+
+    it('MQTT 5: "Retain Handling" 2 skips the stored value, 0 delivers it', async () => {
+        const id = 'mqtt.0.rh.known';
+        states[id] = { val: 'stored', ack: true };
+        await adapter.setForeignObjectAsync(id, {
+            type: 'state',
+            common: { name: 'known', type: 'string', read: true, write: true, role: 'variable' },
+            native: { topic: 'rh/known' },
+        });
+        await adapter.setForeignStateAsync(id, 'stored');
+
+        const skipped: string[] = [];
+        const { client: rh2 } = await connectTracked('v5rh2', 5);
+        rh2.on('message', (t: string) => skipped.push(t));
+        await rh2.subscribeAsync({ 'rh/known': { qos: 0, rh: 2 } });
+        await wait(800);
+        assert.deepStrictEqual(skipped, [], 'Retain Handling 2 must not deliver the known value');
+
+        const delivered: string[] = [];
+        const { client: rh0 } = await connectTracked('v5rh0', 5);
+        rh0.on('message', (t: string) => delivered.push(t));
+        await rh0.subscribeAsync({ 'rh/known': { qos: 0, rh: 0 } });
+        await wait(800);
+        assert.ok(delivered.includes('rh/known'), 'Retain Handling 0 must still deliver the known value');
+    });
+
+    it('MQTT 5: QoS 1 and 2 are acknowledged and unsubscribe answers with reason codes', async () => {
+        const { client } = await connectTracked('v5qos', 5);
+
+        await client.subscribeAsync({ 'v5qos/a': { qos: 2 }, 'v5qos/b': { qos: 1 } });
+        // every publish resolves only after its PUBACK / PUBCOMP arrived
+        await client.publishAsync('v5qos/a', 'q1', { qos: 1 });
+        await client.publishAsync('v5qos/a', 'q2', { qos: 2 });
+        await wait(400);
+
+        // UNSUBACK carries one reason code per topic in MQTT 5; a wrong count would desynchronise
+        // the stream and the following operations would hang
+        await client.unsubscribeAsync(['v5qos/a', 'v5qos/b']);
+        await wait(200);
+        assert.ok(client.connected, 'the connection must survive a multi topic UNSUBACK');
+
+        const state = await adapter.getForeignStateAsync('mqtt.0.v5qos.a');
+        assert.ok(state, 'the QoS 2 message must have been stored');
+        assert.strictEqual(state.val, 'q2');
     });
 });
