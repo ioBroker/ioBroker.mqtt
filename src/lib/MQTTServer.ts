@@ -1,6 +1,5 @@
 import type { MqttAdapterConfig, MqttPattern, MqttTopic } from './types';
-// @ts-expect-error no types
-import mqtt from 'mqtt-connection';
+import MqttConnection from './MqttConnection';
 import {
     state2string,
     convertTopic2id,
@@ -12,7 +11,10 @@ import {
     convertMessage,
     topic2filename,
     findIdForTopic,
+    parseSharedTopic,
 } from './common';
+import type { ScramError } from './scram';
+import { createSalt, saltPassword, ScramExchange, SCRAM_SHA_256 } from './scram';
 import { createServer as createHttpsServer, type Server as HttpsServer } from 'https';
 import { createServer as createHttpServer, type Server as HttpServer } from 'http';
 import { createServer as createTlsServer, type Server as TlsServer } from 'tls';
@@ -30,6 +32,10 @@ type HttpHttpsServer = HttpsServer | HttpServer;
 type Server = TlsServer | NetServer;
 type MqttMessage = {
     topic: string;
+    /** MQTT 5 properties of an outgoing PUBLISH (subscription identifier, message expiry, ...) */
+    properties?: Record<string, any>;
+    /** When this message stops being deliverable (MQTT 5 message expiry), absolute time in ms */
+    expiresAt?: number;
     payload: string | null;
     qos: 0 | 1 | 2;
     retain: boolean;
@@ -41,30 +47,44 @@ type MqttMessage = {
     binary?: boolean;
 };
 
+/**
+ * One subscription of a client.
+ *
+ * `nl`, `rap` and `rh` are the MQTT 5 subscription options (MQTT-5.0 3.8.3.1). They are absent for
+ * MQTT 3.1.1 clients, where the defaults (send everything, force our own retain flag, always send
+ * the known value on subscribe) match the behaviour the adapter always had.
+ */
+type MqttSubscription = {
+    regex: RegExp;
+    qos: 0 | 1 | 2;
+    pattern: MqttPattern;
+    /** No Local: do not send a message back to the client that published it */
+    nl?: boolean;
+    /** Retain As Published: forward the retain flag of the incoming message instead of ours */
+    rap?: boolean;
+    /** Retain Handling: 0/1 = send the known value on subscribe, 2 = do not */
+    rh?: 0 | 1 | 2;
+    /** MQTT 5 subscription identifier, echoed back on every message this subscription matches */
+    subscriptionIdentifier?: number;
+    /** MQTT 5 share name when this came from a "$share/<name>/<filter>" subscription */
+    shareName?: string;
+};
+
 interface PersistentSession {
     id: string;
-    _subsID?: {
-        [id: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
-    _subs?: {
-        [topic: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
+    _subsID?: Record<string, MqttSubscription>;
+    _subs?: Record<string, MqttSubscription>;
     _messages: MqttMessage[];
     connected?: boolean;
     lastSeen: number;
 }
 
-interface MqttConnection {
+/**
+ * A connection plus the per-client bookkeeping the broker attaches to it: its id, the pending
+ * QoS 1/2 messages, its subscriptions and its session flags.
+ */
+type MqttClientConnection = MqttConnection & {
     id: string;
-    stream: any;
     _messages: MqttMessage[];
     _sendOnStart?: NodeJS.Timeout | null;
     _resendonStart?: NodeJS.Timeout | null;
@@ -75,53 +95,65 @@ interface MqttConnection {
         qos: 0 | 1 | 2;
         retain: boolean;
     };
-    destroy: () => void;
-    _subsID?: {
-        [id: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
-    _subs?: {
-        [topic: string]: {
-            regex: RegExp;
-            qos: 0 | 1 | 2;
-            pattern: MqttPattern;
-        };
-    };
+    _subsID?: Record<string, MqttSubscription>;
+    _subs?: Record<string, MqttSubscription>;
     cleanSession?: boolean;
     _keepalive: number;
     authenticated?: boolean;
-
-    publish: (message: MqttMessage) => void;
-    pubrec: (message: { messageId: number }) => void;
-    connack: (message: { returnCode: number; sessionPresent?: boolean }) => void;
-    puback: (message: { messageId: number }) => void;
-    unsuback: (message: { messageId: number }) => void;
-    pingresp: () => void;
-    suback: (message: { messageId: number; granted: number[] }) => void;
-    pubrel: (message: { messageId: number }) => void;
-    pubcomp: (message: { messageId: number }) => void;
-    on(
-        event:
-            | 'publish'
-            | 'connect'
-            | 'pubrec'
-            | 'pubcomp'
-            | 'pubrel'
-            | 'puback'
-            | 'subscribe'
-            | 'unsubscribe'
-            | 'close'
-            | 'disconnect'
-            | 'error'
-            | 'pingreq',
-        callback: (message: any) => void,
-    ): void;
-}
+    /** MQTT 5 topic aliases the client established on this connection (alias to topic) */
+    _topicAliases?: Map<number, MqttTopic>;
+    /** MQTT 5 session expiry interval in seconds, 0 = end the session with the connection */
+    _sessionExpiryInterval?: number;
+    /** MQTT 5 will delay interval in seconds, 0 = publish the will as soon as the connection drops */
+    _willDelayInterval?: number;
+    /** MQTT 5 "Receive Maximum": how many QoS > 0 messages may be in flight to this client */
+    _receiveMaximum?: number;
+    /** Messages that have to wait because the client's receive maximum is exhausted */
+    _pendingMessages?: MqttMessage[];
+    /** MQTT 5 enhanced authentication method this connection agreed on */
+    _authMethod?: string;
+    /** The running SCRAM exchange, while the client is still proving who it is */
+    _scram?: ScramExchange;
+    /** What to run once the enhanced authentication succeeded */
+    _completeConnect?: () => void;
+    /** The SCRAM server-final message, which travels back in the CONNACK */
+    _scramServerFinal?: Buffer;
+};
 
 const messageboxRegex = new RegExp('\\.messagebox$');
+
+/**
+ * How many MQTT 5 topic aliases a client may use. Announced in the CONNACK; a client must not use
+ * an alias above this value, and none at all if we announce 0 (MQTT-5.0 3.1.2.11.3).
+ */
+const TOPIC_ALIAS_MAXIMUM = 32;
+
+/**
+ * How long a state change is still attributed to the client that published it, so a "No Local"
+ * subscriber does not get its own message back through the state change fan-out.
+ */
+const NO_LOCAL_WINDOW = 2000;
+
+/**
+ * Why a message is sent to a client.
+ *
+ * `retained` means it is the value the broker already had and delivers because a subscription was
+ * just established ("Publish own states on connect"); `live` means it is forwarded as it happens.
+ * MQTT 5 wants a different RETAIN flag for the two (MQTT-5.0 3.8.3.1 / 3.8.4).
+ */
+type MessageDelivery = 'live' | 'retained';
+
+/** Anything that carries subscriptions: a connected client or a stored offline session. */
+type Subscriber = {
+    _subsID?: Record<string, MqttSubscription>;
+    _subs?: Record<string, MqttSubscription>;
+};
+
+/** The part of an incoming PUBLISH the topic alias handling needs. */
+type IncomingPublish = {
+    topic: string;
+    properties?: { topicAlias?: number };
+};
 
 export default class MQTTServer {
     private readonly adapter: ioBroker.Adapter;
@@ -130,7 +162,7 @@ export default class MQTTServer {
     private server: Server | null = null;
     private serverWs: WsServer | null = null;
     private serverForWs: HttpHttpsServer | null = null;
-    private readonly clients: { [clientID: string]: MqttConnection } = {};
+    private readonly clients: { [clientID: string]: MqttClientConnection } = {};
     private readonly topic2id: Record<
         MqttTopic,
         {
@@ -147,6 +179,26 @@ export default class MQTTServer {
     // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
     // at most once per topic.
     private readonly resolvedTopics: Record<MqttTopic, true> = {};
+    // Which client last published a state and when. `onStateChange` fans a state change out to
+    // every client without knowing where it came from, so the MQTT 5 "No Local" option needs this
+    // to recognise the publisher. Entries are only consulted for a short moment (see NO_LOCAL_WINDOW).
+    private readonly lastPublisher: Record<string, { secret: string; ts: number }> = {};
+    // Wills whose "Will Delay Interval" has not passed yet, keyed by client id. A client that comes
+    // back within the delay cancels its own will (MQTT-5.0 3.1.3.2.2).
+    private readonly delayedWills: Record<string, ioBroker.Timeout | undefined> = {};
+    // When the value of a state stops being deliverable, from the MQTT 5 "Message Expiry Interval"
+    // of the publish that produced it (MQTT-5.0 3.3.2.3.3). Absent means it never expires.
+    private readonly messageExpiry: Record<string, number> = {};
+    // MQTT 5 shared subscriptions (MQTT-5.0 4.8.2). Every group delivers a matching message to
+    // exactly one of its members, so the choice cannot be made per client and lives here.
+    // Salt and derived key for SCRAM. The salt is generated once per adapter start and the
+    // expensive derivation is done on first use only, so authenticating stays cheap.
+    private readonly scramSalt = createSalt();
+    private scramSaltedPassword: Promise<Buffer> | null = null;
+    private readonly sharedGroups: Record<
+        string,
+        { shareName: string; pattern: MqttPattern; regex: RegExp; members: string[]; cursor: number }
+    > = {};
     private messageId = 1;
     private persistentSessions: {
         [clientId: string]: PersistentSession;
@@ -227,6 +279,11 @@ export default class MQTTServer {
         if (this.resendTimer) {
             clearInterval(this.resendTimer);
             this.resendTimer = null;
+        }
+        // pending wills must not fire into a torn down adapter
+        for (const clientId of Object.keys(this.delayedWills)) {
+            this.adapter.clearTimeout(this.delayedWills[clientId]);
+            delete this.delayedWills[clientId];
         }
         this.persistentSessions = {};
 
@@ -316,9 +373,17 @@ export default class MQTTServer {
         }
 
         setImmediate(() => {
-            Object.keys(this.clients).forEach(k =>
-                this.sendState2Client(this.clients[k], id, state, this.config.defaultQoS, !this.config.noRetain),
-            );
+            const sharedRecipients = this.resolveSharedRecipients(id);
+
+            Object.keys(this.clients).forEach(k => {
+                if (this.publishedItself(this.clients[k], id)) {
+                    return;
+                }
+                if (!this.isRecipient(this.clients[k], id, sharedRecipients)) {
+                    return;
+                }
+                this.sendState2Client(this.clients[k], id, state, this.config.defaultQoS, !this.config.noRetain);
+            });
 
             Object.keys(this.persistentSessions).forEach(clientId => {
                 if (!this.clients[clientId]) {
@@ -420,23 +485,436 @@ export default class MQTTServer {
         });
     }
 
+    /**
+     * Decides whether a state change may be forwarded to a client.
+     *
+     * `extraSet` normally lets the publisher receive its own message back, because "get" and "set"
+     * then use different topics. An MQTT 5 client that subscribed with the "No Local" option has
+     * explicitly asked not to get its own messages, and that wins (MQTT-5.0 3.8.3.1).
+     *
+     * @param client The client the message would be sent to
+     * @param ignoreClient The client the message came from
+     * @param id The state id that changed
+     * @returns Whether the message may be sent
+     */
+    private mayReceiveOwnMessage(
+        client: MqttClientConnection,
+        ignoreClient: MqttClientConnection,
+        id: string,
+    ): boolean {
+        if (client !== ignoreClient) {
+            return true;
+        }
+        if (!this.config.extraSet) {
+            return false;
+        }
+        return !this.isNoLocal(client, id);
+    }
+
+    /**
+     * Adds a client to a shared subscription group, creating the group if it is new.
+     *
+     * @param shareName The share name from "$share/<name>/<filter>"
+     * @param pattern The ioBroker pattern the filter was converted to
+     * @param regex The compiled pattern, used to decide which messages the group receives
+     * @param clientId The subscribing client
+     */
+    /**
+     * Converts a topic filter into the ioBroker pattern a shared subscription group is keyed by.
+     *
+     * The group must be identified by the filter the clients subscribed to, not by the state id it
+     * happens to resolve to: the first subscriber of a topic sees the unresolved id and a later one
+     * the created object, which would put members of the same group into two different ones.
+     *
+     * @param filter The topic filter, already without the "$share/<name>/" prefix
+     * @returns The pattern used as the group key and for its regex
+     */
+    private sharedPatternFor(filter: MqttTopic): MqttPattern {
+        let pattern = filter;
+        if (this.config.prefix && pattern.startsWith(this.config.prefix)) {
+            pattern = pattern.substring(this.config.prefix.length);
+        }
+        pattern = pattern.replace(/\//g, '.');
+        if (pattern[0] === '.') {
+            pattern = pattern.substring(1);
+        }
+        return pattern;
+    }
+
+    private joinSharedGroup(shareName: string, pattern: MqttPattern, regex: RegExp, clientId: string): void {
+        const key = JSON.stringify([shareName, pattern]);
+        this.sharedGroups[key] ||= { shareName, pattern, regex, members: [], cursor: 0 };
+
+        if (!this.sharedGroups[key].members.includes(clientId)) {
+            this.sharedGroups[key].members.push(clientId);
+        }
+        this.adapter.log.info(
+            `Client [${clientId}] joined shared subscription "${shareName}" for "${pattern}" ` +
+                `(${this.sharedGroups[key].members.length} member(s))`,
+        );
+    }
+
+    /**
+     * Removes a client from shared subscription groups. Empty groups are dropped.
+     *
+     * @param clientId The client to remove
+     * @param pattern Only leave the groups for this pattern; all of them when undefined
+     */
+    private leaveSharedGroups(clientId: string, pattern?: MqttPattern): void {
+        for (const key of Object.keys(this.sharedGroups)) {
+            const group = this.sharedGroups[key];
+            if (pattern !== undefined && group.pattern !== pattern) {
+                continue;
+            }
+            const index = group.members.indexOf(clientId);
+            if (index !== -1) {
+                group.members.splice(index, 1);
+                if (group.cursor > index) {
+                    group.cursor--;
+                }
+            }
+            if (!group.members.length) {
+                delete this.sharedGroups[key];
+            }
+        }
+    }
+
+    /**
+     * Picks which clients receive a message through a shared subscription.
+     *
+     * Every group that matches the state gets exactly one recipient, chosen round robin over its
+     * connected members. A client that is in several matching groups is picked once per group,
+     * which is what the standard asks for — the groups are independent of each other.
+     *
+     * @param id The state id that changed
+     * @returns The ids of the clients that were drawn
+     */
+    private resolveSharedRecipients(id: string): Set<string> {
+        const chosen = new Set<string>();
+
+        for (const key of Object.keys(this.sharedGroups)) {
+            const group = this.sharedGroups[key];
+            if (!group.regex.test(id)) {
+                continue;
+            }
+
+            // skip members that are not connected right now
+            const available = group.members.filter(clientId => this.clients[clientId]);
+            if (!available.length) {
+                continue;
+            }
+
+            group.cursor = (group.cursor + 1) % available.length;
+            chosen.add(available[group.cursor]);
+        }
+
+        return chosen;
+    }
+
+    /**
+     * Decides whether a client may receive a message at all.
+     *
+     * A normal subscription always delivers. A shared subscription only delivers to the member that
+     * was drawn for this message, so a client that lost the draw and has no other matching
+     * subscription is skipped.
+     *
+     * @param client The client in question
+     * @param id The state id that changed
+     * @param sharedRecipients The clients drawn for this message
+     * @returns Whether the message may be sent to this client
+     */
+    private isRecipient(client: MqttClientConnection, id: string, sharedRecipients: Set<string>): boolean {
+        if (sharedRecipients.has(client.id)) {
+            return true;
+        }
+        return this.hasUnsharedMatch(client, id);
+    }
+
+    /**
+     * Checks whether a client has a normal (not shared) subscription matching a state.
+     *
+     * @param client The client
+     * @param id The state id
+     * @returns Whether a normal subscription matches
+     */
+    private hasUnsharedMatch(client: Subscriber, id: string): boolean {
+        if (client._subsID?.[id]) {
+            return !client._subsID[id].shareName;
+        }
+        if (client._subs) {
+            for (const topic of Object.keys(client._subs)) {
+                if (client._subs[topic].regex.test(id) && !client._subs[topic].shareName) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sends one message to a client, honouring its MQTT 5 "Receive Maximum".
+     *
+     * A client may limit how many QoS 1/2 messages the broker has unacknowledged at any time
+     * (MQTT-5.0 4.9). Anything above the limit has to wait instead of being sent, otherwise the
+     * client is entitled to close the connection with a protocol error. QoS 0 does not count.
+     *
+     * @param client The receiving client
+     * @param message The message to send
+     */
+    private deliver(client: MqttClientConnection, message: MqttMessage): void {
+        if (!message.qos) {
+            client.publish(message);
+            return;
+        }
+
+        client._messages ||= [];
+
+        const limit = client._receiveMaximum;
+        if (limit && this.inFlightCount(client) >= limit) {
+            client._pendingMessages ||= [];
+            client._pendingMessages.push(message);
+            this.adapter.log.debug(
+                `Client [${client.id}] receive maximum (${limit}) reached, "${message.topic}" has to wait`,
+            );
+            return;
+        }
+
+        client.publish(message);
+        client._messages.push(message);
+    }
+
+    /**
+     * Counts the QoS 1/2 messages the broker sent to a client and that are still unacknowledged.
+     * Inbound QoS 2 packets waiting for a PUBREL are stored in the same list but do not count.
+     *
+     * @param client The client
+     * @returns The number of messages in flight
+     */
+    private inFlightCount(client: MqttClientConnection): number {
+        return client._messages?.filter(message => message.cmd === 'publish').length ?? 0;
+    }
+
+    /**
+     * Sends what had to wait for the client's receive maximum, called whenever a slot became free.
+     *
+     * @param client The client that just acknowledged a message
+     */
+    private flushPending(client: MqttClientConnection): void {
+        const limit = client._receiveMaximum;
+        if (!limit || !client._pendingMessages?.length) {
+            return;
+        }
+
+        while (client._pendingMessages.length && this.inFlightCount(client) < limit) {
+            const message = client._pendingMessages.shift()!;
+            if (message.expiresAt && message.expiresAt <= Date.now()) {
+                this.adapter.log.debug(`Client [${client.id}] Queued message for "${message.topic}" expired`);
+                continue;
+            }
+            message.ts = Date.now();
+            client.publish(message);
+            client._messages.push(message);
+        }
+    }
+
+    /**
+     * Builds the MQTT 5 properties of an outgoing PUBLISH.
+     *
+     * Currently that is the subscription identifier, which tells the client which of its
+     * subscriptions matched (MQTT-5.0 3.3.4). MQTT 3.1.1 clients get no properties at all.
+     *
+     * @param client The receiving client
+     * @param id The state id
+     * @returns The properties, or undefined when there is nothing to send
+     */
+    private outgoingProperties(client: Subscriber, id: string): Record<string, any> | undefined {
+        if ((client as { protocolVersion?: number }).protocolVersion !== 5) {
+            return undefined;
+        }
+
+        const properties: Record<string, any> = {};
+
+        const subscriptionIdentifier = this.findSubscription(client, id)?.subscriptionIdentifier;
+        if (subscriptionIdentifier) {
+            properties.subscriptionIdentifier = subscriptionIdentifier;
+        }
+
+        // What is left of the publisher's "Message Expiry Interval" — the standard wants the value
+        // it was published with minus the time it waited here (MQTT-5.0 3.3.2.3.3).
+        const remaining = this.remainingExpiry(id);
+        if (remaining !== undefined) {
+            properties.messageExpiryInterval = remaining;
+        }
+
+        return Object.keys(properties).length ? properties : undefined;
+    }
+
+    /**
+     * Checks whether the value of a state may still be delivered.
+     *
+     * @param id The state id
+     * @returns Whether its message expiry interval has passed
+     */
+    private isExpired(id: string): boolean {
+        const expiresAt = this.messageExpiry[id];
+        if (!expiresAt) {
+            return false;
+        }
+        if (expiresAt > Date.now()) {
+            return false;
+        }
+        delete this.messageExpiry[id];
+        return true;
+    }
+
+    /**
+     * Calculates how many seconds a value may still be delivered.
+     *
+     * @param id The state id
+     * @returns The remaining seconds, or undefined when it never expires or already did
+     */
+    private remainingExpiry(id: string): number | undefined {
+        const expiresAt = this.messageExpiry[id];
+        if (!expiresAt) {
+            return undefined;
+        }
+        const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+        return remaining > 0 ? remaining : undefined;
+    }
+
+    /**
+     * Determines the RETAIN flag of an outgoing message.
+     *
+     * MQTT 3.1.1 clients keep what the adapter always did: the flag comes from the
+     * `Publish messages without "retain" flag` setting, because every value is stored in the
+     * States DB and a reconnecting client should find it.
+     *
+     * MQTT 5 defines it per subscription (MQTT-5.0 3.8.3.1): a message delivered because the
+     * subscription was just established is retained, everything forwarded afterwards carries
+     * RETAIN 0 — unless the client asked for "Retain As Published", then it keeps the flag the
+     * message was published with.
+     *
+     * @param client The receiving client (or an offline session, which is never MQTT 5)
+     * @param id The state id
+     * @param retain The flag the message was published with
+     * @param delivery Whether this is retained delivery or a live forward
+     * @returns The RETAIN flag to put on the wire
+     */
+    private effectiveRetain(client: Subscriber, id: string, retain: boolean, delivery: MessageDelivery): boolean {
+        if ((client as { protocolVersion?: number }).protocolVersion !== 5) {
+            return retain;
+        }
+        if (delivery === 'retained') {
+            return true;
+        }
+        return this.findSubscription(client, id)?.rap ? retain : false;
+    }
+
+    /**
+     * Finds the subscription of a client that matches a state id.
+     *
+     * @param client The subscribing client
+     * @param id The state id
+     * @returns The matching subscription, or undefined if there is none
+     */
+    private findSubscription(client: Subscriber, id: string): MqttSubscription | undefined {
+        if (client._subsID?.[id]) {
+            return client._subsID[id];
+        }
+        if (client._subs) {
+            for (const topic of Object.keys(client._subs)) {
+                if (client._subs[topic].regex.test(id)) {
+                    return client._subs[topic];
+                }
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Checks whether this client just published the state itself and subscribed with "No Local",
+     * so the state change must not be sent back to it.
+     *
+     * @param client The client the message would be sent to
+     * @param id The state id that changed
+     * @returns Whether the message has to be suppressed for this client
+     */
+    private publishedItself(client: MqttClientConnection, id: string): boolean {
+        const publisher = this.lastPublisher[id];
+        if (!publisher || !client.__secret || publisher.secret !== client.__secret) {
+            return false;
+        }
+        if (Date.now() - publisher.ts > NO_LOCAL_WINDOW) {
+            delete this.lastPublisher[id];
+            return false;
+        }
+        return this.isNoLocal(client, id);
+    }
+
+    /**
+     * Checks whether the subscription that matches `id` was made with the MQTT 5 "No Local" option.
+     *
+     * @param client The subscribing client
+     * @param id The state id
+     * @returns Whether the client asked not to receive its own messages for this topic
+     */
+    private isNoLocal(client: MqttClientConnection, id: string): boolean {
+        return !!this.findSubscription(client, id)?.nl;
+    }
+
+    /**
+     * Applies the MQTT 5 topic alias of an incoming PUBLISH (MQTT-5.0 3.3.2.3.4).
+     *
+     * A packet that carries a topic name together with an alias establishes the mapping for the
+     * rest of the connection; a packet with an empty topic name refers back to it. An alias the
+     * client never established, or one above the maximum we announced, is a protocol error.
+     *
+     * @param client The publishing client
+     * @param packet The received PUBLISH; its `topic` is filled in from the alias when needed
+     * @returns Whether the packet may be processed
+     */
+    private resolveTopicAlias(client: MqttClientConnection, packet: IncomingPublish): boolean {
+        const alias = packet.properties?.topicAlias;
+        if (alias === undefined) {
+            return true;
+        }
+
+        if (!alias || alias > TOPIC_ALIAS_MAXIMUM) {
+            this.adapter.log.warn(
+                `Client [${client.id}] used the invalid topic alias ${alias} (maximum is ${TOPIC_ALIAS_MAXIMUM})`,
+            );
+            client.disconnect({ reasonCode: 0x94 }); // topic alias invalid
+            client.close();
+            return false;
+        }
+
+        client._topicAliases ||= new Map<number, MqttTopic>();
+
+        if (packet.topic) {
+            client._topicAliases.set(alias, packet.topic);
+            return true;
+        }
+
+        const topic = client._topicAliases.get(alias);
+        if (!topic) {
+            this.adapter.log.warn(`Client [${client.id}] used the unknown topic alias ${alias}`);
+            client.disconnect({ reasonCode: 0x94 }); // topic alias invalid
+            client.close();
+            return false;
+        }
+
+        packet.topic = topic;
+        if (this.config.debug) {
+            this.adapter.log.debug(`Client [${client.id}] topic alias ${alias} resolved to "${topic}"`);
+        }
+        return true;
+    }
+
     private getMqttMessage<
         T extends {
             id: string;
-            _subsID?: {
-                [id: string]: {
-                    regex: RegExp;
-                    qos: 0 | 1 | 2;
-                    pattern: MqttPattern;
-                };
-            };
-            _subs?: {
-                [topic: string]: {
-                    regex: RegExp;
-                    qos: 0 | 1 | 2;
-                    pattern: MqttPattern;
-                };
-            };
+            _subsID?: Record<string, MqttSubscription>;
+            _subs?: Record<string, MqttSubscription>;
         },
     >(
         client: T,
@@ -445,6 +923,7 @@ export default class MQTTServer {
         qos: 0 | 1 | 2 | undefined,
         retain: boolean | undefined,
         cb: (err: string | null, message?: MqttMessage, client?: T) => void,
+        delivery: MessageDelivery = 'live',
     ): void {
         if (!this.id2topic[id]) {
             void this.adapter.getForeignObject(id, (err, obj) => {
@@ -479,7 +958,7 @@ export default class MQTTServer {
 
                 this.topic2id[topic] ||= { obj: obj as ioBroker.StateObject, id: obj._id };
 
-                void this.getMqttMessage<T>(client, obj._id, state, qos, retain, cb);
+                void this.getMqttMessage<T>(client, obj._id, state, qos, retain, cb, delivery);
             });
             return;
         }
@@ -487,6 +966,15 @@ export default class MQTTServer {
         // Binary states are delivered as raw files via sendBinaryState2Client, never as a
         // (URL) string message. Skip here so the file URL is not published as the payload.
         if (this.topic2id[this.id2topic[id]]?.obj?.native?.binary) {
+            cb(null, undefined, client);
+            return;
+        }
+
+        // An expired value must not be handed out any more as the value the broker "already had".
+        // Only the delivery is suppressed — the ioBroker state itself stays untouched, other
+        // adapters keep using it.
+        if (delivery === 'retained' && this.isExpired(id)) {
+            this.adapter.log.debug(`Value of "${id}" expired, not sending it on subscribe`);
             cb(null, undefined, client);
             return;
         }
@@ -545,8 +1033,15 @@ export default class MQTTServer {
         if (message) {
             message = this.addMessageAttributes(message, {
                 qos: qos ?? this.config.defaultQoS,
-                retain: retain ?? false,
+                retain: this.effectiveRetain(client, id, retain ?? false, delivery),
             });
+            const properties = this.outgoingProperties(client, id);
+            if (properties) {
+                message.properties = properties;
+            }
+            if (this.messageExpiry[id]) {
+                message.expiresAt = this.messageExpiry[id];
+            }
         }
 
         cb(null, message, client);
@@ -584,7 +1079,7 @@ export default class MQTTServer {
     }
 
     private sendMessage2Client(
-        client: MqttConnection,
+        client: MqttClientConnection,
         topic: MqttTopic,
         payload: ioBroker.State | ioBroker.StateValue,
         retain: boolean,
@@ -610,21 +1105,17 @@ export default class MQTTServer {
             );
         }
 
-        client.publish(message);
-
-        if (message.qos > 0) {
-            client._messages ||= [];
-            client._messages.push(message);
-        }
+        this.deliver(client, message);
     }
 
     private sendState2Client(
-        client: MqttConnection,
+        client: MqttClientConnection,
         id: string,
         state: ioBroker.State | null | undefined,
         qos?: 0 | 1 | 2,
         retain?: boolean,
         cb?: (id: string) => void,
+        delivery: MessageDelivery = 'live',
     ): void {
         if (messageboxRegex.test(id)) {
             return;
@@ -633,28 +1124,31 @@ export default class MQTTServer {
         // Binary state: send the raw file bytes instead of the stored URL string
         const binaryTopic = this.id2topic[id];
         if (binaryTopic && this.topic2id[binaryTopic]?.obj?.native?.binary) {
-            this.sendBinaryState2Client(client, id, qos, retain, cb);
+            this.sendBinaryState2Client(client, id, qos, retain, cb, delivery);
             return;
         }
 
-        this.getMqttMessage<MqttConnection>(client, id, state, qos, retain, (_err, message, client) => {
-            if (message) {
-                if (this.config.debug) {
-                    this.adapter.log.debug(
-                        `Client [${client!.id}] send to this client "${message.topic}": ${message.payload !== null ? message.payload : 'deleted'}`,
-                    );
+        this.getMqttMessage<MqttClientConnection>(
+            client,
+            id,
+            state,
+            qos,
+            retain,
+            (_err, message, client) => {
+                if (message) {
+                    if (this.config.debug) {
+                        this.adapter.log.debug(
+                            `Client [${client!.id}] send to this client "${message.topic}": ${message.payload !== null ? message.payload : 'deleted'}`,
+                        );
+                    }
+
+                    this.deliver(client!, message);
                 }
 
-                client!.publish(message);
-
-                if (message.qos > 0) {
-                    client!._messages ||= [];
-                    client!._messages.push(message);
-                }
-            }
-
-            cb?.(id);
-        });
+                cb?.(id);
+            },
+            delivery,
+        );
     }
 
     /**
@@ -662,11 +1156,12 @@ export default class MQTTServer {
      * storage (the state value itself only holds the file URL).
      */
     private sendBinaryState2Client(
-        client: MqttConnection,
+        client: MqttClientConnection,
         id: string,
         qos?: 0 | 1 | 2,
         retain?: boolean,
         cb?: (id: string) => void,
+        delivery: MessageDelivery = 'live',
     ): void {
         const topic = this.id2topic[id];
         const file: string | undefined = topic ? this.topic2id[topic]?.obj?.native?.file : undefined;
@@ -700,17 +1195,18 @@ export default class MQTTServer {
                     cb?.(id);
                     return;
                 }
+                const wireRetain = this.effectiveRetain(client, id, retain ?? false, delivery);
                 const message = this.addMessageAttributes(
                     {
                         topic,
                         payload: data as unknown as string,
                         qos: subscribedQos,
-                        retain: retain ?? false,
+                        retain: wireRetain,
                         ts: Date.now(),
                         count: 0,
                         messageId: 0,
                     },
-                    { qos: qos ?? subscribedQos ?? this.config.defaultQoS, retain: retain ?? false, binary: true },
+                    { qos: qos ?? subscribedQos ?? this.config.defaultQoS, retain: wireRetain, binary: true },
                 );
 
                 if (this.config.debug) {
@@ -719,12 +1215,7 @@ export default class MQTTServer {
                     );
                 }
 
-                client.publish(message);
-
-                if (message.qos > 0) {
-                    client._messages ||= [];
-                    client._messages.push(message);
-                }
+                this.deliver(client, message);
                 cb?.(id);
             })
             .catch(err => {
@@ -733,20 +1224,35 @@ export default class MQTTServer {
             });
     }
 
-    private sendStates2Client(client: MqttConnection, list: string[]): void {
+    private sendStates2Client(client: MqttClientConnection, list: string[]): void {
         if (list?.length) {
             const id = list.shift() || '';
-            this.sendState2Client(client, id, this.states[id], 0, !this.config.noRetain, () =>
-                setTimeout(() => this.sendStates2Client(client, list), this.config.sendInterval),
+            this.sendState2Client(
+                client,
+                id,
+                this.states[id],
+                0,
+                !this.config.noRetain,
+                () => setTimeout(() => this.sendStates2Client(client, list), this.config.sendInterval),
+                // these are the values the broker already had, not live forwards
+                'retained',
             );
         } else {
             //return;
         }
     }
 
-    private resendMessages2Client(client: MqttConnection, messages: MqttMessage[], i?: number): void {
+    private resendMessages2Client(client: MqttClientConnection, messages: MqttMessage[], i?: number): void {
         i ||= 0;
         if (messages && i < messages.length) {
+            if (messages[i].expiresAt && messages[i].expiresAt! <= Date.now()) {
+                this.adapter.log.debug(
+                    `Client [${client.id}] Queued message for "${messages[i].topic}" expired, not resending it`,
+                );
+                messages.splice(i, 1);
+                setImmediate(() => this.resendMessages2Client(client, messages, i));
+                return;
+            }
             try {
                 messages[i].ts = Date.now();
                 messages[i].count = 0; // keep at 0 in case checkResends fires between resend steps
@@ -816,11 +1322,22 @@ export default class MQTTServer {
         qos: 0 | 1 | 2,
         retain: boolean,
         isAck: boolean,
-        ignoreClient: MqttConnection,
+        ignoreClient: MqttClientConnection,
+        expiryInterval?: number,
     ): Promise<void> {
         if (id === `${this.adapter.namespace}.info.connection`) {
             this.adapter.log.debug(`Ignore State update for ${id} because adapter internal state.`);
             return;
+        }
+
+        if (ignoreClient.__secret) {
+            this.lastPublisher[id] = { secret: ignoreClient.__secret, ts: Date.now() };
+        }
+
+        if (expiryInterval) {
+            this.messageExpiry[id] = Date.now() + expiryInterval * 1000;
+        } else {
+            delete this.messageExpiry[id];
         }
 
         // expand an old version of objects
@@ -942,9 +1459,14 @@ export default class MQTTServer {
                     state = { val: parsedForType.message, ack: isAck } as ioBroker.State;
                 }
 
+                const sharedRecipients = this.resolveSharedRecipients(id);
+
                 Object.keys(this.clients).forEach(k => {
                     // if 'get' and 'set' have different topic names, send state to issuing a client too.
-                    if (this.clients[k] !== ignoreClient || this.config.extraSet) {
+                    if (
+                        this.mayReceiveOwnMessage(this.clients[k], ignoreClient, id) &&
+                        this.isRecipient(this.clients[k], id, sharedRecipients)
+                    ) {
                         this.sendState2Client(this.clients[k], id, state, qos, retain);
                     }
                 });
@@ -1149,7 +1671,7 @@ export default class MQTTServer {
         isAck: boolean,
         qos: 0 | 1 | 2,
         retain: boolean,
-        ignoreClient: MqttConnection,
+        ignoreClient: MqttClientConnection,
     ): Promise<void> {
         const file = topic2filename(topic);
 
@@ -1256,8 +1778,13 @@ export default class MQTTServer {
         // forward the binary to all other subscribed clients (like the onchange path in processTopic)
         if (this.config.onchange && this.server) {
             setImmediate(() => {
+                const sharedRecipients = this.resolveSharedRecipients(entry.id);
+
                 Object.keys(this.clients).forEach(k => {
-                    if (this.clients[k] !== ignoreClient || this.config.extraSet) {
+                    if (
+                        this.mayReceiveOwnMessage(this.clients[k], ignoreClient, entry.id) &&
+                        this.isRecipient(this.clients[k], entry.id, sharedRecipients)
+                    ) {
                         this.sendState2Client(this.clients[k], entry.id, state, qos, retain);
                     }
                 });
@@ -1265,7 +1792,7 @@ export default class MQTTServer {
         }
     }
 
-    private async receivedTopic(packet: MqttMessage, client: MqttConnection): Promise<void> {
+    private async receivedTopic(packet: MqttMessage, client: MqttClientConnection): Promise<void> {
         let isAck = true;
         let topic = packet.topic;
         const message = packet.payload;
@@ -1382,7 +1909,16 @@ export default class MQTTServer {
             });
         }
 
-        await this.processTopic(this.topic2id[topic].id, topic, message, qos, retain, isAck, client);
+        await this.processTopic(
+            this.topic2id[topic].id,
+            topic,
+            message,
+            qos,
+            retain,
+            isAck,
+            client,
+            packet.properties?.messageExpiryInterval,
+        );
     }
 
     private addMessageWithTopicCheck(arr: MqttMessage[], message: MqttMessage): void {
@@ -1398,13 +1934,175 @@ export default class MQTTServer {
         arr.push(message);
     }
 
-    private clientClose(client: MqttConnection, reason?: string): void {
+    /**
+     * Publishes the last will of a client whose connection dropped.
+     *
+     * MQTT 5 lets a client ask for a delay, so a short network hiccup does not announce it as
+     * offline: the will is only published once the delay passed and the client did not come back
+     * (MQTT-5.0 3.1.3.2.2). The delay is capped by the session expiry interval, because the will
+     * must not outlive the session. MQTT 3.1.1 has no delay and is published right away.
+     *
+     * @param client The client that just disconnected
+     */
+    private publishWill(client: MqttClientConnection): void {
+        const will = { ...client._will, messageId: 0 };
+        const send = (): void => {
+            delete this.delayedWills[client.id];
+            void this.receivedTopic(will, client).catch(() => null);
+        };
+
+        let delay = client._willDelayInterval ?? 0;
+        if (client._sessionExpiryInterval !== undefined) {
+            delay = Math.min(delay, client._sessionExpiryInterval);
+        }
+
+        if (!delay) {
+            send();
+            return;
+        }
+
+        this.adapter.log.debug(`Client [${client.id}] will is delayed by ${delay} seconds`);
+        if (this.delayedWills[client.id]) {
+            this.adapter.clearTimeout(this.delayedWills[client.id]);
+        }
+        this.delayedWills[client.id] = this.adapter.setTimeout(send, delay * 1000);
+    }
+
+    /**
+     * The salted password for SCRAM, derived from the configured one exactly once.
+     *
+     * @returns The salted password
+     */
+    private getScramSaltedPassword(): Promise<Buffer> {
+        this.scramSaltedPassword ||= saltPassword(this.config.pass || '', this.scramSalt);
+        return this.scramSaltedPassword;
+    }
+
+    /**
+     * Starts a SCRAM-SHA-256 exchange: takes the client's first message and answers with an AUTH
+     * packet carrying the server's first message (MQTT-5.0 4.12).
+     *
+     * @param client The connecting client
+     * @param clientFirst The authentication data of its CONNECT packet
+     */
+    private startScram(client: MqttClientConnection, clientFirst?: Buffer): void {
+        if (!clientFirst?.length) {
+            this.adapter.log.warn(`Client [${client.id}] started SCRAM without a first message`);
+            this.rejectAuthentication(client);
+            return;
+        }
+
+        const exchange = new ScramExchange(this.config.user, this.scramSalt);
+        let serverFirst: Buffer;
+        try {
+            serverFirst = exchange.begin(clientFirst);
+        } catch (e) {
+            this.adapter.log.warn(`Client [${client.id}] sent an unusable SCRAM message: ${(e as ScramError).message}`);
+            this.rejectAuthentication(client);
+            return;
+        }
+
+        client._scram = exchange;
+        client.auth({
+            reasonCode: 0x18, // continue authentication
+            properties: { authenticationMethod: SCRAM_SHA_256, authenticationData: serverFirst },
+        });
+    }
+
+    /**
+     * Finishes a SCRAM exchange with the client's proof.
+     *
+     * @param client The authenticating client
+     * @param clientFinal The authentication data of its AUTH packet
+     * @param reAuthentication Whether this is a re-authentication of an already connected client
+     */
+    private async finishScram(
+        client: MqttClientConnection,
+        clientFinal: Buffer | undefined,
+        reAuthentication: boolean,
+    ): Promise<void> {
+        const exchange = client._scram;
+        if (!exchange || !clientFinal?.length) {
+            this.rejectAuthentication(client, reAuthentication);
+            return;
+        }
+
+        let serverFinal: Buffer;
+        try {
+            serverFinal = exchange.finish(clientFinal, await this.getScramSaltedPassword());
+        } catch (e) {
+            // Always the same message: which half was wrong is not the client's business.
+            this.adapter.log.warn(
+                `Client [${client.id}] failed the SCRAM authentication (${(e as ScramError).message})`,
+            );
+            this.rejectAuthentication(client, reAuthentication);
+            return;
+        } finally {
+            client._scram = undefined;
+        }
+
+        client.authenticated = true;
+        this.adapter.log.info(`Client [${client.id}] authenticated with ${SCRAM_SHA_256}`);
+
+        if (reAuthentication) {
+            // the connection stays as it is, only the proof was renewed
+            client.auth({
+                reasonCode: 0x00, // success
+                properties: { authenticationMethod: SCRAM_SHA_256, authenticationData: serverFinal },
+            });
+            return;
+        }
+
+        const complete = client._completeConnect;
+        client._completeConnect = undefined;
+        client._scramServerFinal = serverFinal;
+        complete?.();
+    }
+
+    /**
+     * Rejects an authentication attempt and closes the connection.
+     *
+     * @param client The client to reject
+     * @param reAuthentication Whether an established connection is being torn down
+     */
+    private rejectAuthentication(client: MqttClientConnection, reAuthentication = false): void {
+        client.authenticated = false;
+        client._scram = undefined;
+        client._completeConnect = undefined;
+
+        if (reAuthentication) {
+            // an established connection is ended with a DISCONNECT, not with a CONNACK
+            client.disconnect({ reasonCode: 0x87 }); // not authorized
+        } else {
+            client.connack({ reasonCode: 0x87 }); // not authorized
+        }
+        client.close();
+    }
+
+    private clientClose(client: MqttClientConnection, reason?: string): void {
         if (!client) {
             return;
         }
 
         if (this.persistentSessions[client.id]) {
             this.persistentSessions[client.id].connected = false;
+        }
+
+        // A shared subscription only makes sense while the client is there; on reconnect it
+        // subscribes again. Leaving now keeps messages from being drawn for a gone member.
+        this.leaveSharedGroups(client.id);
+
+        // never keep a half finished authentication around
+        client._scram = undefined;
+        client._completeConnect = undefined;
+        client._scramServerFinal = undefined;
+
+        // Anything that was still waiting for a free slot belongs into the session queue, so a
+        // persistent session replays it on the next connection instead of losing it.
+        if (client._pendingMessages?.length) {
+            client._messages ||= [];
+            client._messages.push(...client._pendingMessages);
+            client._pendingMessages = [];
         }
 
         if (client._sendOnStart) {
@@ -1422,12 +2120,9 @@ export default class MQTTServer {
                 delete this.clients[client.id];
                 this.updateClients();
                 if (client._will && reason !== 'disconnected') {
-                    void this.receivedTopic({ ...client._will, messageId: 0 }, client)
-                        .catch(() => null) // ignore
-                        .then(() => client.destroy());
-                } else {
-                    client.destroy();
+                    this.publishWill(client);
                 }
+                client.destroy();
             } else {
                 client.destroy();
             }
@@ -1438,7 +2133,7 @@ export default class MQTTServer {
 
     private validateRequest(
         type: 'publish' | 'pubrec' | 'pubcomp' | 'pubrel' | 'subscribe' | 'unsubscribe' | 'pingreq' | 'puback',
-        client: MqttConnection,
+        client: MqttClientConnection,
     ): boolean {
         if (this.config.user && !client.authenticated) {
             this.adapter.log.warn(`Client [${client.id}] sends ${type} after unsuccessful authentication. Ignore!`);
@@ -1477,12 +2172,7 @@ export default class MQTTServer {
 
         // Use event variable to start the connection
         socket.on(connectionEvent, (stream: any) => {
-            let client: MqttConnection;
-            if (ws) {
-                client = mqtt(wsStream(stream));
-            } else {
-                client = mqtt(stream);
-            }
+            const client = new MqttConnection(ws ? wsStream(stream) : stream) as MqttClientConnection;
 
             // Store unique connection identifier
             client.__secret = `${Date.now()}_${Math.round(Math.random() * 10000)}`;
@@ -1501,14 +2191,37 @@ export default class MQTTServer {
                         payload: string;
                         qos: 0 | 1 | 2;
                         retain: boolean;
+                        properties?: { willDelayInterval?: number };
+                    };
+                    properties?: {
+                        sessionExpiryInterval?: number;
+                        receiveMaximum?: number;
+                        authenticationMethod?: string;
+                        authenticationData?: Buffer;
                     };
                 }): void => {
                     // set client id
                     client.id = options.clientId;
+
+                    // MQTT 5 replaced the "clean session" flag: "clean start" only says whether an
+                    // existing session is resumed, while the session expiry interval decides whether
+                    // it survives the connection at all (MQTT-5.0 3.1.2.11.2). An interval of 0 —
+                    // and the absence of the property — means the session ends with the connection.
+                    client._sessionExpiryInterval =
+                        client.protocolVersion === 5 ? (options.properties?.sessionExpiryInterval ?? 0) : undefined;
+
+                    // How many unacknowledged QoS 1/2 messages this client accepts at once. The
+                    // default of 65535 means "no practical limit" (MQTT-5.0 3.1.2.11.3).
+                    client._receiveMaximum =
+                        client.protocolVersion === 5 ? (options.properties?.receiveMaximum ?? 65535) : undefined;
+                    client._pendingMessages = [];
+
                     if (this.config.forceCleanSession === 'clean') {
                         client.cleanSession = true;
                     } else if (this.config.forceCleanSession === 'keep') {
                         client.cleanSession = false;
+                    } else if (client._sessionExpiryInterval !== undefined) {
+                        client.cleanSession = client._sessionExpiryInterval === 0;
                     } else {
                         // The old logic always resulted in 'undefined' when cleanSession was not active,
                         // because options.cleanSession was undefined. This led to client.cleanSession being set to undefined.
@@ -1523,13 +2236,195 @@ export default class MQTTServer {
                     // get possible an old client
                     const oldClient = this.clients[client.id];
 
+                    // Everything that happens once the client is authenticated. Enhanced
+                    // authentication needs another round trip first, so this cannot run inline.
+                    const completeConnect = (): void => {
+                        if (oldClient) {
+                            this.adapter.log.info(
+                                `Client [${client.id}] reconnected. Old secret ${this.clients[client.id].__secret}. New secret ${client.__secret}`,
+                            );
+                            // need to destroy the old client
+
+                            if (client.__secret !== this.clients[client.id].__secret) {
+                                // it is another socket!!
+                                // It was the following situation:
+                                // - old connection was active
+                                // - new connection is on the same TCP
+                                // Just forget him
+                                // oldClient.destroy();
+                            }
+                        } else {
+                            this.adapter.log.info(`Client [${client.id}] connected with secret ${client.__secret}`);
+                        }
+
+                        let sessionPresent = false;
+
+                        if (!client.cleanSession && this.config.storeClientsTime !== 0) {
+                            if (this.persistentSessions[client.id]) {
+                                sessionPresent = true;
+                                this.persistentSessions[client.id].lastSeen = Date.now();
+                            } else {
+                                this.persistentSessions[client.id] = {
+                                    id: client.id,
+                                    _subsID: {},
+                                    _subs: {},
+                                    _messages: [],
+                                    lastSeen: Date.now(),
+                                };
+                            }
+                            client._messages = this.persistentSessions[client.id]._messages || [];
+                            this.persistentSessions[client.id].connected = true;
+                        } else if (client.cleanSession && this.persistentSessions[client.id]) {
+                            delete this.persistentSessions[client.id];
+                        }
+                        client._messages ||= [];
+
+                        client.connack({
+                            returnCode: 0,
+                            sessionPresent,
+                            // Only MQTT 5 has CONNACK properties; MqttConnection drops them otherwise.
+                            // Only what differs from the defaults is announced — "maximum QoS" for
+                            // example must not be sent at all when it is 2 (MQTT-5.0 3.2.2.3.4).
+                            properties: {
+                                topicAliasMaximum: TOPIC_ALIAS_MAXIMUM,
+                                // The client verifies the server with this, so it knows it did not
+                                // hand its proof to an impostor (MQTT-5.0 4.12).
+                                ...(client._scramServerFinal
+                                    ? {
+                                          authenticationMethod: client._authMethod,
+                                          authenticationData: client._scramServerFinal,
+                                      }
+                                    : {}),
+                            },
+                        });
+                        client._scramServerFinal = undefined;
+                        this.clients[client.id] = client;
+                        this.updateClients();
+
+                        // The client is back before its will was published, so it must not be sent
+                        // any more (MQTT-5.0 3.1.3.2.2).
+                        if (this.delayedWills[client.id]) {
+                            this.adapter.clearTimeout(this.delayedWills[client.id]);
+                            delete this.delayedWills[client.id];
+                            this.adapter.log.debug(`Client [${client.id}] reconnected, its delayed will is dropped`);
+                        }
+
+                        if (options.will) {
+                            // the client's will message options. object that supports the following properties:
+                            // topic:   the will topic. string
+                            // payload: the will payload. string
+                            // qos:     will qos level. number
+                            // retain:  will retain a flag. boolean
+                            client._will = JSON.parse(JSON.stringify(options.will));
+                            client._willDelayInterval =
+                                client.protocolVersion === 5 ? (options.will.properties?.willDelayInterval ?? 0) : 0;
+                            let id;
+                            if (this.topic2id[client._will.topic]) {
+                                id =
+                                    this.topic2id[client._will.topic].id ||
+                                    convertTopic2id(
+                                        client._will.topic,
+                                        false,
+                                        this.config.prefix,
+                                        this.adapter.namespace,
+                                        this.config.dotToUnderscore,
+                                    );
+                            } else {
+                                id = convertTopic2id(
+                                    client._will.topic,
+                                    false,
+                                    this.config.prefix,
+                                    this.adapter.namespace,
+                                    this.config.dotToUnderscore,
+                                );
+                            }
+                            this.checkObject(id, client._will.topic, options.will.payload)
+                                .then(() => {
+                                    // something went wrong while JSON.parse, so the payload of last will not be handled correctly as buffer
+                                    client._will.payload = options.will!.payload;
+                                    this.adapter.log.debug(
+                                        `Client [${client.id}] with last will ${JSON.stringify(client._will)}`,
+                                    );
+                                })
+                                .catch(err => this.adapter.log.info(err.message));
+                        }
+
+                        // Send all subscribed variables to a client
+                        if (this.config.publishAllOnStart) {
+                            // Give to client 2 seconds to send the `subscribe` message
+                            client._sendOnStart = setTimeout(() => {
+                                client._sendOnStart = null;
+                                this.sendStates2Client(client, Object.keys(this.states));
+                            }, this.config.sendOnStartInterval);
+                        }
+
+                        if (this.persistentSessions[client.id]) {
+                            client._subsID = this.persistentSessions[client.id]._subsID;
+                            client._subs = this.persistentSessions[client.id]._subs;
+                            if (this.persistentSessions[client.id]._messages.length) {
+                                // Reset retry counters immediately so that checkResends() does not
+                                // see stale counts and disconnect the freshly reconnected client
+                                // during the 100 ms window before resendMessages2Client() runs.
+                                const now = Date.now();
+                                for (const msg of this.persistentSessions[client.id]._messages) {
+                                    msg.count = 0;
+                                    msg.ts = now;
+                                }
+                                // give to the client a little bit time
+                                client._resendonStart = setTimeout(
+                                    (clientId: string): void => {
+                                        client._resendonStart = null;
+                                        if (this.persistentSessions[clientId]) {
+                                            this.resendMessages2Client(
+                                                client,
+                                                this.persistentSessions[clientId]._messages,
+                                            );
+                                        }
+                                    },
+                                    100,
+                                    client.id,
+                                );
+                            }
+                        }
+
+                        // set timeout for stream to 1,5 times keepalive [MQTT-3.1.2-24].
+                        if (!ws && client._keepalive !== 0) {
+                            const streamTimeoutSec = 1.5 * client._keepalive;
+                            stream.setTimeout(streamTimeoutSec * 1000);
+
+                            this.adapter.log.debug(
+                                `Client [${client.id}] with keepalive ${client._keepalive} set timeout to ${streamTimeoutSec} seconds`,
+                            );
+                        }
+                    };
+
+                    // MQTT 5 enhanced authentication: the client names a method instead of sending
+                    // its password, and the exchange runs over AUTH packets (MQTT-5.0 4.12).
+                    const authMethod = options.properties?.authenticationMethod;
+                    if (authMethod) {
+                        if (!this.config.user || authMethod !== SCRAM_SHA_256) {
+                            this.adapter.log.warn(
+                                `Client [${client.id}] asked for the unsupported authentication method "${authMethod}"`,
+                            );
+                            client.connack({ reasonCode: 0x8c }); // bad authentication method
+                            client.close();
+                            return;
+                        }
+
+                        client._authMethod = authMethod;
+                        client._completeConnect = completeConnect;
+                        this.startScram(client, options.properties?.authenticationData);
+                        return;
+                    }
+
                     if (this.config.user) {
                         if (
                             this.config.user !== options.username ||
                             this.config.pass !== (options.password || '').toString()
                         ) {
+                            // never log the credentials themselves
                             this.adapter.log.warn(
-                                `Client [${client.id}] has invalid password(${options.password}) or username(${options.username})`,
+                                `Client [${client.id}] has invalid credentials for user "${options.username ?? ''}"`,
                             );
                             client.authenticated = false;
                             client.connack({ returnCode: 4 });
@@ -1539,138 +2434,13 @@ export default class MQTTServer {
                                 this.updateClients();
                                 oldClient.destroy();
                             }
-                            client.destroy();
+                            client.close();
                             return;
                         }
                         client.authenticated = true;
                     }
 
-                    if (oldClient) {
-                        this.adapter.log.info(
-                            `Client [${client.id}] reconnected. Old secret ${this.clients[client.id].__secret}. New secret ${client.__secret}`,
-                        );
-                        // need to destroy the old client
-
-                        if (client.__secret !== this.clients[client.id].__secret) {
-                            // it is another socket!!
-                            // It was the following situation:
-                            // - old connection was active
-                            // - new connection is on the same TCP
-                            // Just forget him
-                            // oldClient.destroy();
-                        }
-                    } else {
-                        this.adapter.log.info(`Client [${client.id}] connected with secret ${client.__secret}`);
-                    }
-
-                    let sessionPresent = false;
-
-                    if (!client.cleanSession && this.config.storeClientsTime !== 0) {
-                        if (this.persistentSessions[client.id]) {
-                            sessionPresent = true;
-                            this.persistentSessions[client.id].lastSeen = Date.now();
-                        } else {
-                            this.persistentSessions[client.id] = {
-                                id: client.id,
-                                _subsID: {},
-                                _subs: {},
-                                _messages: [],
-                                lastSeen: Date.now(),
-                            };
-                        }
-                        client._messages = this.persistentSessions[client.id]._messages || [];
-                        this.persistentSessions[client.id].connected = true;
-                    } else if (client.cleanSession && this.persistentSessions[client.id]) {
-                        delete this.persistentSessions[client.id];
-                    }
-                    client._messages ||= [];
-
-                    client.connack({ returnCode: 0, sessionPresent });
-                    this.clients[client.id] = client;
-                    this.updateClients();
-
-                    if (options.will) {
-                        // the client's will message options. object that supports the following properties:
-                        // topic:   the will topic. string
-                        // payload: the will payload. string
-                        // qos:     will qos level. number
-                        // retain:  will retain a flag. boolean
-                        client._will = JSON.parse(JSON.stringify(options.will));
-                        let id;
-                        if (this.topic2id[client._will.topic]) {
-                            id =
-                                this.topic2id[client._will.topic].id ||
-                                convertTopic2id(
-                                    client._will.topic,
-                                    false,
-                                    this.config.prefix,
-                                    this.adapter.namespace,
-                                    this.config.dotToUnderscore,
-                                );
-                        } else {
-                            id = convertTopic2id(
-                                client._will.topic,
-                                false,
-                                this.config.prefix,
-                                this.adapter.namespace,
-                                this.config.dotToUnderscore,
-                            );
-                        }
-                        this.checkObject(id, client._will.topic, options.will.payload)
-                            .then(() => {
-                                // something went wrong while JSON.parse, so the payload of last will not be handled correctly as buffer
-                                client._will.payload = options.will!.payload;
-                                this.adapter.log.debug(
-                                    `Client [${client.id}] with last will ${JSON.stringify(client._will)}`,
-                                );
-                            })
-                            .catch(err => this.adapter.log.info(err.message));
-                    }
-
-                    // Send all subscribed variables to a client
-                    if (this.config.publishAllOnStart) {
-                        // Give to client 2 seconds to send the `subscribe` message
-                        client._sendOnStart = setTimeout(() => {
-                            client._sendOnStart = null;
-                            this.sendStates2Client(client, Object.keys(this.states));
-                        }, this.config.sendOnStartInterval);
-                    }
-
-                    if (this.persistentSessions[client.id]) {
-                        client._subsID = this.persistentSessions[client.id]._subsID;
-                        client._subs = this.persistentSessions[client.id]._subs;
-                        if (this.persistentSessions[client.id]._messages.length) {
-                            // Reset retry counters immediately so that checkResends() does not
-                            // see stale counts and disconnect the freshly reconnected client
-                            // during the 100 ms window before resendMessages2Client() runs.
-                            const now = Date.now();
-                            for (const msg of this.persistentSessions[client.id]._messages) {
-                                msg.count = 0;
-                                msg.ts = now;
-                            }
-                            // give to the client a little bit time
-                            client._resendonStart = setTimeout(
-                                (clientId: string): void => {
-                                    client._resendonStart = null;
-                                    if (this.persistentSessions[clientId]) {
-                                        this.resendMessages2Client(client, this.persistentSessions[clientId]._messages);
-                                    }
-                                },
-                                100,
-                                client.id,
-                            );
-                        }
-                    }
-
-                    // set timeout for stream to 1,5 times keepalive [MQTT-3.1.2-24].
-                    if (!ws && client._keepalive !== 0) {
-                        const streamTimeoutSec = 1.5 * client._keepalive;
-                        stream.setTimeout(streamTimeoutSec * 1000);
-
-                        this.adapter.log.debug(
-                            `Client [${client.id}] with keepalive ${client._keepalive} set timeout to ${streamTimeoutSec} seconds`,
-                        );
-                    }
+                    completeConnect();
                 },
             );
 
@@ -1686,8 +2456,13 @@ export default class MQTTServer {
                     topic: string;
                     payload: string;
                     retain: boolean;
+                    properties?: { topicAlias?: number; messageExpiryInterval?: number };
                 }): Promise<void> => {
                     if (!this.validateRequest('publish', client)) {
+                        return;
+                    }
+
+                    if (!this.resolveTopicAlias(client, packet)) {
                         return;
                     }
 
@@ -1797,6 +2572,7 @@ export default class MQTTServer {
                 }
                 if (pos !== -1) {
                     client._messages.splice(pos, 1);
+                    this.flushPending(client);
                 } else {
                     this.adapter.log.info(
                         `Client [${client.id}] Received pubcomp for unknown message ID: ${packet.messageId}`,
@@ -1861,6 +2637,7 @@ export default class MQTTServer {
                         `Client [${client.id}] Received puback for ${client.id} message ID: ${packet.messageId}`,
                     );
                     client._messages.splice(pos, 1);
+                    this.flushPending(client);
                 } else {
                     this.adapter.log.info(
                         `Client [${client.id}] Received puback for unknown message ID: ${packet.messageId}`,
@@ -1872,7 +2649,8 @@ export default class MQTTServer {
                 'subscribe',
                 async (packet: {
                     messageId: number;
-                    subscriptions: { qos: 0 | 1 | 2; topic: MqttTopic }[];
+                    subscriptions: { qos: 0 | 1 | 2; topic: MqttTopic; nl?: boolean; rap?: boolean; rh?: 0 | 1 | 2 }[];
+                    properties?: { subscriptionIdentifier?: number };
                 }): Promise<void> => {
                     if (!this.validateRequest('subscribe', client)) {
                         return;
@@ -1898,7 +2676,42 @@ export default class MQTTServer {
                         );
                         granted.push(packet.subscriptions[i].qos);
 
-                        const topic = packet.subscriptions[i].topic;
+                        // MQTT 5 subscription options; undefined for MQTT 3.1.1 clients
+                        const { nl, rap, rh } = packet.subscriptions[i];
+                        // one identifier applies to every subscription of this SUBSCRIBE packet
+                        const subscriptionIdentifier = packet.properties?.subscriptionIdentifier;
+
+                        // "$share/<name>/<filter>" makes this one member of a group that shares the
+                        // messages. Everything below works on the plain filter; only the delivery
+                        // differs (MQTT-5.0 4.8.2).
+                        const { shareName, filter } = parseSharedTopic(packet.subscriptions[i].topic);
+
+                        // "No Local" is not allowed on a shared subscription (MQTT-5.0 3.8.3.1)
+                        if (shareName && nl) {
+                            this.adapter.log.warn(
+                                `Client [${client.id}] used "No Local" on the shared subscription "${packet.subscriptions[i].topic}"`,
+                            );
+                            client.disconnect({ reasonCode: 0x82 }); // protocol error
+                            client.close();
+                            return;
+                        }
+
+                        // Retain Handling 2 means the client does not want the value it already
+                        // missed, only what is published from now on. A shared subscription never
+                        // gets the stored value on subscribe either.
+                        const sendKnownValue = this.config.publishOnSubscribe && rh !== 2 && !shareName;
+
+                        if (shareName) {
+                            const sharePattern = this.sharedPatternFor(filter);
+                            this.joinSharedGroup(
+                                shareName,
+                                sharePattern,
+                                new RegExp(pattern2RegEx(sharePattern, this.adapter, this.config.prefix)),
+                                client.id,
+                            );
+                        }
+
+                        const topic = filter;
                         let id;
 
                         if (this.topic2id[topic]) {
@@ -1945,21 +2758,31 @@ export default class MQTTServer {
                                 continue;
                             }
 
+                            const exactRegex = new RegExp(pattern2RegEx(id, this.adapter, this.config.prefix));
                             client._subsID[this.topic2id[topic].id] = {
                                 pattern: id,
-                                regex: new RegExp(pattern2RegEx(id, this.adapter, this.config.prefix)),
+                                regex: exactRegex,
                                 qos: packet.subscriptions[i].qos,
+                                nl,
+                                rap,
+                                rh,
+                                subscriptionIdentifier,
+                                shareName,
                             };
 
                             this.adapter.log.info(`Client [${client.id}] subscribes on "${this.topic2id[topic].id}"`);
 
-                            if (this.config.publishOnSubscribe) {
+                            if (sendKnownValue) {
                                 setTimeout(() => {
                                     this.adapter.log.info(`Client [${client.id}] publishOnSubscribe`);
                                     this.sendState2Client(
                                         client,
                                         this.topic2id[topic].id,
                                         this.states[this.topic2id[topic].id],
+                                        undefined,
+                                        !this.config.noRetain,
+                                        undefined,
+                                        'retained',
                                     );
                                 }, 200);
                             }
@@ -1980,7 +2803,13 @@ export default class MQTTServer {
                                 regex: new RegExp(regText),
                                 qos: packet.subscriptions[i].qos,
                                 pattern: pattern,
+                                nl,
+                                rap,
+                                rh,
+                                subscriptionIdentifier,
+                                shareName,
                             };
+
                             this.adapter.log.info(
                                 `Client [${client.id}] subscribes on "${topic}" with regex /${regText}/`,
                             );
@@ -1992,19 +2821,32 @@ export default class MQTTServer {
                                 regex: new RegExp(regText),
                                 qos: packet.subscriptions[i].qos,
                                 pattern,
+                                nl,
+                                rap,
+                                rh,
+                                subscriptionIdentifier,
+                                shareName,
                             };
                             this.adapter.log.info(
                                 `Client [${client.id}] subscribes on "${topic}"  with regex /${regText}/`,
                             );
 
-                            if (this.config.publishOnSubscribe) {
+                            if (sendKnownValue) {
                                 setTimeout(() => {
                                     this.adapter.log.info(
                                         `Client [${client.id}] publishOnSubscribe send all known states`,
                                     );
                                     Object.keys(this.states).forEach(savedId => {
                                         if (this.checkPattern(client._subs!, savedId)) {
-                                            this.sendState2Client(client, savedId, this.states[savedId]);
+                                            this.sendState2Client(
+                                                client,
+                                                savedId,
+                                                this.states[savedId],
+                                                undefined,
+                                                !this.config.noRetain,
+                                                undefined,
+                                                'retained',
+                                            );
                                         }
                                     });
                                 }, 200);
@@ -2032,7 +2874,10 @@ export default class MQTTServer {
                 }
 
                 for (let i = 0; i < packet.unsubscriptions.length; i++) {
-                    const topic = packet.unsubscriptions[i];
+                    // "$share/<name>/<filter>" only leaves that group; everything below works on
+                    // the plain filter again
+                    const { shareName, filter } = parseSharedTopic(packet.unsubscriptions[i]);
+                    const topic = filter;
                     let id;
 
                     if (this.topic2id[topic]) {
@@ -2058,6 +2903,13 @@ export default class MQTTServer {
                     if (!id) {
                         this.adapter.log.error(`Client [${client.id}] unsubscribes from invalid topic: ${topic}`);
                         continue;
+                    }
+
+                    if (shareName) {
+                        this.leaveSharedGroups(client.id, this.sharedPatternFor(topic));
+                        this.adapter.log.info(
+                            `Client [${client.id}] left the shared subscription "${shareName}" for "${topic}"`,
+                        );
                     }
 
                     // if pattern without wildcards
@@ -2096,8 +2948,52 @@ export default class MQTTServer {
                         }
                     }
                 }
-                client.unsuback({ messageId: packet.messageId });
+                // MQTT 5 wants one reason code per unsubscribed topic
+                client.unsuback({ messageId: packet.messageId, count: packet.unsubscriptions.length });
             });
+
+            // MQTT 5 enhanced authentication (MQTT-5.0 4.12): either the second half of the
+            // exchange that started with the CONNECT, or a re-authentication of a client that is
+            // already connected.
+            client.on(
+                'auth',
+                (packet: {
+                    reasonCode?: number;
+                    properties?: { authenticationMethod?: string; authenticationData?: Buffer };
+                }): void => {
+                    const method = packet.properties?.authenticationMethod;
+
+                    // The method must not change during a connection (MQTT-5.0 3.15.2.2.2)
+                    if (!client._authMethod || method !== client._authMethod) {
+                        this.adapter.log.warn(
+                            `Client [${client.id}] sent AUTH with the wrong method "${method ?? ''}"`,
+                        );
+                        this.rejectAuthentication(client, !!client.authenticated);
+                        return;
+                    }
+
+                    if (packet.reasonCode === 0x19) {
+                        // re-authentication: only allowed once the client is through
+                        if (!client.authenticated) {
+                            this.rejectAuthentication(client);
+                            return;
+                        }
+                        this.adapter.log.debug(`Client [${client.id}] re-authenticates`);
+                        this.startScram(client, packet.properties?.authenticationData);
+                        return;
+                    }
+
+                    if (packet.reasonCode !== 0x18) {
+                        this.adapter.log.warn(
+                            `Client [${client.id}] sent AUTH with the unexpected reason code ${packet.reasonCode}`,
+                        );
+                        this.rejectAuthentication(client, !!client.authenticated);
+                        return;
+                    }
+
+                    void this.finishScram(client, packet.properties?.authenticationData, !!client.authenticated);
+                },
+            );
 
             client.on('pingreq', (/*packet*/) => {
                 if (!this.validateRequest('pingreq', client)) {
@@ -2144,6 +3040,15 @@ export default class MQTTServer {
             if (Object.prototype.hasOwnProperty.call(this.clients, clientId) && this.clients[clientId]?._messages) {
                 for (let m = this.clients[clientId]._messages.length - 1; m >= 0; m--) {
                     const message = this.clients[clientId]._messages[m];
+
+                    if (message.expiresAt && message.expiresAt <= now) {
+                        this.adapter.log.debug(
+                            `Client [${clientId}] Message ${message.messageId} for "${message.topic}" expired, dropping it`,
+                        );
+                        this.clients[clientId]._messages.splice(m, 1);
+                        continue;
+                    }
+
                     if (now - message.ts! >= this.config.retransmitInterval) {
                         if (message.count! > this.config.retransmitCount) {
                             if (this.clients[clientId]._keepalive === 0) {

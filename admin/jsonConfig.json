@@ -243,6 +243,23 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "protocolVersion": {
+                    "newLine": true,
+                    "type": "select",
+                    "hidden": "data.type !== 'client'",
+                    "options": [
+                        { "value": 4, "label": "MQTT 3.1.1 (default)" },
+                        { "value": 5, "label": "MQTT 5.0" },
+                        { "value": 3, "label": "MQTT 3.1" }
+                    ],
+                    "label": "MQTT version",
+                    "tooltip": "Protocol version used to connect to the broker. MQTT 5.0 adds reason codes, session and message expiry and topic aliases. If the broker rejects it, the adapter falls back to MQTT 3.1.1.",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "persistent": {
                     "type": "checkbox",
                     "hidden": "data.type !== 'client'",

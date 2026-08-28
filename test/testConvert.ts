@@ -8,6 +8,7 @@ const {
     pattern2RegEx,
     isEchoOfReceived,
     findIdForTopic,
+    parseSharedTopic,
 } = require('../build/lib/common');
 
 // Minimal adapter stub – convertMessage only uses `log` (for the invalid-JSON debug branch).
@@ -159,6 +160,32 @@ describe('Test convert version', function () {
 
         it('returns undefined if no state is published', () => {
             assert.strictEqual(findIdForTopic('shelly/0/SHCB-1_3494546B9BEC_1', {}, '', 'mqtt.0', ''), undefined);
+        });
+    });
+
+    describe('parseSharedTopic (MQTT 5 shared subscriptions)', () => {
+        it('splits a shared subscription into share name and filter', () => {
+            assert.deepStrictEqual(parseSharedTopic('$share/group/a/b'), { shareName: 'group', filter: 'a/b' });
+        });
+
+        it('keeps wildcards in the filter', () => {
+            assert.deepStrictEqual(parseSharedTopic('$share/g/sensors/#'), { shareName: 'g', filter: 'sensors/#' });
+        });
+
+        it('leaves a normal topic untouched', () => {
+            assert.deepStrictEqual(parseSharedTopic('a/b'), { filter: 'a/b' });
+            assert.deepStrictEqual(parseSharedTopic('shares/a/b'), { filter: 'shares/a/b' });
+        });
+
+        it('is not a shared subscription without a filter', () => {
+            assert.deepStrictEqual(parseSharedTopic('$share/group'), { filter: '$share/group' });
+            assert.deepStrictEqual(parseSharedTopic('$share/group/'), { filter: '$share/group/' });
+        });
+
+        it('rejects an empty share name or one with a wildcard', () => {
+            assert.deepStrictEqual(parseSharedTopic('$share//a/b'), { filter: '$share//a/b' });
+            assert.deepStrictEqual(parseSharedTopic('$share/gr+up/a'), { filter: '$share/gr+up/a' });
+            assert.deepStrictEqual(parseSharedTopic('$share/gr#up/a'), { filter: '$share/gr#up/a' });
         });
     });
 

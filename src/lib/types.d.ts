@@ -32,6 +32,8 @@ export interface MqttAdapterConfig {
     extraSet: boolean;
     sendOnStartInterval: number;
     sendInterval: number;
+    /** MQTT protocol level used in client mode: 3 = MQTT 3.1, 4 = MQTT 3.1.1, 5 = MQTT 5.0 */
+    protocolVersion: 3 | 4 | 5;
     keepalive: number;
     reconnectPeriod: number;
     connectTimeout: number;

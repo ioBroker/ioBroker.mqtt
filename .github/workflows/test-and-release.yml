@@ -52,10 +52,12 @@ jobs:
           os: 'ubuntu-latest'
           node-version: ${{ matrix.node-version }}
           screenshots-path: 'tmp/screenshots/**/*.png'
-          # The @iobroker/legacy-testing suites (test/testClient.ts, test/testServer.ts).
-          # They are being replaced by the ported suites in test/integration.ts and can be
-          # dropped — together with this line and the dependency — once those run green.
-          extra-tests: 'npm run test:legacy'
+          # The @iobroker/legacy-testing suites (test/testClient.ts, test/testServer.ts) run last,
+          # after the fast and deterministic ones: they need a js-controller from npm and must not
+          # be able to hide a failure in the others. They are being replaced by the ported suites
+          # in test/integration.ts and can be dropped — with this line and the dependency — once
+          # those have proven themselves.
+          integration-test-command: 'npm run test:integration && npm run test:legacy'
 
   # Deploys the final package to NPM
   deploy:
