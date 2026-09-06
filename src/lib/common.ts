@@ -1,4 +1,4 @@
-import type { MqttClientID, MqttPattern, MqttTopic } from './types';
+import type { MqttClientID, MqttPattern, MqttTopic, PayloadParsing } from './types';
 
 const IOBROKER_STATE_PROPERTIES = ['val', 'ack', 'ts', 'q', 'lc', 'from', 'expire', 'user', 'c'];
 
@@ -370,6 +370,7 @@ export function convertMessage(
     message: any,
     adapter: ioBroker.Adapter,
     parseCharCodes: boolean,
+    payloadParsing: PayloadParsing = 'full',
     clientID?: MqttClientID,
 ):
     | { message: string | number | boolean | Record<string, any>; isStateObject: false }
@@ -404,6 +405,12 @@ export function convertMessage(
         }
     }
 
+    // "none": take the payload over exactly as received. `parseCharCodes` is an independent
+    // option and is still applied above, because its result is a string too.
+    if (payloadParsing === 'none') {
+        return { message, isStateObject: false };
+    }
+
     if (type === 'string') {
         // Try to convert value
         const _val = message.replace(',', '.');
@@ -419,7 +426,8 @@ export function convertMessage(
         }
     }
 
-    if (type === 'string' && message[0] === '{') {
+    // "noStateObjects": never unpack a JSON payload into an ioBroker state object, keep it as string
+    if (type === 'string' && payloadParsing === 'full' && message[0] === '{') {
         try {
             const stateObj: ioBroker.State = JSON.parse(message);
             if (stateObj.val !== undefined) {

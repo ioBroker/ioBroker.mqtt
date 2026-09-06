@@ -26,7 +26,9 @@ class MQTT extends Adapter {
     }
 
     onReady = async (): Promise<void> => {
-        this.config.maxTopicLength = this.config.maxTopicLength || 100;
+        this.config.maxTopicLength ||= 100;
+        // Existing installations have no value stored => keep the previous behavior
+        this.config.payloadParsing ||= 'full';
 
         if (this.config.doNotCreateClientObjects) {
             // delete all server connection information
@@ -60,7 +62,7 @@ class MQTT extends Adapter {
     };
 
     async main(): Promise<void> {
-        this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
+        this.config.forceCleanSession ||= 'no'; // default
 
         // Subscribe on own variables to publish it.
         // "doNotSubscribeOwnStates" (client mode) skips this so states that were created from

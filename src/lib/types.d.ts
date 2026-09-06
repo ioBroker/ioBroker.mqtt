@@ -2,6 +2,15 @@ export type MqttPattern = string;
 export type MqttTopic = string;
 export type MqttClientID = string;
 
+/**
+ * How incoming MQTT payloads are interpreted:
+ * - `full`           – (default) numbers/booleans are converted and a JSON payload that consists only of
+ *                      ioBroker state properties is taken over as an ioBroker state object
+ * - `noStateObjects` – numbers/booleans are still converted, but a JSON payload is always stored as string
+ * - `none`           – the payload is always stored as received (string)
+ */
+export type PayloadParsing = 'full' | 'noStateObjects' | 'none';
+
 export interface MqttAdapterConfig {
     type: 'client' | 'server';
     clientId: string;
@@ -51,6 +60,7 @@ export interface MqttAdapterConfig {
     binaryTopics: string;
     doNotCreateClientObjects: boolean;
     parseCharCodes: boolean;
+    payloadParsing: PayloadParsing;
     dotToUnderscore: boolean;
     doNotSubscribeOwnStates: boolean;
     noEchoInterval: number;

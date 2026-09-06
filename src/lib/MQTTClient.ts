@@ -818,7 +818,13 @@ export default class MQTTClient {
                     this.adapter.log.warn('"file" type is deprecated. Please use "mixed" or "string" instead.');
                     return;
                 }
-                const parsedMessage = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
+                const parsedMessage = convertMessage(
+                    topic,
+                    message,
+                    this.adapter,
+                    this.config.parseCharCodes,
+                    this.config.payloadParsing,
+                );
 
                 this.topic2id[topic].message = parsedMessage;
 
@@ -950,7 +956,13 @@ export default class MQTTClient {
                         `Client received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`,
                     );
                 }
-                this.topic2id[topic].message = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
+                this.topic2id[topic].message = convertMessage(
+                    topic,
+                    message,
+                    this.adapter,
+                    this.config.parseCharCodes,
+                    this.config.payloadParsing,
+                );
             } else {
                 if (!this.config.onchange) {
                     if (this.topic2id[topic].message) {
@@ -962,7 +974,13 @@ export default class MQTTClient {
                 }
 
                 let value: undefined | string | number | boolean | Record<string, any>;
-                const parsedMessage = convertMessage(topic, message, this.adapter, this.config.parseCharCodes);
+                const parsedMessage = convertMessage(
+                    topic,
+                    message,
+                    this.adapter,
+                    this.config.parseCharCodes,
+                    this.config.payloadParsing,
+                );
                 if (typeof parsedMessage.message === 'object') {
                     if (
                         !this.config.onchange ||

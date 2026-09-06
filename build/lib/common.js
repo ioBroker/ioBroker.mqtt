@@ -323,7 +323,7 @@ async function ensureObjectStructure(adapter, id, verifiedObjects) {
         verifiedObjects[idToCheck] = true;
     }
 }
-function convertMessage(topic, message, adapter, parseCharCodes, clientID) {
+function convertMessage(topic, message, adapter, parseCharCodes, payloadParsing = 'full', clientID) {
     let type = typeof message;
     if (type !== 'string' && type !== 'number' && type !== 'boolean') {
         message = message ? message.toString('utf8') : 'null';
@@ -351,6 +351,11 @@ function convertMessage(topic, message, adapter, parseCharCodes, clientID) {
             return { message: str, isStateObject: false };
         }
     }
+    // "none": take the payload over exactly as received. `parseCharCodes` is an independent
+    // option and is still applied above, because its result is a string too.
+    if (payloadParsing === 'none') {
+        return { message, isStateObject: false };
+    }
     if (type === 'string') {
         // Try to convert value
         const _val = message.replace(',', '.');
@@ -364,7 +369,8 @@ function convertMessage(topic, message, adapter, parseCharCodes, clientID) {
             return { message: false, isStateObject: false };
         }
     }
-    if (type === 'string' && message[0] === '{') {
+    // "noStateObjects": never unpack a JSON payload into an ioBroker state object, keep it as string
+    if (type === 'string' && payloadParsing === 'full' && message[0] === '{') {
         try {
             const stateObj = JSON.parse(message);
             if (stateObj.val !== undefined) {

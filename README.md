@@ -219,6 +219,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Added the option "Interpretation of the received payload": besides the previous behavior ("Full") a received message can now be stored without unpacking a JSON into an ioBroker state object ("Numbers and booleans only"), or completely unparsed as string ("None")
+
 ### 8.0.1 (2026-08-28)
 * (@GermanBluefox) The Blockly block is now built from TypeScript sources in `src-blockly/` into `admin/blockly.js`, with the translations in `src-blockly/i18n/`
 * (@GermanBluefox) Fixed: the Blockly block produced no code at all in newer Blockly editors. Since Blockly 10 a generator has to be registered in `Blockly.JavaScript.forBlock`, and the editor migrates its own generators there before it loads an adapter's block

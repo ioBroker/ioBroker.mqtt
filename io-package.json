@@ -384,6 +384,7 @@
     "binaryTopics": "",
     "doNotCreateClientObjects": false,
     "parseCharCodes": false,
+    "payloadParsing": "full",
     "dotToUnderscore": false,
     "doNotSubscribeOwnStates": false,
     "noEchoInterval": 2000

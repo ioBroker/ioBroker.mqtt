@@ -517,6 +517,32 @@
                     "lg": 4,
                     "xl": 4
                 },
+                "payloadParsing": {
+                    "newLine": true,
+                    "type": "select",
+                    "label": "Interpretation of the received payload",
+                    "tooltip": "Controls how strongly a received message is interpreted before it is written into the state.",
+                    "default": "full",
+                    "options": [
+                        {
+                            "value": "full",
+                            "label": "Full: numbers, booleans and ioBroker state objects"
+                        },
+                        {
+                            "value": "noStateObjects",
+                            "label": "Numbers and booleans only: JSON is always stored as string"
+                        },
+                        {
+                            "value": "none",
+                            "label": "None: payload is always stored as string"
+                        }
+                    ],
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "dotToUnderscore": {
                     "newLine": true,
                     "type": "checkbox",

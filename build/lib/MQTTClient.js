@@ -631,7 +631,7 @@ class MQTTClient {
                     this.adapter.log.warn('"file" type is deprecated. Please use "mixed" or "string" instead.');
                     return;
                 }
-                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
+                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
                 this.topic2id[topic].message = parsedMessage;
                 // Derive the datapoint type. For an ioBroker state object use the type of
                 // its `val` (a `val` of null is indeterminate → 'mixed'); a JSON string that
@@ -743,7 +743,7 @@ class MQTTClient {
                 if (this.config.debug) {
                     this.adapter.log.debug(`Client received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`);
                 }
-                this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
+                this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
             }
             else {
                 if (!this.config.onchange) {
@@ -755,7 +755,7 @@ class MQTTClient {
                     }
                 }
                 let value;
-                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
+                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
                 if (typeof parsedMessage.message === 'object') {
                     if (!this.config.onchange ||
                         JSON.stringify(this.topic2id[topic].message?.message) !== JSON.stringify(parsedMessage.message)) {

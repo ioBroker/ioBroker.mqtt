@@ -25,7 +25,9 @@ class MQTT extends adapter_core_1.Adapter {
         this.on('unload', this.onUnload);
     }
     onReady = async () => {
-        this.config.maxTopicLength = this.config.maxTopicLength || 100;
+        this.config.maxTopicLength ||= 100;
+        // Existing installations have no value stored => keep the previous behavior
+        this.config.payloadParsing ||= 'full';
         if (this.config.doNotCreateClientObjects) {
             // delete all server connection information
             const states = await this.getStatesAsync('info.clients.*');
@@ -55,7 +57,7 @@ class MQTT extends adapter_core_1.Adapter {
         await this.main();
     };
     async main() {
-        this.config.forceCleanSession = this.config.forceCleanSession || 'no'; // default
+        this.config.forceCleanSession ||= 'no'; // default
         // Subscribe on own variables to publish it.
         // "doNotSubscribeOwnStates" (client mode) skips this so states that were created from
         // received broker messages are not published back to the broker (loop protection, #414).

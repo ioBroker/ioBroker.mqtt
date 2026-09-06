@@ -69,6 +69,66 @@ describe('Test convert version', function () {
         });
     });
 
+    describe('payloadParsing', () => {
+        const stateJson = '{"val":0,"ack":true}';
+        const foreignJson = '{"event":"up","val":0}';
+
+        it('"full" (default) takes over a pure ioBroker state object', () => {
+            assert.deepStrictEqual(convertMessage('data', stateJson, adapter, false, 'full'), {
+                message: { val: 0, ack: true },
+                isStateObject: true,
+            });
+        });
+
+        it('"full" keeps a JSON with foreign attributes as string', () => {
+            assert.deepStrictEqual(convertMessage('data', foreignJson, adapter, false, 'full'), {
+                message: foreignJson,
+                isStateObject: false,
+            });
+        });
+
+        it('"noStateObjects" keeps even a pure state object as string', () => {
+            assert.deepStrictEqual(convertMessage('data', stateJson, adapter, false, 'noStateObjects'), {
+                message: stateJson,
+                isStateObject: false,
+            });
+        });
+
+        it('"noStateObjects" still converts numbers and booleans', () => {
+            assert.deepStrictEqual(convertMessage('data', '233.57', adapter, false, 'noStateObjects'), {
+                message: 233.57,
+                isStateObject: false,
+            });
+            assert.deepStrictEqual(convertMessage('data', 'true', adapter, false, 'noStateObjects'), {
+                message: true,
+                isStateObject: false,
+            });
+        });
+
+        it('"none" keeps numbers, booleans and JSON as string', () => {
+            for (const payload of ['233.57', 'true', 'false', stateJson, foreignJson]) {
+                assert.deepStrictEqual(convertMessage('data', payload, adapter, false, 'none'), {
+                    message: payload,
+                    isStateObject: false,
+                });
+            }
+        });
+
+        it('"none" still honours parseCharCodes, because its result is a string too', () => {
+            assert.deepStrictEqual(convertMessage('data', '72,101,108,108,111', adapter, true, 'none'), {
+                message: 'Hello',
+                isStateObject: false,
+            });
+        });
+
+        it('omitting the parameter behaves like "full"', () => {
+            assert.deepStrictEqual(convertMessage('data', stateJson, adapter, false), {
+                message: { val: 0, ack: true },
+                isStateObject: true,
+            });
+        });
+    });
+
     describe('convertTopic2id dotToUnderscore', () => {
         it('keeps dots as hierarchy separators when disabled (default)', () => {
             // Wolf heating (ism7mqtt) sends "HK1.Vorlauftemperatur" → dot creates an extra level

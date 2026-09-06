@@ -967,7 +967,7 @@ class MQTTServer {
         // still uses the raw `message`): an ioBroker state object yields the type of its
         // `val` (a `val` of null is indeterminate → 'mixed'), and a JSON string that is not
         // a valid ioBroker state object yields 'mixed'.
-        const parsedForType = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
+        const parsedForType = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
         let messageType = typeof parsedForType.message;
         let stateType = Array.isArray(parsedForType.message)
             ? 'array'
@@ -1173,7 +1173,7 @@ class MQTTServer {
                     throw new Error(`Object ${id} not exists`);
                 }
                 // only for type detection
-                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
+                const parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
                 let stateType;
                 if (parsedMessage.isStateObject) {
                     stateType = typeof parsedMessage.message.val;
@@ -1412,7 +1412,7 @@ class MQTTServer {
         }
         else if (this.topic2id[topic].processing) {
             // still looking for ID
-            this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes);
+            this.topic2id[topic].message = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
             if (this.config.debug) {
                 this.adapter.log.debug(`Client [${client.id}] Server received (but in process) "${topic}" (${typeof this.topic2id[topic].message?.message}): ${JSON.stringify(this.topic2id[topic].message)}`);
             }
@@ -1425,7 +1425,7 @@ class MQTTServer {
             delete this.topic2id[topic].message;
         }
         else if (this.topic2id[topic].obj) {
-            parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, client.id);
+            parsedMessage = (0, common_1.convertMessage)(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing, client.id);
         }
         if (qos) {
             Object.keys(this.persistentSessions).forEach(clientId => {
