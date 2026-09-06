@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "8.0.1",
+    "version": "8.1.0",
     "news": {
+      "8.1.0": {
+        "en": "Added the option \"Interpretation of the received payload\": besides the previous behavior (\"Full\") a received message can now be stored without unpacking a JSON into an ioBroker state object (\"Numbers and booleans only\"), or completely unparsed as string (\"None\")",
+        "de": "Option „Interpretation der empfangenen Nutzlast“ hinzugefügt: Neben dem vorherigen Verhalten („Full“) kann eine Nachricht nun ohne JSON-Entpacken in ein ioBroker-State-Objekt („Numbers and Booleans only“) oder als String („None“) gespeichert werden",
+        "ru": "Добавлена опция «Интерпретация полученной полезной нагрузки»: помимо предыдущего поведения («Full»), полученное сообщение теперь можно сохранить без распаковки JSON в объект состояния IOBroker («Только числа и логические переменные») или полностью без анализа в виде строки («Нет»)",
+        "pt": "Adicionada a opção “Interpretação da carga recebida”: além do comportamento anterior (“Full”), a mensagem recebida agora pode ser armazenada sem descompactar um JSON em um objeto de estado IOBroker (“Numbers and booleans only”) ou não ser analisada como string (“None”)",
+        "nl": "De optie „Interpretatie van de ontvangen payload” toegevoegd: naast het vorige gedrag („Volledig”) kan een ontvangen bericht nu worden opgeslagen zonder een JSON uit te pakken in een IOBroker-statusobject („Alleen voor getallen en booleans”), of volledig ongeparseerd als tekenreeks („Geen”)",
+        "fr": "Ajout de l'option « Interprétation de la charge utile reçue » : outre le comportement précédent (« Complet »), un message reçu peut désormais être stocké sans déballer de JSON dans un objet d'état IOBroker (« Chiffres et booléens uniquement »), ou complètement désanalysé sous forme de chaîne (« Aucun »)",
+        "it": "Aggiunta l'opzione «Interpretazione del payload ricevuto»: oltre al comportamento precedente («Completo»), ora può essere archiviato senza scomprimere un JSON in un oggetto di stato IOBroker («Solo numeri e booleani») o non analizzato come stringa («Nessuno»)",
+        "es": "Se ha añadido la opción «Interpretación de la carga útil recibida»: además del comportamiento anterior («Completo»), un mensaje recibido ahora puede almacenarse sin desempaquetar un JSON en un objeto de estado de IOBroker («Solo números y booleanos») o sin analizar como cadena («Ninguno»)",
+        "pl": "Dodano opcję „Interpretacja otrzymanego ładunku”: oprócz poprzedniego zachowania („Pełny”) odebrana wiadomość może być teraz przechowywana bez rozpakowywania JSON do obiektu stanu ioBroker („Tylko numery i booleany”) lub całkowicie rozparsowana jako ciąg znaków („Brak”)",
+        "uk": "Додана опція «Інтерпретація отриманого корисного навантаження»: крім попередньої поведінки («Повний») отримане повідомлення тепер може зберігатися без розпакування JSON у об'єкт стану IObroker («Тільки числа та булеві»), або повністю розпаруватися як рядок («None»)",
+        "zh-cn": "添加了 “解释收到的有效负载” 选项：除了先前的行为（“完整”），现在无需将JSON解压缩到IOBroker状态对象（“仅限数字和布尔值”），也可以完全不解析为字符串（“无”），也可以完全不解析为字符串（“无”）"
+      },
       "8.0.1": {
         "en": "The Blockly block is now built from TypeScript sources in `src-blockly/` into `admin/blockly.js`, with the translations in `src-blockly/i18n/`\nFixed: the Blockly block produced no code at all in newer Blockly editors. Since Blockly 10 a generator has to be registered in `Blockly.JavaScript.forBlock`, and the editor migrates its own generators there before it loads an adapter's block",
         "de": "Der Blockly-Block wird nun aus TypeScript-Quellen in `src-blockly/` in `admin/blockly.js` erstellt, wobei sich die Übersetzungen in `src-blockly/i18n/` befinden.\nBehoben: Der Blockly-Block erzeugte in neueren Blockly-Editoren überhaupt keinen Code. Seit Blockly 10 muss ein Generator in `Blockly.JavaScript.forBlock` registriert werden, und der Editor migriert seine eigenen Generatoren dorthin, bevor er den Block eines Adapters lädt.",
@@ -80,19 +93,6 @@
         "pl": "Dodano ustawienie „Tematy binarne” umożliwiające przechowywanie surowych ładunków binarnych (np. mapy Valetudo, obrazów z kamer) jako plików zamiast ich uszkadzania jako ciągów UTF-8 (#573)",
         "uk": "Додано налаштування «Бінкові теми» для зберігання необроблених бінарних корисних даних (наприклад, карти Valetudo, зображень з камери) у вигляді файлів, замість їх пошкодження як рядків UTF-8 (#573)",
         "zh-cn": "添加了“二进制主题”设置，用于将原始二进制有效载荷（例如 Valetudo 地图、相机图像）存储为文件，而不是将其损坏为 UTF-8 字符串（#573）"
-      },
-      "7.0.2": {
-        "en": "Added an optional \"Parse comma-separated numbers as character codes\" setting (disabled by default) to prevent garbled values from devices like NUKI locks\nMigrated the test suite to TypeScript",
-        "de": "Es wurde eine optionale Einstellung „Kommagetrennte Zahlen als Zeichencodes interpretieren“ hinzugefügt (standardmäßig deaktiviert), um fehlerhafte Werte von Geräten wie NUKI-Schlössern zu verhindern.\nDie Testsuite wurde nach TypeScript migriert.",
-        "ru": "Добавлена необязательная настройка «Преобразовывать числа, разделенные запятыми, в коды символов» (по умолчанию отключена) для предотвращения искажения значений на таких устройствах, как замки NUKI.\nПеревел набор тестов на TypeScript.",
-        "pt": "Adicionada uma configuração opcional \"Analisar números separados por vírgula como códigos de caracteres\" (desativada por padrão) para evitar valores corrompidos provenientes de dispositivos como as fechaduras NUKI.\nMigrei o conjunto de testes para TypeScript.",
-        "nl": "Er is een optionele instelling \"Door komma's gescheiden getallen parseren als tekenreeksen\" toegevoegd (standaard uitgeschakeld) om te voorkomen dat apparaten zoals NUKI-sloten vervormde waarden doorgeven.\nDe testsuite is gemigreerd naar TypeScript.",
-        "fr": "Ajout d'une option « Analyser les nombres séparés par des virgules comme des codes de caractères » (désactivée par défaut) afin d'éviter les valeurs erronées provenant de périphériques tels que les serrures NUKI.\nMigration de la suite de tests vers TypeScript",
-        "it": "È stata aggiunta un'impostazione opzionale \"Converti i numeri separati da virgole come codici carattere\" (disabilitata per impostazione predefinita) per evitare valori illeggibili da dispositivi come le serrature NUKI.\nMigrazione della suite di test a TypeScript",
-        "es": "Se agregó una configuración opcional \"Analizar números separados por comas como códigos de caracteres\" (deshabilitada por defecto) para evitar valores ilegibles provenientes de dispositivos como las cerraduras NUKI.\nSe migró el conjunto de pruebas a TypeScript.",
-        "pl": "Dodano opcjonalne ustawienie „Analizuj liczby rozdzielone przecinkami jako kody znaków” (domyślnie wyłączone), aby zapobiec zniekształcaniu wartości z urządzeń, takich jak zamki NUKI\nPrzeniesiono zestaw testów do TypeScript",
-        "uk": "Додано додатковий параметр «Розбирати числа, розділені комами, як коди символів» (за замовчуванням вимкнено), щоб запобігти спотворенню значень від пристроїв, таких як замки NUKI.\nПеренесено набір тестів на TypeScript",
-        "zh-cn": "新增了可选的“将逗号分隔的数字解析为字符代码”设置（默认禁用），以防止从 NUKI 锁等设备获取乱码值。\n将测试套件迁移到 TypeScript"
       }
     },
     "titleLang": {

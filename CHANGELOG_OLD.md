@@ -1,4 +1,7 @@
 # Older changes
+## 7.1.1 (2026-07-08)
+* (@Marc-Berg) Fixed: Publish only on change issue
+
 ## 7.1.0 (2026-07-03)
 * (@GermanBluefox) Added a "Binary topics" setting to store raw binary payloads (e.g. Valetudo map, camera images) as files instead of corrupting them as UTF-8 strings (#573)
 
