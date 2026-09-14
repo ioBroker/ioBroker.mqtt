@@ -13,7 +13,7 @@
     "Client ID:": "Client ID",
     "Client mode only: a value received from the broker is not published back within this time (in ms). This breaks endless loops when the same values are received and published again. Set to 0 to disable.": "Solo modalità client: un valore ricevuto dal broker non viene ripubblicato entro questo tempo (in ms). Ciò interrompe i cicli infiniti quando gli stessi valori vengono ricevuti e pubblicati nuovamente. Impostare su 0 per disabilitare.",
     "Client mode only: do not automatically subscribe to and publish this instance's own states (mqtt.<instance>.*). States that were created from received broker messages are then never published back, which prevents an endless loop.": "Solo modalità client: non sottoscrivere e pubblicare automaticamente gli stati di questa istanza (mqtt.<istanza>.*). Gli stati creati dai messaggi del broker ricevuti non verranno mai più pubblicati, il che impedisce un ciclo infinito.",
-    "Connection": "Connection",
+    "Connection": "Connessione",
     "Connection settings": "Connection settings",
     "Controls how strongly a received message is interpreted before it is written into the state.": "Definisce quanto un messaggio ricevuto viene interpretato prima di essere scritto nello stato.",
     "Convert comma-separated numbers like \"72,101,108,108,111\" to text like \"Hello\". Only values 0-255 are supported.": "Converti i numeri separati da virgole come \"72,101,108,108,111\" in testo come \"Ciao\". Sono supportati solo i valori da 0 a 255.",
@@ -80,6 +80,6 @@
     "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "Quando i WebSocket sono abilitati, sono in esecuzione due server MQTT, con la porta per i WebSocket incrementata di uno. Ad esempio, se la porta è impostata su 8883, il server con i WebSocket funziona sulla 8884, oppure se la porta è 1883 (senza SSL), con i WebSocket funziona sulla 1884.",
     "chars": "chars",
     "connected": "connected",
-    "ms": "ms",
+    "ms": "SM",
     "rejectUnauthorized": "Rifiuta server non autorizzati"
 }
