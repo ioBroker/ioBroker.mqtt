@@ -13,7 +13,7 @@
     "Client ID:": "Client ID",
     "Client mode only: a value received from the broker is not published back within this time (in ms). This breaks endless loops when the same values are received and published again. Set to 0 to disable.": "Alleen in clientmodus: een van de makelaar ontvangen waarde wordt niet binnen deze tijd (in ms) teruggepubliceerd. Dit verbreekt eindeloze lussen wanneer dezelfde waarden worden ontvangen en opnieuw worden gepubliceerd. Stel in op 0 om uit te schakelen.",
     "Client mode only: do not automatically subscribe to and publish this instance's own states (mqtt.<instance>.*). States that were created from received broker messages are then never published back, which prevents an endless loop.": "Alleen clientmodus: abonneer u niet automatisch op de eigen status van deze instantie (mqtt.<instance>.*) en publiceer deze niet automatisch. Statussen die zijn gemaakt op basis van ontvangen brokerberichten worden vervolgens nooit meer gepubliceerd, wat een eindeloze lus voorkomt.",
-    "Connection": "Connection",
+    "Connection": "Verbinding",
     "Connection settings": "Connection settings",
     "Controls how strongly a received message is interpreted before it is written into the state.": "Bepaalt hoe sterk een ontvangen bericht wordt geïnterpreteerd voordat het naar de state wordt geschreven.",
     "Convert comma-separated numbers like \"72,101,108,108,111\" to text like \"Hello\". Only values 0-255 are supported.": "Converteer door komma's gescheiden getallen zoals \"72,101,108,108,111\" naar tekst zoals \"Hallo\". Alleen waarden van 0 tot en met 255 worden ondersteund.",
@@ -80,6 +80,6 @@
     "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "Wanneer WebSockets zijn ingeschakeld, draaien er twee MQTT-servers, waarbij de poort voor WebSockets met één wordt verhoogd. Als de poort bijvoorbeeld is ingesteld op 8883, draait de server met WebSockets op 8884. Als de poort 1883 is (zonder SSL), draait de server met WebSockets op 1884.",
     "chars": "chars",
     "connected": "connected",
-    "ms": "ms",
+    "ms": "mevrouw",
     "rejectUnauthorized": "Ongeautoriseerde servers weigeren"
 }
