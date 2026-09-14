@@ -13,7 +13,7 @@
     "Client ID:": "Client ID",
     "Client mode only: a value received from the broker is not published back within this time (in ms). This breaks endless loops when the same values are received and published again. Set to 0 to disable.": "Apenas modo cliente: um valor recebido do corretor não é publicado dentro deste tempo (em ms). Isso quebra loops intermináveis ​​quando os mesmos valores são recebidos e publicados novamente. Defina como 0 para desativar.",
     "Client mode only: do not automatically subscribe to and publish this instance's own states (mqtt.<instance>.*). States that were created from received broker messages are then never published back, which prevents an endless loop.": "Somente modo cliente: não assine e publique automaticamente os próprios estados desta instância (mqtt.<instância>.*). Os estados que foram criados a partir de mensagens do intermediário recebidas nunca são publicados novamente, o que evita um loop infinito.",
-    "Connection": "Connection",
+    "Connection": "Conexão",
     "Connection settings": "Configurações de conexão",
     "Controls how strongly a received message is interpreted before it is written into the state.": "Define o quanto uma mensagem recebida é interpretada antes de ser escrita no estado.",
     "Convert comma-separated numbers like \"72,101,108,108,111\" to text like \"Hello\". Only values 0-255 are supported.": "Converta números separados por vírgula, como \"72,101,108,108,111\", em texto como \"Olá\". Somente valores de 0 a 255 são suportados.",
@@ -80,6 +80,6 @@
     "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with WebSockets it runs on 1884.": "Quando os WebSockets estão habilitados, dois servidores MQTT estão em execução, com a porta para WebSockets incrementada em um. Por exemplo, se a porta estiver definida como 8883, o servidor com WebSockets será executado em 8884, ou se a porta for 1883 (sem SSL), com WebSockets ele será executado em 1884.",
     "chars": "chars",
     "connected": "connected",
-    "ms": "ms",
+    "ms": "EM",
     "rejectUnauthorized": "Rejeitar servidores não autorizados"
 }
