@@ -47,7 +47,7 @@
     "@types/mocha": "^10.0.10",
     "blockly": "^13.2.1",
     "esbuild": "^0.28.2",
-    "globals": "^17.11.0",
+    "globals": "^17.12.0",
     "node.extend": "^2.0.3",
     "typescript": "^6.0.3"
   },
