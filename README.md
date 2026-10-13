@@ -219,6 +219,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
+
 ### 8.1.1 (2026-10-13)
 * (@GermanBluefox) Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process
 

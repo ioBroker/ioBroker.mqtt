@@ -4,15 +4,6 @@ import { tests } from '@iobroker/testing';
 import MqttServer from './lib/mqttServer';
 import MqttClient from './lib/mqttClient';
 
-// Helper function for encryption (same as in the legacy tests)
-function encrypt(key: string, value: string): string {
-    let result = '';
-    for (let i = 0; i < value.length; ++i) {
-        result += String.fromCharCode(key[i % key.length].charCodeAt(0) ^ value.charCodeAt(i));
-    }
-    return result;
-}
-
 /**
  * Topic → ID mapping rules, taken 1:1 from the legacy testClient / testServer suites.
  * They cover the leading slash, the own namespace, a topic without any level, whitespace
@@ -120,9 +111,6 @@ tests.integration(path.join(__dirname, '..'), {
 
                 const harness = getHarness();
 
-                // Get system config for secret
-                const systemConfig = await harness.objects.getObjectAsync('system.config');
-                const secret = systemConfig?.native?.secret || 'Zgfr56gFe87jJOM';
 
                 // Configure adapter as server
                 await harness.changeAdapterConfig('mqtt', {
@@ -131,7 +119,7 @@ tests.integration(path.join(__dirname, '..'), {
                         port: 11883,
                         bind: '127.0.0.1',
                         user: 'testuser',
-                        pass: encrypt(secret, 'testpass'),
+                        pass: 'testpass',
                         publish: '',
                         debug: false,
                         onchange: true,
@@ -199,9 +187,6 @@ tests.integration(path.join(__dirname, '..'), {
 
                 const harness = getHarness();
 
-                // Get system config for secret
-                const systemConfig = await harness.objects.getObjectAsync('system.config');
-                const secret = systemConfig?.native?.secret || 'Zgfr56gFe87jJOM';
 
                 // Configure adapter as client
                 await harness.changeAdapterConfig('mqtt', {
@@ -210,7 +195,7 @@ tests.integration(path.join(__dirname, '..'), {
                         url: '127.0.0.1',
                         port: 11884,
                         user: 'testuser',
-                        pass: encrypt(secret, 'testpass'),
+                        pass: 'testpass',
                         publish: '',
                         debug: false,
                         onchange: true,
@@ -254,8 +239,6 @@ tests.integration(path.join(__dirname, '..'), {
                 this.timeout(90000);
 
                 const harness = getHarness();
-                const systemConfig = await harness.objects.getObjectAsync('system.config');
-                const secret = systemConfig?.native?.secret || 'Zgfr56gFe87jJOM';
 
                 // A foreign state the adapter has to write into instead of creating one of its own
                 await harness.objects.setObjectAsync('testAdapter.0.testChannel.testState', {
@@ -270,7 +253,7 @@ tests.integration(path.join(__dirname, '..'), {
                         port: PORT,
                         bind: '127.0.0.1',
                         user: USER,
-                        pass: encrypt(secret, PASS),
+                        pass: PASS,
                         publish: 'mqtt.0.*',
                         debug: false,
                         onchange: false,
@@ -415,8 +398,6 @@ tests.integration(path.join(__dirname, '..'), {
                 this.timeout(90000);
 
                 const harness = getHarness();
-                const systemConfig = await harness.objects.getObjectAsync('system.config');
-                const secret = systemConfig?.native?.secret || 'Zgfr56gFe87jJOM';
 
                 await harness.objects.setObjectAsync('testAdapter.0.testChannel.testState', {
                     type: 'state',
@@ -437,7 +418,7 @@ tests.integration(path.join(__dirname, '..'), {
                         url: '127.0.0.1',
                         port: PORT,
                         user: USER,
-                        pass: encrypt(secret, PASS),
+                        pass: PASS,
                         publish: 'mqtt.0.*',
                         patterns: '#',
                         debug: false,
