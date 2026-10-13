@@ -3196,17 +3196,13 @@ export default class MQTTServer {
             this.server = this.config.ssl ? createTlsServer(this.config.certificates!) : createNetServer();
         } catch (err) {
             this.adapter.log.error(`Cannot create server: ${err as Error}`);
-            this.adapter.terminate
-                ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+            this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
             return;
         }
 
         this.server.on('error', (err: Error): void => {
             this.adapter.log.error(`Cannot create server: ${err}`);
-            this.adapter.terminate
-                ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+            this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
         });
 
         try {
@@ -3214,9 +3210,7 @@ export default class MQTTServer {
             this.startServer(this.server, null, this.config.port, this.config.bind, this.config.ssl, false);
         } catch (err) {
             this.adapter.log.error(`Cannot create server: ${err as Error}`);
-            this.adapter.terminate
-                ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+            this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
             return;
         }
         if (this.config.webSocket) {
@@ -3235,9 +3229,7 @@ export default class MQTTServer {
                 );
             } catch (err) {
                 this.adapter.log.error(`Cannot create server: ${err as Error}`);
-                this.adapter.terminate
-                    ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                    : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+                this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
                 return;
             }
         }

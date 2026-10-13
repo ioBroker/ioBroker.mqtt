@@ -81,5 +81,18 @@
     "chars": "字符",
     "connected": "连接的",
     "ms": "多发性硬化症",
-    "rejectUnauthorized": "拒绝未经授权的服务器"
+    "rejectUnauthorized": "拒绝未经授权的服务器",
+    "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.": "启用 WebSockets 后，会运行两个 MQTT 服务器，WebSockets 的端口加一。例如，端口设置为 8883 时，带 WebSockets 的服务器运行在 8884；端口为 1883（无 SSL）时，带 WebSockets 的服务器运行在 1884。",
+    "/path/to/root-ca.pem": "/path/to/root-ca.pem",
+    "Client settings": "客户端设置",
+    "Server settings": "服务器设置",
+    "MQTT version": "MQTT 版本",
+    "Protocol version used to connect to the broker. MQTT 5.0 adds reason codes, session and message expiry and topic aliases. If the broker rejects it, the adapter falls back to MQTT 3.1.1.": "连接代理时使用的协议版本。MQTT 5.0 增加了原因码、会话和消息过期以及主题别名。如果代理拒绝，适配器将回退到 MQTT 3.1.1。",
+    "MQTT 3.1.1 (default)": "MQTT 3.1.1（默认）",
+    "MQTT 5.0": "MQTT 5.0",
+    "MQTT 3.1": "MQTT 3.1",
+    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "接收时将忽略这些主题（以逗号分隔，例如 'mqtt.0.*,javascript.*'）",
+    "Binary topics (stored as files):": "二进制主题（存储为文件）：",
+    "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "这些主题的负载将作为文件存储在文件存储中，而不是状态中。状态中保存文件的 URL。允许使用通配符（以逗号分隔，例如 'valetudo/+/map,zigbee.*.image'）",
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "这些状态将被发布。（以逗号分隔，例如 'mqtt.0.*,javascript.*'）"
 }

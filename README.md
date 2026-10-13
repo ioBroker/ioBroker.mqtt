@@ -219,6 +219,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process
+
 ### 8.1.0 (2026-09-06)
 * (@GermanBluefox) Added the option "Interpretation of the received payload": besides the previous behavior ("Full") a received message can now be stored without unpacking a JSON into an ioBroker state object ("Numbers and booleans only"), or completely unparsed as string ("None")
 

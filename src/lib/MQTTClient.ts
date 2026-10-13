@@ -590,7 +590,7 @@ export default class MQTTClient {
             this.client = connect(_url, opts);
         } catch (err) {
             this.adapter.log.error(`Can not connect to mqtt server: ${err as Error}`);
-            typeof this.adapter.terminate === 'function' ? this.adapter.terminate(11) : process.exit(11);
+            this.adapter.terminate(11);
             return;
         }
 

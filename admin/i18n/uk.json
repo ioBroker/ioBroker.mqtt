@@ -81,5 +81,18 @@
     "chars": "символи",
     "connected": "підключений",
     "ms": "РС",
-    "rejectUnauthorized": "Відхиляти неавторизовані сервери"
+    "rejectUnauthorized": "Відхиляти неавторизовані сервери",
+    "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.": "Коли WebSockets увімкнено, працюють два MQTT-сервери, причому порт для WebSockets на одиницю більший. Наприклад, якщо задано порт 8883, сервер з WebSockets працює на 8884, а якщо порт 1883 (без SSL), то з WebSockets він працює на 1884.",
+    "/path/to/root-ca.pem": "/path/to/root-ca.pem",
+    "Client settings": "Налаштування клієнта",
+    "Server settings": "Налаштування сервера",
+    "MQTT version": "Версія MQTT",
+    "Protocol version used to connect to the broker. MQTT 5.0 adds reason codes, session and message expiry and topic aliases. If the broker rejects it, the adapter falls back to MQTT 3.1.1.": "Версія протоколу для підключення до брокера. MQTT 5.0 додає коди причин, термін дії сесій і повідомлень, а також псевдоніми топіків. Якщо брокер її відхиляє, адаптер переходить на MQTT 3.1.1.",
+    "MQTT 3.1.1 (default)": "MQTT 3.1.1 (за замовчуванням)",
+    "MQTT 5.0": "MQTT 5.0",
+    "MQTT 3.1": "MQTT 3.1",
+    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці топіки ігноруються під час отримання (через кому, наприклад 'mqtt.0.*,javascript.*')",
+    "Binary topics (stored as files):": "Двійкові топіки (зберігаються як файли):",
+    "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Дані цих топіків зберігаються як файли у файловому сховищі замість станів. Стан містить URL файлу. Дозволені символи підстановки (через кому, наприклад 'valetudo/+/map,zigbee.*.image')",
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці стани будуть опубліковані. (Через кому, наприклад 'mqtt.0.*,javascript.*')"
 }

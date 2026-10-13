@@ -2404,16 +2404,12 @@ class MQTTServer {
         }
         catch (err) {
             this.adapter.log.error(`Cannot create server: ${err}`);
-            this.adapter.terminate
-                ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+            this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
             return;
         }
         this.server.on('error', (err) => {
             this.adapter.log.error(`Cannot create server: ${err}`);
-            this.adapter.terminate
-                ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+            this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
         });
         try {
             this.adapter.log.debug(`The MQTT server is starting now...`);
@@ -2421,9 +2417,7 @@ class MQTTServer {
         }
         catch (err) {
             this.adapter.log.error(`Cannot create server: ${err}`);
-            this.adapter.terminate
-                ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+            this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
             return;
         }
         if (this.config.webSocket) {
@@ -2435,9 +2429,7 @@ class MQTTServer {
             }
             catch (err) {
                 this.adapter.log.error(`Cannot create server: ${err}`);
-                this.adapter.terminate
-                    ? this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION)
-                    : process.exit(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
+                this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
                 return;
             }
         }

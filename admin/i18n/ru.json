@@ -81,5 +81,18 @@
     "chars": "символов",
     "connected": "успешно",
     "ms": "РС",
-    "rejectUnauthorized": "Отклонить неавторизованные серверы"
+    "rejectUnauthorized": "Отклонить неавторизованные серверы",
+    "When WebSockets are enabled, two MQTT server are running, with the port for WebSockets incremented by one. For example, if the port is set to 8883, then the server with WebSockets runs on 8884, or if the port is 1883 (without SSL), then with Websockets it runs on 1884.": "Если WebSockets включены, работают два MQTT-сервера, причём порт для WebSockets на единицу больше. Например, если задан порт 8883, сервер с WebSockets работает на 8884, а если порт 1883 (без SSL), то с WebSockets он работает на 1884.",
+    "/path/to/root-ca.pem": "/path/to/root-ca.pem",
+    "Client settings": "Настройки клиента",
+    "Server settings": "Настройки сервера",
+    "MQTT version": "Версия MQTT",
+    "Protocol version used to connect to the broker. MQTT 5.0 adds reason codes, session and message expiry and topic aliases. If the broker rejects it, the adapter falls back to MQTT 3.1.1.": "Версия протокола для подключения к брокеру. MQTT 5.0 добавляет коды причин, срок действия сессий и сообщений, а также псевдонимы топиков. Если брокер её отклоняет, адаптер переключается на MQTT 3.1.1.",
+    "MQTT 3.1.1 (default)": "MQTT 3.1.1 (по умолчанию)",
+    "MQTT 5.0": "MQTT 5.0",
+    "MQTT 3.1": "MQTT 3.1",
+    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти топики игнорируются при получении (через запятую, например 'mqtt.0.*,javascript.*')",
+    "Binary topics (stored as files):": "Двоичные топики (сохраняются как файлы):",
+    "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Данные этих топиков сохраняются как файлы в файловом хранилище, а не в состояниях. Состояние содержит URL файла. Допускаются подстановочные знаки (через запятую, например 'valetudo/+/map,zigbee.*.image')",
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти состояния будут опубликованы. (Через запятую, например 'mqtt.0.*,javascript.*')"
 }
