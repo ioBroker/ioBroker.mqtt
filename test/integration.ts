@@ -111,7 +111,6 @@ tests.integration(path.join(__dirname, '..'), {
 
                 const harness = getHarness();
 
-
                 // Configure adapter as server
                 await harness.changeAdapterConfig('mqtt', {
                     native: {
@@ -186,7 +185,6 @@ tests.integration(path.join(__dirname, '..'), {
                 this.timeout(40000);
 
                 const harness = getHarness();
-
 
                 // Configure adapter as client
                 await harness.changeAdapterConfig('mqtt', {
