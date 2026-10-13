@@ -219,7 +219,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.1.2 (2026-10-13)
 * (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
 
 ### 8.1.1 (2026-10-13)
@@ -238,10 +238,6 @@ Note: If you have some client that connects and disconnects very often, the list
 * (@GermanBluefox) Added MQTT 5 enhanced authentication with SCRAM-SHA-256 (RFC 7677) in server mode. The password is no longer sent over the connection; both sides prove that they know it. It uses the configured user name and password, needs no configuration and does not change anything for clients that log in the usual way
 * (@GermanBluefox) Fixed: a rejected login could lose its CONNACK, because the socket was torn down before the answer had left it. The client saw a closed connection instead of the reason
 * (@GermanBluefox) Replaced the unmaintained `mqtt-connection` package with an own connection layer on `mqtt-packet`, which removes a second, outdated copy of `mqtt-packet` from the dependency tree
-
-### 7.1.3 (2026-08-28)
-* (@Tarvion) Fixed: a value received for a topic that was published from a state ID containing "#", "+" or a space (e.g. the Shelly IDs like `shelly.0.SHCB-1#3494546B9BEC#1`) is now written back to that state instead of creating a new state in the adapter's own namespace
-* (@GermanBluefox) Fixed: the resolution above now also corrects an instance that already carries the wrongly created `mqtt.<n>.*` state from an earlier version. Such a state was published at the start and claimed the topic before any message arrived. It is logged once as a leftover and can be deleted
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

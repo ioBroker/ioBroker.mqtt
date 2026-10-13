@@ -1,4 +1,8 @@
 # Older changes
+## 7.1.3 (2026-08-28)
+* (@Tarvion) Fixed: a value received for a topic that was published from a state ID containing "#", "+" or a space (e.g. the Shelly IDs like `shelly.0.SHCB-1#3494546B9BEC#1`) is now written back to that state instead of creating a new state in the adapter's own namespace
+* (@GermanBluefox) Fixed: the resolution above now also corrects an instance that already carries the wrongly created `mqtt.<n>.*` state from an earlier version. Such a state was published at the start and claimed the topic before any message arrived. It is logged once as a leftover and can be deleted
+
 ## 7.1.2 (2026-07-26)
 * (@GermanBluefox) Added a "Replace dots in topic names with underscore" setting to keep MQTT topics that contain dots (e.g. Wolf heating via ism7mqtt) as a single object level (#413)
 * (@GermanBluefox) Client mode: added loop protection so a value just received from the broker is not published straight back, plus a new "Do not subscribe to own states" option (#414)

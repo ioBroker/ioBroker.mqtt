@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "8.1.1",
+    "version": "8.1.2",
     "news": {
+      "8.1.2": {
+        "en": "Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself",
+        "de": "Adaptierte die Integrationstests an @iobroker /testing 6, das das Passwort verschlüsselt",
+        "ru": "Адаптировал интеграционные тесты к @iobroker /testing 6, который шифрует сам пароль",
+        "pt": "Adaptou os testes de integração ao @iobroker /testing 6, que criptografa a senha",
+        "nl": "De integratietests aangepast naar @iobroker /testing 6, waarbij het wachtwoord zelf wordt versleuteld",
+        "fr": "A adapté les tests d'intégration à @iobroker /testing 6, qui crypte le mot de passe lui-même",
+        "it": "Adattato i test di integrazione a @iobroker /testing 6, che cripta la password",
+        "es": "Adaptó las pruebas de integración a @iobroker /testing 6, que cifra la propia contraseña",
+        "pl": "Dostosowano testy integracyjne do @iobroker /testing 6, który szyfruje samo hasło",
+        "uk": "Адаптував тести інтеграції до @iobroker /testing 6, який шифрує сам пароль",
+        "zh-cn": "将集成测试改编为 @iobroker /testing 6，它会加密密码本身"
+      },
       "8.1.1": {
         "en": "Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process",
         "de": "Admin 7.6.20+ ist nötig. Fehlende Übersetzungen. Der Kompaktmodus beendet nicht mehr den Host-Prozess",
@@ -80,19 +93,6 @@
         "pl": "Dodano ustawienie \"Zamień kropki w nazwach tematów z podkreśleniem\", aby zachować tematy MQTT zawierające kropki (np. ogrzewanie Wolf poprzez ism7mqtt) jako pojedynczy poziom obiektu (# 413)\nTryb klienta: dodana ochrona pętli, więc wartość właśnie otrzymana od brokera nie jest publikowana z powrotem, plus nowa opcja \"Nie subskrybuj własnych stanów\" (# 414)",
         "uk": "Додано \"Замінити точки в темних іменах з підставкою\" для збереження тем MQTT, які містять точки (наприклад, нагрів через ism7mqtt) як єдиний рівень об'єкта (#413)\nРежим роботи клієнта: додана петля захисту так, що значення тільки отримана від брокера не видається прямо назад, плюс новий варіант \"Не підписатися на власні держави\" (#414)",
         "zh-cn": "添加了“ 重置主题名称中的点并加下划线” 设置, 以保留包含点的 MQTT 主题( 例如 Wolf 通过ism7mqtt) 作为单一对象级别( # 413) \n客户端模式: 添加了循环保护, 所以刚刚从经纪人收到的一个值不会直接回放, 加上一个新的“ 不要订阅到自己的状态 ” (# 414) 选项"
-      },
-      "7.1.1": {
-        "en": "Fixed: Publish only on change issue",
-        "de": "Behoben: Problem „Nur bei Änderung veröffentlichen“",
-        "ru": "Исправлено: Публиковать только изменения в запросе на внесение исправлений.",
-        "pt": "Corrigido: Publicar somente em caso de alteração",
-        "nl": "Opgelost: Publiceer alleen bij wijziging",
-        "fr": "Corrigé : Publication uniquement en cas de modification.",
-        "it": "Risolto: problema di pubblicazione solo in caso di modifiche",
-        "es": "Solucionado: Publicar solo al cambiar el problema",
-        "pl": "Naprawiono: Publikuj tylko w przypadku zmiany",
-        "uk": "Виправлено: Публікація лише після зміни проблеми",
-        "zh-cn": "已修复：仅在更改时发布的问题"
       }
     },
     "titleLang": {
