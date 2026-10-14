@@ -139,6 +139,7 @@
     "compact": true,
     "blockly": true,
     "messagebox": true,
+    "declareUsedResources": true,
     "readme": "https://github.com/ioBroker/ioBroker.mqtt/blob/master/README.md",
     "loglevel": "info",
     "icon": "mqtt.svg",

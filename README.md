@@ -219,6 +219,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@GermanBluefox) In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)
+
 ### 8.1.2 (2026-10-13)
 * (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
 

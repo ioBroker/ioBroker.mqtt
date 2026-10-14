@@ -2277,6 +2277,7 @@ class MQTTServer {
             .listen(port, bind, () => {
             this.adapter.log.info(`Starting MQTT${ws ? '-WebSocket' : ''}${ssl ? ' (Secure)' : ''}${this.config.user ? ' authenticated' : ''} server on ${bind || '0.0.0.0'}:${port}`);
             this.adapter.log.debug(`The MQTT server${ws ? ' (WebSocket)' : ''} has successfully started!`);
+            void this.registerUsedPort(port);
         })
             .on('error', (err) => this.adapter.log.error(`Error starting MQTT (Setting up listener)${ws ? '-WebSocket' : ''}${ssl ? ' (Secure)' : ''}${this.config.user ? ' authenticated' : ''} server on ${bind || '0.0.0.0'}:${port}: ${err}`));
     }
@@ -2411,9 +2412,65 @@ class MQTTServer {
             this.adapter.log.error(`Cannot create server: ${err}`);
             this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
         });
+        // Ask js-controller (>= 8) first whether another instance holds one of our ports, so a
+        // failing listen can name it. Older controllers have no registry: listen right away.
+        if (this.resourceRegistry()?.checkUsedResource) {
+            void this.warnAboutUsedPorts().then(() => this.server && this.startListeners());
+        }
+        else {
+            this.startListeners();
+        }
+        this.resendTimer = setInterval(() => !this.resending && this.checkResends(), this.config.retransmitInterval || 2000);
+    }
+    /** The ports this server listens on: MQTT and, if enabled, MQTT over WebSocket on the next one */
+    usedPorts() {
+        const port = this.config.port; // normalized in init()
+        return this.config.webSocket ? [port, port + 1] : [port];
+    }
+    /** The exclusive-resource API of js-controller 8, or null if the controller does not have it */
+    resourceRegistry() {
+        const registry = this.adapter;
+        return typeof registry.registerUsedResource === 'function' ? registry : null;
+    }
+    /** Address for the registry entries; an unset or wildcard bind is the registry's default anyway */
+    usedBind() {
+        return this.config.bind && this.config.bind !== '0.0.0.0' ? this.config.bind : undefined;
+    }
+    async warnAboutUsedPorts() {
+        const registry = this.resourceRegistry();
+        if (!registry?.checkUsedResource) {
+            return;
+        }
+        for (const port of this.usedPorts()) {
+            try {
+                const holders = await registry.checkUsedResource('tcpPort', { port, bind: this.usedBind() });
+                if (holders.length) {
+                    this.adapter.log.warn(`Port ${port} is already used by ${holders.map(h => h.instance).join(', ')}. The MQTT server will probably not start.`);
+                }
+            }
+            catch (err) {
+                this.adapter.log.debug(`Cannot check if port ${port} is free: ${err.message}`);
+            }
+        }
+    }
+    /** Reports a port this server listens on to js-controller (>= 8), so it shows up as occupied */
+    async registerUsedPort(port) {
+        const registry = this.resourceRegistry();
+        if (!registry) {
+            return;
+        }
+        try {
+            await registry.registerUsedResource('tcpPort', { port, bind: this.usedBind() });
+        }
+        catch (err) {
+            this.adapter.log.warn(`Cannot register port ${port} as used: ${err.message}`);
+        }
+    }
+    startListeners() {
+        const port = this.config.port; // normalized in init()
         try {
             this.adapter.log.debug(`The MQTT server is starting now...`);
-            this.startServer(this.server, null, this.config.port, this.config.bind, this.config.ssl, false);
+            this.startServer(this.server, null, port, this.config.bind, this.config.ssl, false);
         }
         catch (err) {
             this.adapter.log.error(`Cannot create server: ${err}`);
@@ -2425,15 +2482,13 @@ class MQTTServer {
             this.serverWs = new ws_1.Server({ server: this.serverForWs });
             try {
                 this.adapter.log.debug(`The MQTT server (Websocket) is starting now...`);
-                this.startServer(this.serverWs, this.serverForWs, this.config.port + 1, this.config.bind, this.config.ssl, true);
+                this.startServer(this.serverWs, this.serverForWs, port + 1, this.config.bind, this.config.ssl, true);
             }
             catch (err) {
                 this.adapter.log.error(`Cannot create server: ${err}`);
                 this.adapter.terminate(EXIT_CODES.ADAPTER_REQUESTED_TERMINATION);
-                return;
             }
         }
-        this.resendTimer = setInterval(() => !this.resending && this.checkResends(), this.config.retransmitInterval || 2000);
     }
 }
 exports.default = MQTTServer;
