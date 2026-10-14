@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "mqtt",
-    "version": "8.1.2",
+    "version": "8.1.3",
     "news": {
+      "8.1.3": {
+        "en": "In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)",
+        "de": "Im Servermodus werden belegte TCP-Ports an js-controller 8 gemeldet (`registerUsedResource`)",
+        "ru": "В серверном режиме о занятых портах TCP сообщается js-controller 8 (`RegisterUsedResource`)",
+        "pt": "No modo servidor, as portas TCP ocupadas são relatadas ao js-controller 8",
+        "nl": "In servermodus worden de bezette TCP-poorten gerapporteerd aan js-controller 8 (`RegisterUsedResource`)",
+        "fr": "En mode serveur, les ports TCP occupés sont signalés à js-controller 8 (`RegisterUsedResource`)",
+        "it": "In modalità server le porte TCP occupate sono segnalate a js-controller 8",
+        "es": "En modo servidor, los puertos TCP ocupados se envían a js-controller 8 (`RegisterUsedResource`)",
+        "pl": "W trybie serwera zajęte porty TCP są zgłaszane do js-controller 8 (`RegisterUsedResource`)",
+        "uk": "У серверному режимі про зайняті порти TCP повідомляються js-контролеру 8 (`RegisterUsedResource`)",
+        "zh-cn": "在服务器模式下，占用的 TCP 端口将报告给 js-controller 8 (`registerUsedResource`)"
+      },
       "8.1.2": {
         "en": "Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself",
         "de": "Adaptierte die Integrationstests an @iobroker /testing 6, das das Passwort verschlüsselt",
@@ -80,19 +93,6 @@
         "pl": "Naprawiono: wartość otrzymana dla tematu opublikowanego z identyfikatora stanu zawierającego znak „#”, „+” lub spację (np. identyfikatory Shelly, takie jak „shelly.0.SHCB-1#3494546B9BEC#1”) jest teraz zapisywana z powrotem do tego stanu zamiast tworzyć nowy stan w przestrzeni nazw adaptera\nNaprawiono: powyższe rozwiązanie koryguje teraz również instancję, która zawiera już błędnie utworzony stan `mqtt.<n>.*` z wcześniejszej wersji. Taki stan został opublikowany na początku i zajął temat przed nadejściem jakiejkolwiek wiadomości. Jest on rejestrowany jednorazowo jako pozostałość i można go usunąć.",
         "uk": "Виправлено: значення, отримане для теми, опублікованої з ідентифікатора стану, що містить \"#\", \"+\" або пробіл (наприклад, ідентифікатори Shelly, такі як `shelly.0.SHCB-1#3494546B9BEC#1`), тепер записується назад до цього стану, а не створюється новий стан у власному просторі імен адаптера.\nВиправлено: вищезгадане рішення тепер також виправляє екземпляр, який вже містить помилково створений стан `mqtt.<n>.*` з попередньої версії. Такий стан був опублікований на початку та зайняв тему до надходження будь-якого повідомлення. Він реєструється один раз як залишок і може бути видалений.",
         "zh-cn": "已修复：现在，对于从包含“#”、“+”或空格的状态 ID（例如 Shelly ID，如 `shelly.0.SHCB-1#3494546B9BEC#1`）发布的主题所接收到的值，会写回该状态，而不是在适配器自身的命名空间中创建新状态。\n已修复：上述解决方案现在也修正了之前版本中错误创建的 `mqtt.<n>.*` 状态。该状态在启动时发布，并在任何消息到达之前就占用了主题。它会作为残留状态记录一次，可以删除。"
-      },
-      "7.1.2": {
-        "en": "Added a \"Replace dots in topic names with underscore\" setting to keep MQTT topics that contain dots (e.g. Wolf heating via ism7mqtt) as a single object level (#413)\nClient mode: added loop protection so a value just received from the broker is not published straight back, plus a new \"Do not subscribe to own states\" option (#414)",
-        "de": "Hinzufügen einer Einstellung \"Punkte in Themennamen durch Unterstriche ersetzen\", um MQTT-Themen, die Punkte enthalten (z. B. Wolf-Heizung über ism7mqtt) als einzelne Objektebene beizubehalten (#413)\nClient-Modus: zusätzlicher Schleifenschutz, so dass ein gerade vom Broker erhaltener Wert nicht direkt zurück veröffentlicht wird, sowie eine neue Option \"Nicht abonnieren Sie eigene Staaten\" (#414)",
-        "ru": "Добавлена настройка «Заменить точки в названиях тем с подчеркиванием», чтобы сохранить темы MQTT, которые содержат точки (например, нагревание волка через ism7mqtt) в качестве одного уровня объекта (#413)\nРежим клиента: дополнительная защита цикла, поэтому значение, только что полученное от брокера, не публикуется сразу же, плюс новый вариант «Не подписывайтесь на собственные государства» (#414)",
-        "pt": "Adicionado uma configuração \"Substituir pontos em nomes de tópicos com sublinhado\" para manter tópicos MQTT que contêm pontos (por exemplo, aquecimento de lobo via ism7mqtt) como um único nível de objeto (#413)\nModo cliente: proteção de loop adicionada para que um valor recebido da corretora não seja publicado diretamente para trás, além de uma nova opção \"Não se subscreva a estados próprios\" (#414)",
-        "nl": "Toegevoegd een \"Vervangen punten in topic namen met underscore\" instelling te houden MQTT onderwerpen die punten bevatten (bijv. Wolf verwarming via ism7mqtt) als een enkel object niveau (#413)\nClient mode: toegevoegde lus bescherming zodat een waarde die net ontvangen van de makelaar niet direct wordt gepubliceerd, plus een nieuwe \"Niet abonneren op eigen staten\" optie (#414)",
-        "fr": "Ajout d'un paramètre \"Remplacer les points dans les noms de sujets avec le soulignement\" pour garder les sujets MQTT qui contiennent des points (p. ex. le chauffage du loup via ism7mqtt) comme un seul niveau d'objet (#413)\nMode client: protection de boucle ajoutée de sorte qu'une valeur qui vient d'être reçue du courtier n'est pas publiée directement, plus une nouvelle option \"Ne pas s'abonner à ses propres états\" (#414)",
-        "it": "Aggiunto un \"Sostituisci punti in nomi di argomento con underscore\" impostazione per mantenere gli argomenti MQTT che contengono punti (ad esempio il riscaldamento Wolf via ism7mqtt) come un unico livello di oggetto (#413)\nModalità client: aggiunta protezione loop in modo che un valore appena ricevuto dal broker non venga pubblicato direttamente indietro, più una nuova opzione \"Non iscriversi ai propri stati\" (#414)",
-        "es": "Agregó un ajuste \"Reemplazar puntos en nombres de temas con subrayado\" para mantener los temas MQTT que contienen puntos (por ejemplo, la calefacción por lobo a través de ism7mqtt) como un solo nivel de objeto (#413)\nModo de cliente: protección de bucle añadido para que un valor que acaba de recibir del corredor no se publique directamente atrás, más una nueva opción \"No suscribirse a estados propios\" (#414)",
-        "pl": "Dodano ustawienie \"Zamień kropki w nazwach tematów z podkreśleniem\", aby zachować tematy MQTT zawierające kropki (np. ogrzewanie Wolf poprzez ism7mqtt) jako pojedynczy poziom obiektu (# 413)\nTryb klienta: dodana ochrona pętli, więc wartość właśnie otrzymana od brokera nie jest publikowana z powrotem, plus nowa opcja \"Nie subskrybuj własnych stanów\" (# 414)",
-        "uk": "Додано \"Замінити точки в темних іменах з підставкою\" для збереження тем MQTT, які містять точки (наприклад, нагрів через ism7mqtt) як єдиний рівень об'єкта (#413)\nРежим роботи клієнта: додана петля захисту так, що значення тільки отримана від брокера не видається прямо назад, плюс новий варіант \"Не підписатися на власні держави\" (#414)",
-        "zh-cn": "添加了“ 重置主题名称中的点并加下划线” 设置, 以保留包含点的 MQTT 主题( 例如 Wolf 通过ism7mqtt) 作为单一对象级别( # 413) \n客户端模式: 添加了循环保护, 所以刚刚从经纪人收到的一个值不会直接回放, 加上一个新的“ 不要订阅到自己的状态 ” (# 414) 选项"
       }
     },
     "titleLang": {
