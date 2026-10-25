@@ -219,6 +219,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
+
 ### 8.1.3 (2026-10-14)
 * (@GermanBluefox) In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)
 
