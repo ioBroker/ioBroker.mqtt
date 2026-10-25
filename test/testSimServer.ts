@@ -1990,3 +1990,58 @@ describe('MQTT server: enhanced authentication', function () {
         setTimeout(() => finish(new Error('no CONNACK')), 8000);
     });
 });
+
+// Every QoS 1/2 PUBLISH the broker sends must carry its own packet identifier (MQTT-2.3.1-2).
+// Before, all messages got the same ID, so PUBACKs could not be matched and unacknowledged
+// messages piled up and were retransmitted endlessly.
+describe('MQTT server: packet identifiers', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    before('MQTT server (packet ids): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 1, onchange: true });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (packet ids): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('uses a new packet identifier for every QoS 1 message and clears the queue on PUBACK', async () => {
+        const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            protocolVersion: 4,
+            clientId: 'packetIds',
+            clean: true,
+            reconnectPeriod: 0,
+        });
+        const ids: number[] = [];
+        client.on('packetreceive', (packet: any) => packet.cmd === 'publish' && ids.push(packet.messageId));
+        await new Promise<void>(resolve => client.on('connect', () => resolve()));
+        await new Promise<void>(resolve => client.subscribe('pid/#', { qos: 1 }, () => resolve()));
+
+        for (let i = 0; i < 5; i++) {
+            const id = `mqtt.0.pid.v${i}`;
+            await adapter.setForeignObjectAsync(id, {
+                _id: id,
+                type: 'state',
+                common: { name: id, type: 'number', role: 'value', read: true, write: true },
+                native: { topic: `pid/v${i}` },
+            });
+            await adapter.setForeignStateAsync(id, i, true);
+            server.onStateChange(id, { val: i, ack: true });
+        }
+
+        await new Promise<void>(resolve => setTimeout(resolve, 500));
+        client.end(true);
+
+        assert.strictEqual(ids.length, 5);
+        assert.strictEqual(new Set(ids).size, ids.length, `duplicate packet ids: ${JSON.stringify(ids)}`);
+        assert.strictEqual(server.clients?.packetIds?._messages?.length ?? 0, 0);
+    });
+});
