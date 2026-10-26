@@ -352,6 +352,33 @@ describe('MQTT server', function () {
         });
     }).timeout(3000);
 
+    it('MQTT server: A topic creates its object again after the user deleted it', () => {
+        let emitterClient: any;
+        const topic = 'deletedTopic';
+        const id = `mqtt.0.${topic}`;
+        return new Promise<void>(resolve => {
+            emitterClient = new Client(
+                isConnected => {
+                    if (isConnected) {
+                        emitterClient.publish(topic, '1');
+                        setTimeout(() => {
+                            adapter.deleteObject(id);
+                            server.onObjectDeleted(id);
+                            emitterClient.publish(topic, '2');
+                            setTimeout(() => resolve(), 300);
+                        }, 300);
+                    }
+                },
+                null,
+                { url: `127.0.0.1:${port}`, clean: true, clientId: 'deletedTopicClient' },
+            );
+        }).then(async () => {
+            assert.ok(await adapter.getForeignObjectAsync(id), 'the object must be created again');
+            assert.ok(await adapter.getForeignStateAsync(id), 'the state must be written');
+            emitterClient.destroy();
+        });
+    }).timeout(3000);
+
     it('MQTT server: Binary topic payload is stored as a file and the state holds the URL', () => {
         let emitterClient: any;
         const topic = 'binimg';

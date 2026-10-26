@@ -224,6 +224,12 @@ export default class AdapterSimulator {
         return this.#files[`${adapterName}/${path}`];
     }
 
+    /** Test helper: deletes an object together with its state, like js-controller does */
+    deleteObject(id: string): void {
+        delete this.#objects[id];
+        delete this.#states[id];
+    }
+
     clearAll(): void {
         this.#objects = {};
         this.#states = {};
