@@ -1088,11 +1088,15 @@ export default class MQTTServer {
             binary?: boolean;
         },
     ): MqttMessage {
+        const qos = message.qos ?? attributes.qos;
         return {
             ...message,
-            qos: message.qos ?? attributes.qos,
+            qos,
             retain: attributes.retain,
-            messageId: this.messageId,
+            // Every QoS 1/2 PUBLISH needs its own packet identifier (MQTT-2.3.1-2). Reusing the
+            // current counter value gave all messages the same ID, so a PUBACK could not be matched
+            // to the message it acknowledged and unacknowledged messages were retransmitted forever.
+            messageId: qos ? this.getNextMessageId() : 0,
             ts: Date.now(),
             count: 0,
             binary: attributes.binary,
