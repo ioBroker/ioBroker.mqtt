@@ -21,6 +21,7 @@ class MQTT extends adapter_core_1.Adapter {
         });
         this.on('ready', this.onReady);
         this.on('stateChange', this.onStateChange);
+        this.on('objectChange', this.onObjectChange);
         this.on('message', this.onMessage);
         this.on('unload', this.onUnload);
     }
@@ -58,6 +59,8 @@ class MQTT extends adapter_core_1.Adapter {
     };
     async main() {
         this.config.forceCleanSession ||= 'no'; // default
+        // Objects deleted by the user: the topics have to create them again (see onObjectChange)
+        await this.subscribeObjectsAsync('*');
         // Subscribe on own variables to publish it.
         // "doNotSubscribeOwnStates" (client mode) skips this so states that were created from
         // received broker messages are not published back to the broker (loop protection, #414).
@@ -235,6 +238,12 @@ class MQTT extends adapter_core_1.Adapter {
                     });
                 }
             }
+        }
+    };
+    onObjectChange = (id, obj) => {
+        if (!obj) {
+            this.server?.onObjectDeleted(id);
+            this.client?.onObjectDeleted(id);
         }
     };
     onStateChange = (id, state) => {

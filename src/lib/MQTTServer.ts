@@ -373,6 +373,20 @@ export default class MQTTServer {
         }
     }
 
+    /**
+     * Forget the object of a deleted state: otherwise the next message of its topic writes the state without object.
+     *
+     * @param id ID of the deleted object
+     */
+    onObjectDeleted(id: string): void {
+        for (const [topic, entry] of Object.entries(this.topic2id)) {
+            // an object which is being created right now is handled by its creation
+            if (entry.id === id && !entry.processing) {
+                delete this.topic2id[topic];
+            }
+        }
+    }
+
     onStateChange(id: string, state: ioBroker.State | null | undefined): void {
         this.adapter.log.debug(`onStateChange ${id}: ${JSON.stringify(state)}`);
 

@@ -21,6 +21,7 @@ class MQTT extends Adapter {
         });
         this.on('ready', this.onReady);
         this.on('stateChange', this.onStateChange);
+        this.on('objectChange', this.onObjectChange);
         this.on('message', this.onMessage);
         this.on('unload', this.onUnload);
     }
@@ -63,6 +64,9 @@ class MQTT extends Adapter {
 
     async main(): Promise<void> {
         this.config.forceCleanSession ||= 'no'; // default
+
+        // Objects deleted by the user: the topics have to create them again (see onObjectChange)
+        await this.subscribeObjectsAsync('*');
 
         // Subscribe on own variables to publish it.
         // "doNotSubscribeOwnStates" (client mode) skips this so states that were created from
@@ -292,6 +296,13 @@ class MQTT extends Adapter {
                     });
                 }
             }
+        }
+    };
+
+    onObjectChange = (id: string, obj: ioBroker.Object | null | undefined): void => {
+        if (!obj) {
+            this.server?.onObjectDeleted(id);
+            this.client?.onObjectDeleted(id);
         }
     };
 
