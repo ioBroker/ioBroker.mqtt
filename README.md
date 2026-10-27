@@ -219,7 +219,8 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### 8.1.4 (2026-10-27)
+### **WORK IN PROGRESS**
+* (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
 * (@GermanBluefox) Fixed: after the object of a topic was deleted while the instance was running, the next messages wrote the state without object - the object is created again now
 
 ### 8.1.3 (2026-10-14)
