@@ -219,7 +219,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 8.1.5 (2026-10-27)
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
 * (@GermanBluefox) Server mode: the packet identifiers of a client and of the broker are kept apart. A QoS 2 message of a client was dropped as duplicate when the broker had a message with the same identifier in flight to it. After the counter wrapped, an identifier still in flight is not handed out again, and an unacknowledged message keeps its identifier when it is sent again after a reconnect
 * (@GermanBluefox) Server mode: a deleted value (empty payload) and a value of `null` are sent as empty payload instead of `"null"` or `"NaN"`, so a client that deletes its retained topics does not get values back. A received empty payload sets the state to `null` and keeps its type (#682)
@@ -237,9 +237,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 8.1.1 (2026-10-13)
 * (@GermanBluefox) Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process
-
-### 8.1.0 (2026-09-06)
-* (@GermanBluefox) Added the option "Interpretation of the received payload": besides the previous behavior ("Full") a received message can now be stored without unpacking a JSON into an ioBroker state object ("Numbers and booleans only"), or completely unparsed as string ("None")
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
