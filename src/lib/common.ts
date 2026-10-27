@@ -153,6 +153,20 @@ export function pattern2RegEx(
 }
 
 /**
+ * Builds the object ID part for a connected client (`info.clients.<id>`).
+ * A MQTT client ID may contain any UTF-8 character, also binary data (#493), but an ioBroker object
+ * ID must not: characters that js-controller rejects become "_", like dots and whitespace that would
+ * otherwise create extra object levels.
+ *
+ * @param clientId The MQTT client ID
+ * @param forbiddenChars `adapter.FORBIDDEN_CHARS` of js-controller
+ * @returns The ID part to use below `info.clients.`
+ */
+export function clientId2objectId(clientId: string, forbiddenChars: RegExp): string {
+    return clientId.replace(forbiddenChars, '_').replace(/[.\s]+/g, '_');
+}
+
+/**
  * Checks whether a received payload is empty, which is how MQTT deletes a value
  *
  * @param message The payload as received (Buffer) or as string
