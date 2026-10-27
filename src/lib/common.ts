@@ -153,6 +153,16 @@ export function pattern2RegEx(
 }
 
 /**
+ * Checks whether a received payload is empty, which is how MQTT deletes a value
+ *
+ * @param message The payload as received (Buffer) or as string
+ * @returns Whether it has no content at all
+ */
+export function isEmptyPayload(message: unknown): boolean {
+    return message === '' || (Buffer.isBuffer(message) && message.length === 0);
+}
+
+/**
  * Checks whether a received topic should be ignored
  *
  * @param topic The topic to check

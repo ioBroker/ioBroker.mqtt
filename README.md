@@ -221,6 +221,12 @@ Note: If you have some client that connects and disconnects very often, the list
 ## Changelog
 ### **WORK IN PROGRESS**
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
+* (@GermanBluefox) Server mode: the packet identifiers of a client and of the broker are kept apart. A QoS 2 message of a client was dropped as duplicate when the broker had a message with the same identifier in flight to it. After the counter wrapped, an identifier still in flight is not handed out again, and an unacknowledged message keeps its identifier when it is sent again after a reconnect
+* (@GermanBluefox) Server mode: a deleted value (empty payload) and a value of `null` are sent as empty payload instead of `"null"` or `"NaN"`, so a client that deletes its retained topics does not get values back. A received empty payload sets the state to `null` and keeps its type (#682)
+* (@GermanBluefox) The default of "Maximum topic name length" is 255 characters for new instances (was 100). The warning about a too long topic names this setting and comes only once per topic (#560)
+* (@GermanBluefox) Client mode: a reconnect attempt no longer reports the connection as established (#508)
+
+### 8.1.4 (2026-10-27)
 * (@GermanBluefox) Fixed: after the object of a topic was deleted while the instance was running, the next messages wrote the state without object - the object is created again now
 
 ### 8.1.3 (2026-10-14)

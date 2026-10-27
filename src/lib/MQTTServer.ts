@@ -12,6 +12,7 @@ import {
     topic2filename,
     findIdForTopic,
     parseSharedTopic,
+    isEmptyPayload,
 } from './common';
 import type { ScramError } from './scram';
 import { createSalt, saltPassword, ScramExchange, SCRAM_SHA_256 } from './scram';
@@ -157,6 +158,12 @@ type Subscriber = {
     _subs?: Record<string, MqttSubscription>;
 };
 
+/** Where the QoS 1/2 messages to a connected client or a stored offline session wait for their acknowledgement. */
+type MessageQueue = {
+    _messages?: MqttMessage[];
+    _pendingMessages?: MqttMessage[];
+};
+
 /** The part of an incoming PUBLISH the topic alias handling needs. */
 type IncomingPublish = {
     topic: string;
@@ -187,6 +194,8 @@ export default class MQTTServer {
     // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
     // at most once per topic.
     private readonly resolvedTopics: Record<MqttTopic, true> = {};
+    // Topics ignored for their length, so the warning comes once per topic and not with every value
+    private readonly tooLongTopics: Record<MqttTopic, true> = {};
     // Which client last published a state and when. `onStateChange` fans a state change out to
     // every client without knowing where it came from, so the MQTT 5 "No Local" option needs this
     // to recognise the publisher. Entries are only consulted for a short moment (see NO_LOCAL_WINDOW).
@@ -933,7 +942,7 @@ export default class MQTTServer {
     }
 
     private getMqttMessage<
-        T extends {
+        T extends MessageQueue & {
             id: string;
             _subsID?: Record<string, MqttSubscription>;
             _subs?: Record<string, MqttSubscription>;
@@ -1005,16 +1014,12 @@ export default class MQTTServer {
         let message: MqttMessage | undefined;
         let topic;
         let pattern;
+        // A deleted state and a value of null go out as an empty payload, which is how MQTT deletes
+        // a value. As the string "null", a client that deleted a topic got a value back (#682).
+        const payload = state?.val != null ? state2string(state.val) : null;
 
         if (client._subsID?.[id]) {
             topic = this.id2topic[id];
-
-            let payload: null | string;
-            if (!state) {
-                payload = null;
-            } else {
-                payload = state2string(state.val);
-            }
 
             message = {
                 topic: this.config.extraSet && state && !state.ack ? `${topic}/set` : topic,
@@ -1033,13 +1038,6 @@ export default class MQTTServer {
                 client._subsID ||= {};
                 client._subsID[id] = pattern;
 
-                let payload;
-                if (!state) {
-                    payload = null;
-                } else {
-                    payload = state2string(state.val);
-                }
-
                 message = {
                     topic: this.config.extraSet && state && !state.ack ? `${topic}/set` : topic,
                     payload,
@@ -1053,10 +1051,14 @@ export default class MQTTServer {
         }
 
         if (message) {
-            message = this.addMessageAttributes(message, {
-                qos: qos ?? this.config.defaultQoS,
-                retain: this.effectiveRetain(client, id, retain ?? false, delivery),
-            });
+            message = this.addMessageAttributes(
+                message,
+                {
+                    qos: qos ?? this.config.defaultQoS,
+                    retain: this.effectiveRetain(client, id, retain ?? false, delivery),
+                },
+                client,
+            );
             const properties = this.outgoingProperties(client, id);
             if (properties) {
                 message.properties = properties;
@@ -1069,15 +1071,42 @@ export default class MQTTServer {
         cb(null, message, client);
     }
 
-    private getNextMessageId(): number {
-        const id = this.messageId;
-
-        this.messageId++;
-        if (this.messageId > 65535) {
-            this.messageId = 1;
+    /**
+     * Hands out the packet identifier of the next QoS 1/2 message to a client.
+     *
+     * An identifier must not be used again while a message carrying it is unacknowledged
+     * (MQTT-2.3.1-2). The counter is shared by all clients and wraps at 65535, so the identifiers
+     * still in flight to this client are skipped.
+     *
+     * @param client The receiving client or offline session
+     * @returns The packet identifier
+     */
+    private getNextMessageId(client?: MessageQueue): number {
+        for (let i = 0; i < 65535; i++) {
+            const id = this.messageId;
+            this.messageId = this.messageId >= 65535 ? 1 : this.messageId + 1;
+            if (!client || !this.isMessageIdInFlight(client, id)) {
+                return id;
+            }
         }
+        // every identifier is in flight, which no client can take in
+        return this.messageId;
+    }
 
-        return id;
+    /**
+     * Whether a QoS 1/2 message to a client already carries this packet identifier. Inbound QoS 2
+     * messages are in the same queue, but they carry identifiers of the client and do not count.
+     *
+     * @param client The receiving client or offline session
+     * @param id The packet identifier
+     * @param except A queued message that is not to be compared with
+     * @returns Whether the identifier is taken
+     */
+    private isMessageIdInFlight(client: MessageQueue, id: number, except?: MqttMessage): boolean {
+        return (
+            !!client._messages?.some(m => m !== except && m.cmd === 'publish' && m.messageId === id) ||
+            !!client._pendingMessages?.some(m => m !== except && m.messageId === id)
+        );
     }
 
     private addMessageAttributes(
@@ -1087,6 +1116,7 @@ export default class MQTTServer {
             retain: boolean;
             binary?: boolean;
         },
+        client?: MessageQueue,
     ): MqttMessage {
         const qos = message.qos ?? attributes.qos;
         return {
@@ -1096,7 +1126,7 @@ export default class MQTTServer {
             // Every QoS 1/2 PUBLISH needs its own packet identifier (MQTT-2.3.1-2). Reusing the
             // current counter value gave all messages the same ID, so a PUBACK could not be matched
             // to the message it acknowledged and unacknowledged messages were retransmitted forever.
-            messageId: qos ? this.getNextMessageId() : 0,
+            messageId: qos ? this.getNextMessageId(client) : 0,
             ts: Date.now(),
             count: 0,
             binary: attributes.binary,
@@ -1123,6 +1153,7 @@ export default class MQTTServer {
                 messageId: 0,
             },
             { qos: client._subsID?.[topic]?.qos ?? 0, retain },
+            client,
         );
 
         if (this.config.debug) {
@@ -1233,6 +1264,7 @@ export default class MQTTServer {
                         messageId: 0,
                     },
                     { qos: qos ?? subscribedQos ?? this.config.defaultQoS, retain: wireRetain, binary: true },
+                    client,
                 );
 
                 if (this.config.debug) {
@@ -1286,7 +1318,15 @@ export default class MQTTServer {
                     `Client [${client.id}] Resend messages on connect: ${messages[i].topic} and id ${messages[i].messageId} (${messages[i].cmd}) = ${messages[i].payload}`,
                 );
                 if (messages[i].cmd === 'publish') {
-                    messages[i].messageId = this.getNextMessageId();
+                    // An unacknowledged message is sent again with the identifier it had
+                    // (MQTT-4.4.0-1). Only one without an identifier, or whose identifier is
+                    // taken by another queued message, gets a new one.
+                    if (
+                        !messages[i].messageId ||
+                        this.isMessageIdInFlight(client, messages[i].messageId, messages[i])
+                    ) {
+                        messages[i].messageId = this.getNextMessageId(client);
+                    }
                     client.publish(messages[i]);
                 }
             } catch (e) {
@@ -1366,18 +1406,18 @@ export default class MQTTServer {
             delete this.messageExpiry[id];
         }
 
+        // An empty payload deletes the value (MQTT-3.3.1-10 for a retained message). It becomes null
+        // and keeps the type of the state; parsed as a number it was NaN (#682).
+        const deleted = this.config.payloadParsing !== 'none' && isEmptyPayload(message);
+
         // expand an old version of objects
         // The payload is parsed only for type detection (the value handling further down
         // still uses the raw `message`): an ioBroker state object yields the type of its
         // `val` (a `val` of null is indeterminate → 'mixed'), and a JSON string that is not
         // a valid ioBroker state object yields 'mixed'.
-        const parsedForType = convertMessage(
-            topic,
-            message,
-            this.adapter,
-            this.config.parseCharCodes,
-            this.config.payloadParsing,
-        );
+        const parsedForType = deleted
+            ? { message: null, isStateObject: false as const }
+            : convertMessage(topic, message, this.adapter, this.config.parseCharCodes, this.config.payloadParsing);
         let messageType = typeof parsedForType.message;
         let stateType: ioBroker.CommonType = Array.isArray(parsedForType.message)
             ? 'array'
@@ -1414,9 +1454,10 @@ export default class MQTTServer {
         if (
             obj &&
             this.namespaceRegEx.test(id) &&
-            (!obj.native?.topic || (obj.common && obj.common.type !== 'mixed' && obj.common.type !== stateType))
+            (!obj.native?.topic ||
+                (!deleted && obj.common && obj.common.type !== 'mixed' && obj.common.type !== stateType))
         ) {
-            if (obj.common && obj.common.type !== 'mixed' && obj.common.type !== stateType) {
+            if (!deleted && obj.common && obj.common.type !== 'mixed' && obj.common.type !== stateType) {
                 // mqtt topics could change types, but log it to communicate to the user if a type is frequently fluctuating
                 this.adapter.log.info(`Server: Changed type of "${id}" from "${obj.common.type}" to "${stateType}"`);
                 obj.common.type = stateType;
@@ -1435,9 +1476,11 @@ export default class MQTTServer {
             this.adapter.log.debug(`Server received "${topic}" (${typeof message}): ${JSON.stringify(message)}`);
         }
 
-        if (parsedForType.message != null) {
+        if (deleted || parsedForType.message != null) {
             let value: ioBroker.State;
-            if (typeof parsedForType.message === 'object') {
+            if (deleted) {
+                value = { val: null, ack: isAck } as ioBroker.State;
+            } else if (typeof parsedForType.message === 'object') {
                 if (parsedForType.isStateObject) {
                     value = parsedForType.message;
                 } else {
@@ -1478,10 +1521,13 @@ export default class MQTTServer {
         }
 
         // send a message to all other clients
-        if (this.config.onchange && this.server && parsedForType.message != null) {
+        if (this.config.onchange && this.server && (deleted || parsedForType.message != null)) {
             setImmediate(() => {
                 let state: ioBroker.State;
-                if (typeof parsedForType.message === 'object') {
+                if (deleted) {
+                    // goes out as an empty payload again
+                    state = { val: null, ack: isAck } as ioBroker.State;
+                } else if (typeof parsedForType.message === 'object') {
                     if (parsedForType.isStateObject) {
                         state = parsedForType.message;
                     } else {
@@ -1868,8 +1914,16 @@ export default class MQTTServer {
         }
 
         // If state is unknown => create mqtt.X.topic
-        if (`${this.adapter.namespace}.${id}`.length > this.config.maxTopicLength) {
-            this.adapter.log.warn(`Client [${client.id}] Topic name is too long: ${id.substring(0, 100)}...`);
+        const idLength = `${this.adapter.namespace}.${id}`.length;
+        if (idLength > this.config.maxTopicLength) {
+            // once per topic, a device repeats its topics with every value
+            const text = `Client [${client.id}] Topic name is too long (${idLength} > ${this.config.maxTopicLength} characters, see "Maximum topic name length" in the instance settings) and is ignored: ${id.substring(0, 100)}...`;
+            if (!this.tooLongTopics[topic]) {
+                this.tooLongTopics[topic] = true;
+                this.adapter.log.warn(text);
+            } else {
+                this.adapter.log.debug(text);
+            }
             return;
         }
 
@@ -1949,7 +2003,8 @@ export default class MQTTServer {
                                 topic,
                                 qos,
                                 retain,
-                                messageId: packet.messageId || sendMessage.messageId,
+                                // an identifier of this session, not the one of the publisher
+                                messageId: sendMessage.messageId || this.getNextMessageId(persistentClient),
                                 ts: now,
                                 payload: message,
                                 count: 0,
@@ -2531,7 +2586,11 @@ export default class MQTTServer {
                         // send PUBACK to a client
                         client.puback({ messageId: packet.messageId });
                     } else if (packet.qos === 2) {
-                        const pack = client._messages?.find(e => e.messageId === packet.messageId);
+                        // The queue holds our own messages too. Their identifiers are ours, not the
+                        // client's, so only inbound messages waiting for a PUBREL can be duplicates.
+                        const pack = client._messages?.find(
+                            e => e.cmd === 'pubrel' && e.messageId === packet.messageId,
+                        );
                         if (pack) {
                             // duplicate message => ignore
                             this.adapter.log.info(
@@ -2579,7 +2638,7 @@ export default class MQTTServer {
                     }
 
                     // remove this message from queue
-                    const frame = client._messages?.find(e => e.messageId === packet.messageId);
+                    const frame = client._messages?.find(e => e.cmd === 'publish' && e.messageId === packet.messageId);
                     if (frame) {
                         client.pubrel({ messageId: packet.messageId });
                     } else {
@@ -2619,7 +2678,7 @@ export default class MQTTServer {
                 let pos = -1;
                 // remove this message from queue
                 if (client._messages) {
-                    pos = client._messages.findIndex(e => e.messageId === packet.messageId);
+                    pos = client._messages.findIndex(e => e.cmd === 'publish' && e.messageId === packet.messageId);
                 }
                 if (pos !== -1) {
                     client._messages.splice(pos, 1);
@@ -2650,7 +2709,7 @@ export default class MQTTServer {
                 let pos = -1;
                 // remove this message from queue
                 if (client._messages) {
-                    pos = client._messages.findIndex(e => e.messageId === packet.messageId);
+                    pos = client._messages.findIndex(e => e.cmd === 'pubrel' && e.messageId === packet.messageId);
                 }
                 if (pos !== -1) {
                     client.pubcomp({ messageId: packet.messageId });
@@ -2681,7 +2740,7 @@ export default class MQTTServer {
                 let pos = -1;
                 // remove this message from queue
                 if (client._messages) {
-                    pos = client._messages.findIndex(e => e.messageId === packet.messageId);
+                    pos = client._messages.findIndex(e => e.cmd === 'publish' && e.messageId === packet.messageId);
                 }
                 if (pos !== -1) {
                     this.adapter.log.debug(

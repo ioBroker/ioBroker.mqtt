@@ -36,7 +36,7 @@ export interface MqttAdapterConfig {
     sendAckToo: boolean;
     sendStateObject: boolean;
     webSocket: boolean;
-    maxTopicLength: 100;
+    maxTopicLength: number;
     publishOnSubscribe: boolean;
     extraSet: boolean;
     sendOnStartInterval: number;

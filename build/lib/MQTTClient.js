@@ -24,6 +24,8 @@ class MQTTClient {
     // Topics for which `resolveTopicId` already scanned the published states, so the scan runs
     // at most once per topic.
     resolvedTopics = {};
+    // Topics ignored for their length, so the warning comes once per topic and not with every value
+    tooLongTopics = {};
     // Loop protection (#414): last value written to a state because it was received from the broker,
     // keyed by state id, together with the time it was received. Used to suppress echoing it back.
     lastReceived = {};
@@ -550,7 +552,15 @@ class MQTTClient {
             let id = this.topic2id[topic]?.id ||
                 (0, common_1.convertTopic2id)(topic, false, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
             if (id.length > this.config.maxTopicLength) {
-                this.adapter.log.warn(`[${this.client ? this.config.clientId : 'disconnected'}] Topic name is too long: ${id.substring(0, 100)}...`);
+                // once per topic, a device repeats its topics with every value
+                const text = `[${this.client ? this.config.clientId : 'disconnected'}] Topic name is too long (${id.length} > ${this.config.maxTopicLength} characters, see "Maximum topic name length" in the instance settings) and is ignored: ${id.substring(0, 100)}...`;
+                if (!this.tooLongTopics[topic]) {
+                    this.tooLongTopics[topic] = true;
+                    this.adapter.log.warn(text);
+                }
+                else {
+                    this.adapter.log.debug(text);
+                }
                 return;
             }
             if (id.match(invalidChars)) {
@@ -886,13 +896,12 @@ class MQTTClient {
                 this.publishAllStates(toPublish);
             }
         });
+        // Emitted when a reconnect attempt starts, not when it succeeded: "connect" reports that
         this.client.on('reconnect', () => {
             if (!this.client) {
                 return;
             }
-            this.adapter.log.info(`Reconnected to ${this.config.url}`);
-            this.connected = true;
-            void this.adapter.setState('info.connection', this.connected, true);
+            this.adapter.log.debug(`Reconnecting to ${this.config.url}`);
         });
         this.client.on('error', err => {
             // A broker that does not know the requested protocol level answers with CONNACK

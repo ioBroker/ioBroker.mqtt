@@ -23,6 +23,7 @@ export interface AdapterConfig {
     protocolVersion?: 3 | 4 | 5;
     user?: string;
     pass?: string;
+    maxTopicLength?: number;
 }
 
 export default class AdapterSimulator {

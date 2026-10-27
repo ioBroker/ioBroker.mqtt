@@ -2072,3 +2072,279 @@ describe('MQTT server: packet identifiers', function () {
         assert.strictEqual(server.clients?.packetIds?._messages?.length ?? 0, 0);
     });
 });
+
+// The identifiers of the broker and of the client are separate, the counter must not hand out an
+// identifier that is still in flight, and an unacknowledged message keeps its identifier when it
+// is sent again after a reconnect (MQTT-2.3.1-2, MQTT-4.4.0-1).
+describe('MQTT server: packet identifiers of both directions', function () {
+    const net = require('node:net');
+    const Connection = require('../build/lib/MqttConnection').default;
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    type RawClient = {
+        connection: any;
+        next: (cmd: string, timeout?: number) => Promise<any>;
+        close: () => void;
+    };
+
+    const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+    /**
+     * Connects a client that acknowledges nothing by itself, so the test decides what goes back.
+     *
+     * @param clientId The client id
+     * @param clean Whether to start a clean session
+     * @returns The connected client
+     */
+    function rawClient(clientId: string, clean = true): Promise<RawClient> {
+        return new Promise((resolve, reject) => {
+            const stream = net.createConnection(suitePort, '127.0.0.1');
+            const connection = new Connection(stream);
+            const received: any[] = [];
+            const waiting: { cmd: string; resolve: (packet: any) => void }[] = [];
+            for (const cmd of ['connack', 'suback', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp']) {
+                connection.on(cmd, (packet: any) => {
+                    const pos = waiting.findIndex(w => w.cmd === packet.cmd);
+                    if (pos !== -1) {
+                        waiting.splice(pos, 1)[0].resolve(packet);
+                    } else {
+                        received.push(packet);
+                    }
+                });
+            }
+            const next = (cmd: string, timeout = 2000): Promise<any> =>
+                new Promise((resolveNext, rejectNext) => {
+                    const pos = received.findIndex(p => p.cmd === cmd);
+                    if (pos !== -1) {
+                        resolveNext(received.splice(pos, 1)[0]);
+                        return;
+                    }
+                    const entry = { cmd, resolve: resolveNext };
+                    waiting.push(entry);
+                    setTimeout(() => {
+                        const i = waiting.indexOf(entry);
+                        if (i !== -1) {
+                            waiting.splice(i, 1);
+                            rejectNext(new Error(`no ${cmd} received`));
+                        }
+                    }, timeout);
+                });
+            const close = (): void => {
+                try {
+                    stream.destroy();
+                } catch {
+                    /* ignore */
+                }
+            };
+            stream.on('error', reject);
+            stream.on('connect', () =>
+                connection.connect({ clientId, protocolId: 'MQTT', protocolVersion: 4, clean, keepalive: 0 }),
+            );
+            next('connack').then(() => resolve({ connection, next, close }), reject);
+        });
+    }
+
+    async function subscribe(client: RawClient, topic: string): Promise<void> {
+        client.connection.subscribe({ messageId: 1, subscriptions: [{ topic, qos: 1 }] });
+        await client.next('suback');
+    }
+
+    async function sendState(topic: string, val: number): Promise<void> {
+        const id = `mqtt.0.${topic.replace(/\//g, '.')}`;
+        await adapter.setForeignObjectAsync(id, {
+            _id: id,
+            type: 'state',
+            common: { name: id, type: 'number', role: 'value', read: true, write: true },
+            native: { topic },
+        });
+        await adapter.setForeignStateAsync(id, val, true);
+        server.onStateChange(id, { val, ack: true });
+    }
+
+    before('MQTT server (both directions): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 1 });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (both directions): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('takes an inbound QoS 2 message whose identifier is in flight to the client', async () => {
+        const client = await rawClient('bothDirections');
+        await subscribe(client, 'dir/out');
+        await sendState('dir/out', 1);
+        const out = await client.next('publish'); // not acknowledged yet
+
+        // the client happens to use the same identifier for a message of its own
+        client.connection.publish({ topic: 'dir/in', payload: '42', qos: 2, messageId: out.messageId, retain: false });
+        const pubrec = await client.next('pubrec');
+        assert.strictEqual(pubrec.messageId, out.messageId);
+        client.connection.pubrel({ messageId: out.messageId });
+        await client.next('pubcomp');
+        await delay(100);
+
+        const state = await adapter.getForeignStateAsync('mqtt.0.dir.in');
+        assert.strictEqual(state?.val, 42, 'the inbound message must not be dropped as a duplicate');
+        const queue = server.clients.bothDirections._messages;
+        assert.ok(
+            queue.some((m: any) => m.cmd === 'publish' && m.messageId === out.messageId),
+            'the PUBREL must not take the outbound message away',
+        );
+
+        client.connection.puback({ messageId: out.messageId });
+        await delay(100);
+        assert.strictEqual(server.clients.bothDirections._messages.length, 0);
+        client.close();
+    });
+
+    it('does not hand out an identifier that is still in flight after the counter wrapped', async () => {
+        const client = await rawClient('wrapAround');
+        await subscribe(client, 'wrap/#');
+
+        server.messageId = 65535;
+        await sendState('wrap/a', 1);
+        const first = await client.next('publish'); // not acknowledged
+        assert.strictEqual(first.messageId, 65535);
+
+        // as if the counter went round once while the message waits
+        server.messageId = 65535;
+        await sendState('wrap/b', 2);
+        const second = await client.next('publish');
+        assert.strictEqual(second.messageId, 1, 'the identifier in flight must be skipped');
+        client.close();
+    });
+
+    it('sends an unacknowledged message again with its identifier after a reconnect', async () => {
+        let client = await rawClient('resendSameId', false);
+        await subscribe(client, 'again/#');
+        await sendState('again/a', 7);
+        const first = await client.next('publish');
+        client.close();
+        await delay(200);
+
+        client = await rawClient('resendSameId', false);
+        const again = await client.next('publish', 3000);
+        assert.strictEqual(again.topic, 'again/a');
+        assert.strictEqual(again.messageId, first.messageId, 'the message has to keep its packet identifier');
+        client.connection.puback({ messageId: again.messageId });
+        await delay(100);
+        assert.strictEqual(server.clients.resendSameId._messages.length, 0);
+        client.close();
+    });
+});
+
+// An empty payload deletes a value. It must go out as an empty payload again and not as "null" or
+// "NaN", otherwise a client that deletes its retained topics gets values back (#682).
+describe('MQTT server: deleted values', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    before('MQTT server (deleted values): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 1, onchange: true });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (deleted values): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('forwards an empty retained payload as empty payload and keeps the type of the state', async () => {
+        const id = 'mqtt.0.del.num';
+        await adapter.setForeignObjectAsync(id, {
+            _id: id,
+            type: 'state',
+            common: { name: id, type: 'number', role: 'value', read: true, write: true },
+            native: { topic: 'del/num' },
+        });
+        await adapter.setForeignStateAsync(id, 5, true);
+
+        const connect = async (clientId: string, received: Buffer[]): Promise<any> => {
+            const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+                protocolVersion: 4,
+                clientId,
+                clean: true,
+                reconnectPeriod: 0,
+            });
+            client.on('message', (topic: string, payload: Buffer) => topic === 'del/num' && received.push(payload));
+            await new Promise<void>(resolve => client.on('connect', () => resolve()));
+            await new Promise<void>(resolve => client.subscribe('del/#', { qos: 1 }, () => resolve()));
+            return client;
+        };
+        const toDeleter: Buffer[] = [];
+        const toWatcher: Buffer[] = [];
+        const deleter = await connect('deleter', toDeleter);
+        const watcher = await connect('watcher', toWatcher);
+
+        // forwarded to the other client right away
+        await new Promise<void>(resolve => deleter.publish('del/num', '', { qos: 1, retain: true }, () => resolve()));
+        await new Promise<void>(resolve => setTimeout(resolve, 300));
+
+        const state = await adapter.getForeignStateAsync(id);
+        assert.strictEqual(state?.val, null, 'an empty payload deletes the value');
+        const obj = await adapter.getForeignObjectAsync(id);
+        assert.strictEqual(obj?.common.type, 'number', 'a deleted value must not change the type');
+        assert.strictEqual(toWatcher.length, 1, 'the other client gets the deletion');
+
+        // the state change of ioBroker, which also brings the deletion back to the deleter
+        server.onStateChange(id, { val: null, ack: true });
+        await new Promise<void>(resolve => setTimeout(resolve, 300));
+        deleter.end(true);
+        watcher.end(true);
+
+        assert.strictEqual(toDeleter.length, 1, 'the deleter gets the state change');
+        assert.strictEqual(toWatcher.length, 2, 'the other client gets the state change');
+        for (const payload of [...toDeleter, ...toWatcher]) {
+            assert.strictEqual(payload.length, 0, `expected an empty payload, got "${payload.toString()}"`);
+        }
+    });
+
+    it('warns only once about a topic that is too long', async () => {
+        const warnings: string[] = [];
+        const warn = adapter.log.warn;
+        adapter.log.warn = (text: string): void => {
+            warnings.push(text);
+            warn(text);
+        };
+        adapter.config.maxTopicLength = 30;
+
+        try {
+            const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+                protocolVersion: 4,
+                clientId: 'longTopics',
+                clean: true,
+                reconnectPeriod: 0,
+            });
+            await new Promise<void>(resolve => client.on('connect', () => resolve()));
+            const topic = 'long/this_topic_is_longer_than_thirty';
+            for (let i = 0; i < 3; i++) {
+                await new Promise<void>(resolve => client.publish(topic, String(i), { qos: 1 }, () => resolve()));
+            }
+            await new Promise<void>(resolve => setTimeout(resolve, 200));
+            client.end(true);
+
+            const tooLong = warnings.filter(text => text.includes('too long'));
+            assert.strictEqual(tooLong.length, 1, JSON.stringify(tooLong));
+            assert.ok(tooLong[0].includes('Maximum topic name length'), 'the warning has to name the setting');
+            assert.ok(
+                !(await adapter.getForeignObjectAsync('mqtt.0.long.this_topic_is_longer_than_thirty')),
+                'no state for an ignored topic',
+            );
+        } finally {
+            adapter.log.warn = warn;
+            delete adapter.config.maxTopicLength;
+        }
+    });
+});

@@ -26,7 +26,7 @@ class MQTT extends adapter_core_1.Adapter {
         this.on('unload', this.onUnload);
     }
     onReady = async () => {
-        this.config.maxTopicLength ||= 100;
+        this.config.maxTopicLength ||= 255;
         // Existing installations have no value stored => keep the previous behavior
         this.config.payloadParsing ||= 'full';
         if (this.config.doNotCreateClientObjects) {

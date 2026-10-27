@@ -27,7 +27,7 @@ class MQTT extends Adapter {
     }
 
     onReady = async (): Promise<void> => {
-        this.config.maxTopicLength ||= 100;
+        this.config.maxTopicLength ||= 255;
         // Existing installations have no value stored => keep the previous behavior
         this.config.payloadParsing ||= 'full';
 

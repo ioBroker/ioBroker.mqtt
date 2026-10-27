@@ -4,6 +4,7 @@ exports.convertID2topic = convertID2topic;
 exports.findIdForTopic = findIdForTopic;
 exports.parseSharedTopic = parseSharedTopic;
 exports.pattern2RegEx = pattern2RegEx;
+exports.isEmptyPayload = isEmptyPayload;
 exports.isIgnoredTopic = isIgnoredTopic;
 exports.isBinaryTopic = isBinaryTopic;
 exports.topic2filename = topic2filename;
@@ -140,6 +141,15 @@ function pattern2RegEx(pattern, adapter, prefix, dotToUnderscore) {
     pattern = pattern.replace(/\\\.\*/g, '(\\..*)?$');
     pattern = pattern.replace(/\+/g, '[^.]*');
     return pattern;
+}
+/**
+ * Checks whether a received payload is empty, which is how MQTT deletes a value
+ *
+ * @param message The payload as received (Buffer) or as string
+ * @returns Whether it has no content at all
+ */
+function isEmptyPayload(message) {
+    return message === '' || (Buffer.isBuffer(message) && message.length === 0);
 }
 /**
  * Checks whether a received topic should be ignored

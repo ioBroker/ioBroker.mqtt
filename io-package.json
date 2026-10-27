@@ -362,7 +362,7 @@
     "sendAckToo": false,
     "sendStateObject": false,
     "webSocket": false,
-    "maxTopicLength": 100,
+    "maxTopicLength": 255,
     "publishOnSubscribe": true,
     "extraSet": false,
     "sendOnStartInterval": 2000,
