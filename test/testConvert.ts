@@ -6,6 +6,7 @@ const {
     convertTopic2id,
     convertID2topic,
     pattern2RegEx,
+    parseTopicList,
     isEchoOfReceived,
     findIdForTopic,
     parseSharedTopic,
@@ -169,6 +170,70 @@ describe('Test convert version', function () {
             const regex = new RegExp(pattern2RegEx('wolf/#', adapter, '', true));
             const id = convertTopic2id('wolf/HK1.Vorlauftemperatur', false, '', 'mqtt.0', true);
             assert.strictEqual(regex.test(id), true);
+        });
+    });
+
+    describe('parseTopicList (ignored topics, binary topics)', () => {
+        /**
+         * Returns whether a state ID matches the parsed list
+         *
+         * @param list The setting as entered
+         * @param id The state ID
+         * @param dotToUnderscore Whether dots in topic names are replaced
+         */
+        function matches(list: string, id: string, dotToUnderscore?: boolean): boolean {
+            const { regexes } = parseTopicList(list, adapter, '', dotToUnderscore);
+            return regexes.some((regex: RegExp) => regex.test(id));
+        }
+
+        it('trims the entries, so a space after the comma does not break the pattern (#429)', () => {
+            const { patterns } = parseTopicList('instar.all.alarm.*, homeassistant.* ,  ,', adapter, '');
+            assert.deepStrictEqual(patterns, ['instar.all.alarm.*', 'homeassistant.*']);
+            assert.strictEqual(matches('a.*, homeassistant.*', 'homeassistant.sensor.temp'), true);
+        });
+
+        it('a "*" in the middle matches any levels (#429)', () => {
+            assert.strictEqual(matches('evcc.loadpoints.*.planSoc', 'evcc.loadpoints.1.planSoc'), true);
+            assert.strictEqual(matches('evcc.loadpoints.*.planSoc', 'mqtt.0.evcc.loadpoints.2.planSoc'), true);
+            assert.strictEqual(matches('evcc.loadpoints.*.planSoc', 'evcc.loadpoints.1.mode'), false);
+            assert.strictEqual(matches('evcc.site.ext*', 'evcc.site.extMeter'), true);
+            assert.strictEqual(matches('evcc.site.ext*', 'evcc.site.grid'), false);
+            assert.strictEqual(matches('zigbee.*.image', 'zigbee.lamp.image'), true);
+        });
+
+        it('a trailing ".*" also matches the parent, like "#" (MQTT-4.7.1-2)', () => {
+            assert.strictEqual(matches('mqtt.0.instar.all.alarm.*', 'mqtt.0.instar.all.alarm'), true);
+            assert.strictEqual(matches('mqtt.0.instar.all.alarm.*', 'mqtt.0.instar.all.alarm.x.y'), true);
+            assert.strictEqual(matches('mqtt.0.instar.all.alarm.*', 'mqtt.0.instar.all.alarmX'), false);
+        });
+
+        it('accepts MQTT topic filters with "#" and "+" (MQTT-4.7.1)', () => {
+            assert.strictEqual(matches('instar/+/alarm/#', 'instar.cam_10.alarm'), true);
+            assert.strictEqual(matches('instar/+/alarm/#', 'instar.cam_10.alarm.motion'), true);
+            assert.strictEqual(matches('instar/+/alarm/#', 'instar.cam.10.alarm'), false);
+            assert.strictEqual(matches('#', 'anything.at.all'), true);
+        });
+
+        it('matches whole IDs only, not parts of them', () => {
+            assert.strictEqual(matches('evcc.site', 'evcc.site'), true);
+            assert.strictEqual(matches('evcc.site', 'evcc.siteTitle'), false);
+            assert.strictEqual(matches('evcc.site', 'xevcc.site'), false);
+        });
+
+        it('takes regex characters in a pattern literally', () => {
+            assert.strictEqual(matches('dev.a(1)', 'dev.a(1)'), true);
+            assert.strictEqual(matches('dev.a(1)', 'dev.a1'), false);
+        });
+
+        it('keeps an ID pattern unchanged when dots are replaced by underscores', () => {
+            assert.strictEqual(matches('wolf.HK1_Vorlauftemperatur', 'wolf.HK1_Vorlauftemperatur', true), true);
+            assert.strictEqual(matches('wolf/HK1.Vorlauftemperatur', 'wolf.HK1_Vorlauftemperatur', true), true);
+            assert.strictEqual(matches('wolf/#', 'wolf.HK1_Vorlauftemperatur', true), true);
+        });
+
+        it('an empty setting yields no expressions', () => {
+            assert.deepStrictEqual(parseTopicList('', adapter, '').regexes, []);
+            assert.deepStrictEqual(parseTopicList(undefined, adapter, '').regexes, []);
         });
     });
 

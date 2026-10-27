@@ -2348,3 +2348,57 @@ describe('MQTT server: deleted values', function () {
         }
     });
 });
+
+// "Ignored topics" must stop the broker from creating states for matching topics, also when the
+// list is written with spaces after the commas and with a "*" in the middle of an entry (#429).
+describe('MQTT server: ignored topics', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    before('MQTT server (ignored topics): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({
+            port: suitePort,
+            defaultQoS: 0,
+            onchange: true,
+            ignoredTopics: 'instar.all.alarm.*, homeassistant/#, evcc.loadpoints.*.planSoc',
+        });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (ignored topics): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('does not create states for ignored topics and keeps all others', async () => {
+        const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            protocolVersion: 4,
+            clientId: 'ignoredTopics',
+            reconnectPeriod: 0,
+        });
+        await new Promise<void>(resolve => client.on('connect', () => resolve()));
+        for (const topic of [
+            'instar/all/alarm/motion',
+            'homeassistant/sensor/temp',
+            'evcc/loadpoints/1/planSoc',
+            'evcc/loadpoints/1/mode',
+            'keep/me',
+        ]) {
+            client.publish(topic, '1', { qos: 1 });
+        }
+        await new Promise<void>(resolve => setTimeout(resolve, 500));
+        client.end(true);
+
+        const exists = async (id: string): Promise<boolean> => !!(await adapter.getForeignObjectAsync(`mqtt.0.${id}`));
+        assert.strictEqual(await exists('instar.all.alarm.motion'), false);
+        assert.strictEqual(await exists('homeassistant.sensor.temp'), false);
+        assert.strictEqual(await exists('evcc.loadpoints.1.planSoc'), false);
+        assert.strictEqual(await exists('evcc.loadpoints.1.mode'), true);
+        assert.strictEqual(await exists('keep.me'), true);
+    });
+});
