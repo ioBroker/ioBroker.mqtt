@@ -153,6 +153,81 @@ export function pattern2RegEx(
 }
 
 /**
+ * Converts one entry of a topic list setting ("Ignored topics", "Binary topics") into a regular
+ * expression that is matched against a state ID.
+ *
+ * An entry may be written as MQTT topic filter (`instar/+/alarm/#`) or as ioBroker ID pattern
+ * (`mqtt.0.instar.*.alarm.*`). `*` and `#` match any number of characters at any position,
+ * `+` matches exactly one level. A trailing `.*` / `/#` also matches the parent itself.
+ *
+ * @param pattern The entry, already trimmed
+ * @param adapter The adapter instance (for the namespace)
+ * @param prefix Configured topic prefix
+ * @param dotToUnderscore Whether dots in topic names are replaced by underscores
+ * @returns The anchored regular expression source
+ */
+export function topicListPattern2RegEx(
+    pattern: string,
+    adapter: ioBroker.Adapter,
+    prefix: string,
+    dotToUnderscore?: boolean,
+): string {
+    // An entry with "/" is a MQTT topic filter and goes through the same conversion as a
+    // received topic. An ID pattern is used as is: converting it would turn its dots into "_" when
+    // "dotToUnderscore" is enabled, so it could never match.
+    const id = pattern.includes('/')
+        ? convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore)
+        : pattern;
+
+    let regex = '';
+    for (const char of id) {
+        if (char === '*' || char === '#') {
+            regex += '.*';
+        } else if (char === '+') {
+            regex += '[^.]*';
+        } else {
+            regex += char.replace(/[\\^$.|?()[\]{}]/g, '\\$&');
+        }
+    }
+    // "a.*" also matches "a" itself, like the MQTT filter "a/#" matches "a"
+    regex = regex.replace(/\\\.\.\*$/, '(\\..*)?');
+
+    return `^${regex}$`;
+}
+
+/**
+ * Parses a comma separated topic list setting ("Ignored topics", "Binary topics").
+ * Entries are trimmed and empty entries are skipped, so "a.*, b.*" works like "a.*,b.*".
+ * Every entry yields two expressions: one for the ID with and one without the namespace.
+ *
+ * @param list The setting as entered
+ * @param adapter The adapter instance (for the namespace)
+ * @param prefix Configured topic prefix
+ * @param dotToUnderscore Whether dots in topic names are replaced by underscores
+ * @returns The entries and the compiled regular expressions
+ */
+export function parseTopicList(
+    list: string | undefined,
+    adapter: ioBroker.Adapter,
+    prefix: string,
+    dotToUnderscore?: boolean,
+): { patterns: string[]; regexes: RegExp[] } {
+    const patterns = (list || '')
+        .split(',')
+        .map(pattern => pattern.trim())
+        .filter(pattern => pattern);
+
+    const regexes: RegExp[] = [];
+    for (const pattern of patterns) {
+        regexes.push(
+            new RegExp(topicListPattern2RegEx(pattern, adapter, prefix, dotToUnderscore)),
+            new RegExp(topicListPattern2RegEx(`${adapter.namespace}.${pattern}`, adapter, prefix, dotToUnderscore)),
+        );
+    }
+    return { patterns, regexes };
+}
+
+/**
  * Checks whether a received payload is empty, which is how MQTT deletes a value
  *
  * @param message The payload as received (Buffer) or as string
