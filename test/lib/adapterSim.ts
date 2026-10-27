@@ -29,6 +29,8 @@ export interface AdapterConfig {
 export default class AdapterSimulator {
     namespace: string;
     config: AdapterConfig;
+    /** Same expression as js-controller's `adapter.FORBIDDEN_CHARS` */
+    readonly FORBIDDEN_CHARS = /[^._\-/ :!#$%&()+=@^{}|~\p{Ll}\p{Lu}\p{Nd}]+/gu;
     log: {
         debug: (text: string) => void;
         info: (text: string) => void;
