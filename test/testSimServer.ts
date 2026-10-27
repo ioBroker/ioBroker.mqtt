@@ -2348,3 +2348,45 @@ describe('MQTT server: deleted values', function () {
         }
     });
 });
+
+// A client ID with characters that are not allowed in an object ID (here binary data and "*")
+// must still get a valid "info.clients" object instead of "Cannot update connection info" (#493).
+describe('MQTT server: client objects for unusual client IDs', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+    const errors: string[] = [];
+
+    before('MQTT server (client objects): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true });
+        adapter.log.error = (text: string): void => {
+            errors.push(text);
+        };
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (client objects): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('creates a valid object ID below info.clients', async () => {
+        const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            protocolVersion: 4,
+            clientId: 'esp*1.\u0003\u0003kitchen',
+            reconnectPeriod: 0,
+        });
+        await new Promise<void>(resolve => client.on('connect', () => resolve()));
+        // the client objects are updated 1 s after a connect
+        await new Promise<void>(resolve => setTimeout(resolve, 1500));
+        client.end(true);
+
+        const obj = await adapter.getObjectAsync('info.clients.esp_1__kitchen');
+        assert.ok(obj, 'client object was not created');
+        assert.deepStrictEqual(errors, []);
+    });
+});

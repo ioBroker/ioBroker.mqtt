@@ -9,6 +9,7 @@ const {
     isEchoOfReceived,
     findIdForTopic,
     parseSharedTopic,
+    clientId2objectId,
 } = require('../build/lib/common');
 
 // Minimal adapter stub – convertMessage only uses `log` (for the invalid-JSON debug branch).
@@ -169,6 +170,25 @@ describe('Test convert version', function () {
             const regex = new RegExp(pattern2RegEx('wolf/#', adapter, '', true));
             const id = convertTopic2id('wolf/HK1.Vorlauftemperatur', false, '', 'mqtt.0', true);
             assert.strictEqual(regex.test(id), true);
+        });
+    });
+
+    describe('clientId2objectId (#493)', () => {
+        // js-controller's adapter.FORBIDDEN_CHARS
+        const forbidden = /[^._\-/ :!#$%&()+=@^{}|~\p{Ll}\p{Lu}\p{Nd}]+/gu;
+
+        it('keeps a normal client ID', () => {
+            assert.strictEqual(clientId2objectId('evcc_1', forbidden), 'evcc_1');
+            assert.strictEqual(clientId2objectId('AHOY-DTU-2099C8', forbidden), 'AHOY-DTU-2099C8');
+        });
+
+        it('replaces dots and whitespace so no extra object levels are created', () => {
+            assert.strictEqual(clientId2objectId('esp.kitchen sensor', forbidden), 'esp_kitchen_sensor');
+        });
+
+        it('replaces binary data and characters not allowed in an object ID', () => {
+            assert.strictEqual(clientId2objectId('\u0003\u00037\u0003\uFFFD?>', forbidden), '_7_');
+            assert.strictEqual(clientId2objectId('dev*1[2]"3"', forbidden), 'dev_1_2_3_');
         });
     });
 
