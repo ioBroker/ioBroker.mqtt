@@ -1,4 +1,8 @@
 # Older changes
+## 8.0.1 (2026-08-28)
+* (@GermanBluefox) The Blockly block is now built from TypeScript sources in `src-blockly/` into `admin/blockly.js`, with the translations in `src-blockly/i18n/`
+* (@GermanBluefox) Fixed: the Blockly block produced no code at all in newer Blockly editors. Since Blockly 10 a generator has to be registered in `Blockly.JavaScript.forBlock`, and the editor migrates its own generators there before it loads an adapter's block
+
 ## 8.0.0 (2026-08-28)
 * (@GermanBluefox) Added MQTT 5.0 support. In server mode every client is answered with the protocol level it announced, so MQTT 5 and MQTT 3.1.1 clients can share one instance. Includes Reason codes, topic aliases, the subscription options "No Local", "Retain Handling" and "Retain As Published", subscription identifiers, message expiry, will delay, maximum packet size, receive maximum, shared subscriptions and the session expiry interval. MQTT 3.1.1 clients are not affected by the new rules
 * (@GermanBluefox) Client mode: the MQTT version (3.1 / 3.1.1 / 5.0) can now be selected. If the broker refuses it, the adapter falls back to MQTT 3.1.1
