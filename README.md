@@ -200,7 +200,7 @@ The broker was tested with the following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ### Client objects
-In server mode, the mqtt broker creates for every connected client the corresponding object in the ioBroker. The object will be created with the name `mqtt.0.info.clients.<clientId>`. The clientId is the unique identifier of the client.
+In server mode, the mqtt broker creates for every connected client the corresponding object in the ioBroker. The object will be created with the name `mqtt.0.info.clients.<clientId>`. The clientId is the unique identifier of the client. Dots, whitespace and characters that are not allowed in an ioBroker object ID (e.g. `*` or binary data) are replaced by `_`.
 
 You can disable the creation of the client objects in the instance settings. (**Do not create client objects**)
 
@@ -219,6 +219,10 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update connection info: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
+* (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
+
 ### 8.1.5 (2026-10-27)
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
 * (@GermanBluefox) Server mode: the packet identifiers of a client and of the broker are kept apart. A QoS 2 message of a client was dropped as duplicate when the broker had a message with the same identifier in flight to it. After the counter wrapped, an identifier still in flight is not handed out again, and an unacknowledged message keeps its identifier when it is sent again after a reconnect
