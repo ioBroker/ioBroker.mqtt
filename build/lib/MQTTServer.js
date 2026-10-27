@@ -187,6 +187,19 @@ class MQTTServer {
             });
         }
     }
+    /**
+     * Forget the object of a deleted state: otherwise the next message of its topic writes the state without object.
+     *
+     * @param id ID of the deleted object
+     */
+    onObjectDeleted(id) {
+        for (const [topic, entry] of Object.entries(this.topic2id)) {
+            // an object which is being created right now is handled by its creation
+            if (entry.id === id && !entry.processing) {
+                delete this.topic2id[topic];
+            }
+        }
+    }
     onStateChange(id, state) {
         this.adapter.log.debug(`onStateChange ${id}: ${JSON.stringify(state)}`);
         if (!this.server) {

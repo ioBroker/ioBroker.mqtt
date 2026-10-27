@@ -221,6 +221,7 @@ Note: If you have some client that connects and disconnects very often, the list
 ## Changelog
 ### **WORK IN PROGRESS**
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
+* (@GermanBluefox) Fixed: after the object of a topic was deleted while the instance was running, the next messages wrote the state without object - the object is created again now
 
 ### 8.1.3 (2026-10-14)
 * (@GermanBluefox) In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)
@@ -233,10 +234,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 8.1.0 (2026-09-06)
 * (@GermanBluefox) Added the option "Interpretation of the received payload": besides the previous behavior ("Full") a received message can now be stored without unpacking a JSON into an ioBroker state object ("Numbers and booleans only"), or completely unparsed as string ("None")
-
-### 8.0.1 (2026-08-28)
-* (@GermanBluefox) The Blockly block is now built from TypeScript sources in `src-blockly/` into `admin/blockly.js`, with the translations in `src-blockly/i18n/`
-* (@GermanBluefox) Fixed: the Blockly block produced no code at all in newer Blockly editors. Since Blockly 10 a generator has to be registered in `Blockly.JavaScript.forBlock`, and the editor migrates its own generators there before it loads an adapter's block
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
