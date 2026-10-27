@@ -2350,7 +2350,7 @@ describe('MQTT server: deleted values', function () {
 });
 
 // A client ID with characters that are not allowed in an object ID (here binary data and "*")
-// must still get a valid "info.clients" object instead of "Cannot update connection info" (#493).
+// must still get a valid "info.clients" object instead of "Cannot update client objects: Invalid ID" (#493).
 describe('MQTT server: client objects for unusual client IDs', function () {
     const mqtt = require('mqtt');
     let adapter: Adapter;
