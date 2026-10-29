@@ -94,5 +94,7 @@
   "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')",
   "Binary topics (stored as files):": "Binary topics (stored as files):",
   "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')",
-  "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
+  "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')",
+  "Credentials:": "Credentials",
+  "credentials_help": "If selected, user name and password are taken from the central credential storage (Settings → Credentials) instead of the fields below"
 }

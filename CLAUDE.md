@@ -51,6 +51,9 @@ holds mocks/utilities (MQTT client/server harnesses, sim adapter).
   `onchange` de-duplication).
 - `onMessage` handles `sendTo` commands: `sendMessage2Client` (publish raw topic/message),
   `sendState2Client` (publish a state), and `test` (try-connect for the admin UI).
+- If `credentialId` is set, `onReady` replaces `user`/`pass` with the login/password of that
+  `system.credentials.*` object (adapter-core `Credentials`, admin Settings → Credentials, #673),
+  restarts the instance when it changes, and does not start at all if it cannot be read.
 - Many config fields arrive as strings from the admin UI and are coerced here
   (`parseInt`, `=== 'true'`); `MqttAdapterConfig` in `src/lib/types.d.ts` is the typed shape.
 
