@@ -231,11 +231,12 @@ Note: If you have some client that connects and disconnects very often, the list
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+## Changelog
 ### **WORK IN PROGRESS**
 * (@GermanBluefox) User name and password can be taken from the central credential storage of ioBroker (Settings → Credentials), so the same credentials can be used by several instances. Requires admin 7.9.0 or newer (#673)
 * (@GermanBluefox) Client mode: "Test connection" passes user name and password as options, so special characters in them no longer break the connection URL
 
-## Changelog
 ### 8.1.5 (2026-10-27)
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
 * (@GermanBluefox) Server mode: the packet identifiers of a client and of the broker are kept apart. A QoS 2 message of a client was dropped as duplicate when the broker had a message with the same identifier in flight to it. After the counter wrapped, an identifier still in flight is not handed out again, and an unacknowledged message keeps its identifier when it is sent again after a reconnect
