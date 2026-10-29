@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import assert from 'node:assert';
 import { tests } from '@iobroker/testing';
+import { connect } from 'mqtt';
 import MqttServer from './lib/mqttServer';
 import MqttClient from './lib/mqttClient';
 
@@ -96,6 +97,37 @@ function connectClient(name: string, port: number, receiver: Receiver): Promise<
             receiver.onMessage,
             { name, url: `127.0.0.1:${port}`, user: USER, pass: PASS },
         );
+    });
+}
+
+/**
+ * Connects once without reconnecting and reports whether the broker accepted the login.
+ *
+ * @param port The broker port
+ * @param username The user name to log in with
+ * @param password The password to log in with
+ * @returns true if the broker accepted the connection
+ */
+function tryLogin(port: number, username: string, password: string): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
+        const client = connect(`mqtt://127.0.0.1:${port}`, {
+            clientId: `login_${Date.now()}`,
+            username,
+            password,
+            reconnectPeriod: 0,
+            connectTimeout: 5000,
+        });
+        let finished = false;
+        const done = (accepted: boolean): void => {
+            if (!finished) {
+                finished = true;
+                client.end(true);
+                resolve(accepted);
+            }
+        };
+        client.once('connect', () => done(true));
+        client.once('error', () => done(false));
+        client.once('close', () => done(false));
     });
 }
 
@@ -381,6 +413,61 @@ tests.integration(path.join(__dirname, '..'), {
                     },
                     30000,
                 );
+            });
+        });
+
+        // User and password come from the central credential storage instead of the instance config (#673)
+        suite('MQTT Adapter Server Mode: central credentials', getHarness => {
+            const PORT = 11891;
+            const CREDENTIAL_ID = 'system.credentials.mqttTest';
+
+            before(async function () {
+                this.timeout(90000);
+
+                const harness = getHarness();
+
+                // The same structure the admin writes (Settings → Credentials), the password encrypted with the system secret
+                await harness.objects.setObjectAsync(CREDENTIAL_ID, {
+                    type: 'config',
+                    common: { name: 'MQTT test' },
+                    native: {
+                        type: 'custom',
+                        version: 1,
+                        encryptedFields: ['password'],
+                        login: USER,
+                        password: await harness.encryptValue(PASS),
+                    },
+                });
+
+                await harness.changeAdapterConfig('mqtt', {
+                    native: {
+                        type: 'server',
+                        port: PORT,
+                        bind: '127.0.0.1',
+                        user: '',
+                        pass: '',
+                        credentialId: CREDENTIAL_ID,
+                        publish: 'mqtt.0.*',
+                        debug: false,
+                    },
+                    common: {
+                        enabled: true,
+                        loglevel: 'info',
+                    },
+                });
+
+                await harness.startAdapterAndWait();
+                await wait(2000);
+            });
+
+            it('MQTT server: accepts the login of the selected credentials', async function () {
+                this.timeout(15000);
+                assert.strictEqual(await tryLogin(PORT, USER, PASS), true);
+            });
+
+            it('MQTT server: refuses a wrong password, so the credentials are really used', async function () {
+                this.timeout(15000);
+                assert.strictEqual(await tryLogin(PORT, USER, 'wrong'), false);
             });
         });
 

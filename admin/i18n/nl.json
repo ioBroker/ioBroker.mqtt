@@ -94,5 +94,7 @@
     "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Deze topics worden bij ontvangst genegeerd (gescheiden door komma, bijv. 'mqtt.0.*,javascript.*')",
     "Binary topics (stored as files):": "Binaire topics (opgeslagen als bestanden):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "De payloads van deze topics worden als bestanden in de bestandsopslag opgeslagen in plaats van in states. De state bevat de URL van het bestand. Jokertekens toegestaan (gescheiden door komma, bijv. 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Deze states worden gepubliceerd. (Gescheiden door komma, bijv. 'mqtt.0.*,javascript.*')"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Deze states worden gepubliceerd. (Gescheiden door komma, bijv. 'mqtt.0.*,javascript.*')",
+    "Credentials:": "Inloggegevens",
+    "credentials_help": "Indien geselecteerd, worden gebruikersnaam en wachtwoord uit de centrale opslag voor inloggegevens (Instellingen → Inloggegevens) gehaald in plaats van uit de velden hieronder"
 }

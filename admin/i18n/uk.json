@@ -94,5 +94,7 @@
     "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці топіки ігноруються під час отримання (через кому, наприклад 'mqtt.0.*,javascript.*')",
     "Binary topics (stored as files):": "Двійкові топіки (зберігаються як файли):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Дані цих топіків зберігаються як файли у файловому сховищі замість станів. Стан містить URL файлу. Дозволені символи підстановки (через кому, наприклад 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці стани будуть опубліковані. (Через кому, наприклад 'mqtt.0.*,javascript.*')"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці стани будуть опубліковані. (Через кому, наприклад 'mqtt.0.*,javascript.*')",
+    "Credentials:": "Облікові дані",
+    "credentials_help": "Якщо вибрано, ім'я користувача та пароль беруться з центрального сховища облікових даних (Налаштування → Облікові дані), а не з полів нижче"
 }

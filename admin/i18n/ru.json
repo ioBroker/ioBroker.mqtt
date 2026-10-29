@@ -94,5 +94,7 @@
     "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти топики игнорируются при получении (через запятую, например 'mqtt.0.*,javascript.*')",
     "Binary topics (stored as files):": "Двоичные топики (сохраняются как файлы):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Данные этих топиков сохраняются как файлы в файловом хранилище, а не в состояниях. Состояние содержит URL файла. Допускаются подстановочные знаки (через запятую, например 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти состояния будут опубликованы. (Через запятую, например 'mqtt.0.*,javascript.*')"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти состояния будут опубликованы. (Через запятую, например 'mqtt.0.*,javascript.*')",
+    "Credentials:": "Учётные данные",
+    "credentials_help": "Если выбрано, имя пользователя и пароль берутся из центрального хранилища учётных данных (Настройки → Учётные данные), а не из полей ниже"
 }

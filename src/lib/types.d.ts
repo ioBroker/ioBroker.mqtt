@@ -22,6 +22,8 @@ export interface MqttAdapterConfig {
     rejectUnauthorized: boolean;
     user: string;
     pass: string;
+    /** ID of credentials in the central storage (`system.credentials.*`). If set, they replace `user` and `pass` */
+    credentialId?: string;
     url: string;
     patterns: string;
     onchange: boolean;

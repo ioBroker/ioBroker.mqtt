@@ -28,6 +28,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
 - **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
 - **SSL** - If TCP and WebSockets should run as secure server.
+- **Authentication/Credentials** - Credentials from the central credential storage, see [Credentials](#credentials). If selected, the two fields below are not used.
 - **Authentication/Username** - If authentication is required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
 - **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify a group of messages, e.g., `*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter `mqtt.0`
@@ -114,6 +115,7 @@ and "Retain As Published".
 - **URL** - name or ip address of the broker/server. Like `localhost`.
 - **Port** - Port of the MQTT broker. By default, 1883
 - **Secure** - If secure (SSL) connection must be used.
+- **Credentials** - Credentials from the central credential storage, see [Credentials](#credentials). If selected, user and password below are not used.
 - **User** - if broker required authentication, define here the username.
 - **Password** - if the username is not empty, the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
@@ -128,6 +130,18 @@ and "Retain As Published".
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true).
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: `{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}`); if not the values `states.val` is sent as a single value (example state.val as single value: `true`)
 - **Persistent Session** - When checked, the broker saves the session information of the adapter. This means it tracks which messages have been sent/received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
+
+### Credentials
+Instead of typing user name and password into every instance, they can be stored once in the central
+credential storage of ioBroker (admin: Settings → Credentials, admin 7.9.0 or newer) and selected in the
+"Authentication settings" of the instance. The ➕ button next to the selector creates new credentials right there.
+Choose the form "Login & password": the login is used as the MQTT user name, the password as the MQTT password.
+The same credentials can be used by several instances, e.g. by a server instance and by the client instances
+that connect to it.
+
+When the selected credentials are changed in the admin, the instance restarts and uses the new values.
+If they cannot be read (e.g. because they were deleted), the instance logs an error and does not start,
+so a server never runs without authentication by accident.
 
 ## Usage
 
@@ -221,6 +235,8 @@ Note: If you have some client that connects and disconnects very often, the list
 ## Changelog
 ### **WORK IN PROGRESS**
 * (@Schimi1983) Ignored topics and binary topics: entries are trimmed, so a space after the comma no longer breaks an entry, and a `*` in the middle of an entry (e.g. `evcc.loadpoints.*.planSoc`) matches any levels. An entry without wildcard now matches exactly this topic instead of every topic containing it (#429)
+* (@GermanBluefox) User name and password can be taken from the central credential storage of ioBroker (Settings → Credentials), so the same credentials can be used by several instances. Requires admin 7.9.0 or newer (#673)
+* (@GermanBluefox) Client mode: "Test connection" passes user name and password as options, so special characters in them no longer break the connection URL
 
 ### 8.1.5 (2026-10-27)
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly

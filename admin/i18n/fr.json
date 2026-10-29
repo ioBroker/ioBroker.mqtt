@@ -94,5 +94,7 @@
     "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ces topics seront ignorés à la réception (séparés par une virgule, p. ex. 'mqtt.0.*,javascript.*')",
     "Binary topics (stored as files):": "Topics binaires (stockés comme fichiers) :",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Les données de ces topics sont stockées comme fichiers dans le stockage de fichiers au lieu d'états. L'état contient l'URL du fichier. Caractères génériques autorisés (séparés par une virgule, p. ex. 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ces états seront publiés. (Séparés par une virgule, p. ex. 'mqtt.0.*,javascript.*')"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ces états seront publiés. (Séparés par une virgule, p. ex. 'mqtt.0.*,javascript.*')",
+    "Credentials:": "Identifiants",
+    "credentials_help": "Si sélectionnés, le nom d'utilisateur et le mot de passe sont pris dans le stockage central des identifiants (Paramètres → Identifiants) au lieu des champs ci-dessous"
 }
