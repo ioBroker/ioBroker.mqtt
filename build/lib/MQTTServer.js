@@ -231,7 +231,7 @@ class MQTTServer {
             if (this.clients) {
                 for (const id in this.clients) {
                     const _id = id || this.clients[id]?.id || this.clients[id]?.stream?.remoteAddress;
-                    const oid = `info.clients.${_id.replace(/[.\s]+/g, '_')}`;
+                    const oid = `info.clients.${(0, common_1.clientId2objectId)(_id, this.adapter.FORBIDDEN_CHARS)}`;
                     clientIds.push(oid);
                     const clientObj = await this.adapter.getObjectAsync(oid);
                     if (!clientObj?.native) {
@@ -2152,10 +2152,10 @@ class MQTTServer {
                             subscriptionIdentifier,
                             shareName,
                         };
-                        this.adapter.log.info(`Client [${client.id}] subscribes on "${this.topic2id[topic].id}"`);
+                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${this.topic2id[topic].id}"`);
                         if (sendKnownValue) {
                             setTimeout(() => {
-                                this.adapter.log.info(`Client [${client.id}] publishOnSubscribe`);
+                                this.adapter.log.debug(`Client [${client.id}] publishOnSubscribe`);
                                 this.sendState2Client(client, this.topic2id[topic].id, this.states[this.topic2id[topic].id], undefined, !this.config.noRetain, undefined, 'retained');
                             }, 200);
                         }
@@ -2182,7 +2182,7 @@ class MQTTServer {
                             subscriptionIdentifier,
                             shareName,
                         };
-                        this.adapter.log.info(`Client [${client.id}] subscribes on "${topic}" with regex /${regText}/`);
+                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}" with regex /${regText}/`);
                         // add simple mqtt.0.pattern
                         pattern = `${this.adapter.namespace}/${pattern}`;
                         regText = (0, common_1.pattern2RegEx)(pattern, this.adapter, this.config.prefix);
@@ -2196,10 +2196,10 @@ class MQTTServer {
                             subscriptionIdentifier,
                             shareName,
                         };
-                        this.adapter.log.info(`Client [${client.id}] subscribes on "${topic}"  with regex /${regText}/`);
+                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}"  with regex /${regText}/`);
                         if (sendKnownValue) {
                             setTimeout(() => {
-                                this.adapter.log.info(`Client [${client.id}] publishOnSubscribe send all known states`);
+                                this.adapter.log.debug(`Client [${client.id}] publishOnSubscribe send all known states`);
                                 Object.keys(this.states).forEach(savedId => {
                                     if (this.checkPattern(client._subs, savedId)) {
                                         this.sendState2Client(client, savedId, this.states[savedId], undefined, !this.config.noRetain, undefined, 'retained');
@@ -2250,14 +2250,14 @@ class MQTTServer {
                             const _id = this.topic2id[topic].id;
                             if (client._subsID?.[_id]) {
                                 delete client._subsID[_id];
-                                this.adapter.log.info(`Client [${client.id}] unsubscribes on "${_id}"`);
+                                this.adapter.log.debug(`Client [${client.id}] unsubscribes on "${_id}"`);
                             }
                             else {
-                                this.adapter.log.info(`Client [${client.id}] unsubscribes on unknown "${_id}"`);
+                                this.adapter.log.debug(`Client [${client.id}] unsubscribes on unknown "${_id}"`);
                             }
                         }
                         else {
-                            this.adapter.log.info(`Client [${client.id}] unsubscribes on unknown topic "${topic}"`);
+                            this.adapter.log.debug(`Client [${client.id}] unsubscribes on unknown topic "${topic}"`);
                         }
                     }
                     else {
@@ -2267,16 +2267,16 @@ class MQTTServer {
                         }
                         // add a simple pattern
                         if (client._subs?.[topic]) {
-                            this.adapter.log.info(`Client [${client.id}] unsubscribes on "${topic}"`);
+                            this.adapter.log.debug(`Client [${client.id}] unsubscribes on "${topic}"`);
                             delete client._subs[topic];
                             if (client._subs[`${this.adapter.namespace}/${topic}`]) {
                                 // add simple mqtt.0.pattern
                                 delete client._subs[`${this.adapter.namespace}/${topic}`];
-                                this.adapter.log.info(`Client [${client.id}] unsubscribes on "${this.adapter.namespace}/${topic}"`);
+                                this.adapter.log.debug(`Client [${client.id}] unsubscribes on "${this.adapter.namespace}/${topic}"`);
                             }
                         }
                         else {
-                            this.adapter.log.info(`Client [${client.id}] unsubscribes on unknown "${topic}"`);
+                            this.adapter.log.debug(`Client [${client.id}] unsubscribes on unknown "${topic}"`);
                         }
                     }
                 }
