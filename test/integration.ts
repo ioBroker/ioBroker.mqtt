@@ -1,5 +1,6 @@
 import * as path from 'node:path';
 import assert from 'node:assert';
+import { createConnection } from 'node:net';
 import { tests } from '@iobroker/testing';
 import { connect } from 'mqtt';
 import MqttServer from './lib/mqttServer';
@@ -97,6 +98,23 @@ function connectClient(name: string, port: number, receiver: Receiver): Promise<
             receiver.onMessage,
             { name, url: `127.0.0.1:${port}`, user: USER, pass: PASS },
         );
+    });
+}
+
+/**
+ * Resolves whether something accepts TCP connections on the port.
+ *
+ * @param port The port on 127.0.0.1
+ * @returns true if a connection could be opened
+ */
+function isListening(port: number): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
+        const socket = createConnection({ port, host: '127.0.0.1' });
+        socket.once('connect', () => {
+            socket.destroy();
+            resolve(true);
+        });
+        socket.once('error', () => resolve(false));
     });
 }
 
@@ -457,7 +475,9 @@ tests.integration(path.join(__dirname, '..'), {
                 });
 
                 await harness.startAdapterAndWait();
-                await wait(2000);
+                // tryLogin() does not retry, so the broker has to listen before the tests start.
+                // It takes a few seconds after the start, longer on slow CI runners.
+                await poll(`the broker on port ${PORT}`, () => isListening(PORT), 30000);
             });
 
             it('MQTT server: accepts the login of the selected credentials', async function () {
