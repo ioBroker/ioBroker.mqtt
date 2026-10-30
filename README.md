@@ -233,7 +233,7 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 9.0.0 (2026-10-30)
 * (@Schimi1983) **Breaking change** - Ignored topics and binary topics: entries are trimmed, so a space after the comma no longer breaks an entry, and a `*` in the middle of an entry (e.g. `evcc.loadpoints.*.planSoc`) matches any levels. An entry has to match the whole ID: an entry without wildcard matches this ID and everything below it, but no longer every ID that contains it (`alarm` no longer matches `instar.all.alarm.motion`, write `*.alarm.*`). Please check both settings after the update (#429)
 * (@GermanBluefox) Ignored topics and binary topics: a MQTT topic filter (e.g. `homeassistant/#`) also matches the ID with namespace when "Replace dots in topic names with underscore" is enabled. Dots at the start or the end of an ID entry are removed with a warning in the log. The help text in the settings describes the syntax
 * (@GermanBluefox) User name and password can be taken from the central credential storage of ioBroker (Settings → Credentials), so the same credentials can be used by several instances. Requires admin 7.9.0 or newer (#673)
@@ -254,9 +254,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 8.1.2 (2026-10-13)
 * (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
-
-### 8.1.1 (2026-10-13)
-* (@GermanBluefox) Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
