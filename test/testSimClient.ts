@@ -73,6 +73,8 @@ describe('MQTT client', function () {
                             const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic}`);
                             assert.ok(obj);
                             assert.strictEqual((obj as ioBroker.StateObject).common.type, 'number');
+                            // "variable" is not an ioBroker state role; "state" is the generic one
+                            assert.strictEqual((obj as ioBroker.StateObject).common.role, 'state');
                             publisher.destroy();
                             done();
                         }, 500);
@@ -167,7 +169,7 @@ describe('MQTT client', function () {
                         const obj = (await adapter.getForeignObjectAsync(`mqtt.0.${topic}`)) as ioBroker.StateObject;
                         assert.ok(obj);
                         assert.strictEqual(obj.common.type, 'string');
-                        assert.strictEqual(obj.common.role, 'url');
+                        assert.strictEqual(obj.common.role, 'text.url');
                         assert.strictEqual((obj.native as any).binary, true);
                         assert.strictEqual((obj.native as any).file, topic);
 
