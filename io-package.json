@@ -471,7 +471,7 @@
           "zh-cn": "MQTT的客户"
         },
         "type": "boolean",
-        "role": "indicator.reachable",
+        "role": "indicator.connected",
         "read": true,
         "write": false,
         "def": false
