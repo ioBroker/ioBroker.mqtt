@@ -1,4 +1,7 @@
 # Older changes
+## 8.1.2 (2026-10-13)
+* (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
+
 ## 8.1.1 (2026-10-13)
 * (@GermanBluefox) Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process
 

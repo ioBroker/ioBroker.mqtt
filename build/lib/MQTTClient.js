@@ -259,7 +259,7 @@ class MQTTClient {
                         name: topic,
                         read: true,
                         write: false,
-                        role: 'url',
+                        role: 'text.url',
                         type: 'string',
                         desc: 'mqtt binary payload (stored as file)',
                     },
@@ -499,7 +499,7 @@ class MQTTClient {
                         _id: 'info.lastSession',
                         type: 'state',
                         common: {
-                            role: 'variable',
+                            role: 'json',
                             name: {
                                 en: "Last session's topics",
                                 de: 'Topics der letzten Session',
@@ -613,7 +613,7 @@ class MQTTClient {
                                 name: topic,
                                 write: true,
                                 read: true,
-                                role: 'variable',
+                                role: 'state',
                                 desc: 'mqtt client variable',
                                 type: 'mixed',
                             },
