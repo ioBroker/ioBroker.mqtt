@@ -20,7 +20,7 @@
   "homepage": "https://github.com/ioBroker/ioBroker.mqtt",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.mqtt"
+    "url": "git+https://github.com/ioBroker/ioBroker.mqtt.git"
   },
   "keywords": [
     "ioBroker",
