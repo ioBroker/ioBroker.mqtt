@@ -233,6 +233,11 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+* (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
+* (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
+* (@Schimi1983) State roles as defined by ioBroker: new states created from topics get `state` instead of the undefined role `variable`, binary topics `text.url` instead of `url`, `info.lastSession` `json`, and `info.connection` in io-package `indicator.connected`. Existing objects keep their role
+
 ### 9.0.1 (2026-10-30)
 * (@Schimi1983) **Breaking change** - Ignored topics and binary topics: entries are trimmed, so a space after the comma no longer breaks an entry, and a `*` in the middle of an entry (e.g. `evcc.loadpoints.*.planSoc`) matches any levels. An entry has to match the whole ID: an entry without wildcard matches this ID and everything below it, but no longer every ID that contains it (`alarm` no longer matches `instar.all.alarm.motion`, write `*.alarm.*`). Please check both settings after the update (#429)
 * (@GermanBluefox) Ignored topics and binary topics: a MQTT topic filter (e.g. `homeassistant/#`) also matches the ID with namespace when "Replace dots in topic names with underscore" is enabled. Dots at the start or the end of an ID entry are removed with a warning in the log. The help text in the settings describes the syntax
