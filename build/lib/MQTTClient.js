@@ -52,29 +52,17 @@ class MQTTClient {
         // The admin UI delivers the version as a string
         const configuredVersion = parseInt(this.config.protocolVersion, 10);
         this.protocolVersion = configuredVersion === 3 || configuredVersion === 5 ? configuredVersion : 4;
-        this.ignoredTopics = this.config.ignoredTopics?.split(',') ?? [];
-        for (const ignoredTopicPattern of this.ignoredTopics) {
-            if (!ignoredTopicPattern) {
-                // Empty strings would filter out all topics, which is probably not what the user wants
-                if (this.ignoredTopics.length > 1) {
-                    this.adapter.log.warn('Ignored topics should not end with an ",".');
-                }
-                continue;
-            }
-            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, this.adapter, this.config.prefix, this.config.dotToUnderscore);
-            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, this.adapter, this.config.prefix, this.config.dotToUnderscore);
-            this.adapter.log.info(`Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`);
-            this.ignoredTopicsRegexes.push(new RegExp(ignoredTopicRegex), new RegExp(ignoredTopicRegexWithNameSpace));
+        const ignored = (0, common_1.parseTopicList)(this.config.ignoredTopics, this.adapter, this.config.prefix, this.config.dotToUnderscore);
+        this.ignoredTopics = ignored.patterns;
+        this.ignoredTopicsRegexes.push(...ignored.regexes);
+        if (ignored.patterns.length) {
+            this.adapter.log.info(`Ignoring topics: ${ignored.patterns.join(', ')} (RegExp: ${ignored.regexes.map(r => r.source).join(' ')})`);
         }
-        this.binaryTopics = this.config.binaryTopics?.split(',') ?? [];
-        for (const binaryTopicPattern of this.binaryTopics) {
-            if (!binaryTopicPattern) {
-                continue;
-            }
-            const binaryTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${binaryTopicPattern}`, this.adapter, this.config.prefix, this.config.dotToUnderscore);
-            const binaryTopicRegex = (0, common_1.pattern2RegEx)(binaryTopicPattern, this.adapter, this.config.prefix, this.config.dotToUnderscore);
-            this.adapter.log.info(`Storing topic as file with pattern: ${binaryTopicPattern} (RegExp: ${binaryTopicRegex} und ${binaryTopicRegexWithNameSpace})`);
-            this.binaryTopicsRegexes.push(new RegExp(binaryTopicRegex), new RegExp(binaryTopicRegexWithNameSpace));
+        const binary = (0, common_1.parseTopicList)(this.config.binaryTopics, this.adapter, this.config.prefix, this.config.dotToUnderscore);
+        this.binaryTopics = binary.patterns;
+        this.binaryTopicsRegexes.push(...binary.regexes);
+        if (binary.patterns.length) {
+            this.adapter.log.info(`Storing topics as file: ${binary.patterns.join(', ')} (RegExp: ${binary.regexes.map(r => r.source).join(' ')})`);
         }
         process.on('uncaughtException', err => this.adapter.log.error(`uncaughtException: ${err}`));
         this.init();

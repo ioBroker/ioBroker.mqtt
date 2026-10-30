@@ -77,28 +77,18 @@ class MQTTServer {
         this.adapter = adapter;
         this.config = adapter.config;
         this.namespaceRegEx = new RegExp(`^${this.adapter.namespace.replace('.', '\\.')}\\.`);
-        this.ignoredTopics = this.config.ignoredTopics?.split(',') ?? [];
         this.states = states;
-        for (const ignoredTopicPattern of this.ignoredTopics) {
-            if (!ignoredTopicPattern) {
-                // Empty strings would filter out all topics, which is probably not what the user wants
-                this.ignoredTopics.length > 1 && this.adapter.log.warn(`Ignored topics should not end with an ",".`);
-                continue;
-            }
-            const ignoredTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${ignoredTopicPattern}`, adapter, this.config.prefix, this.config.dotToUnderscore);
-            const ignoredTopicRegex = (0, common_1.pattern2RegEx)(ignoredTopicPattern, adapter, this.config.prefix, this.config.dotToUnderscore);
-            this.adapter.log.info(`Ignoring topic with pattern: ${ignoredTopicPattern} (RegExp: ${ignoredTopicRegex} und ${ignoredTopicRegexWithNameSpace})`);
-            this.ignoredTopicsRegexes.push(new RegExp(ignoredTopicRegex), new RegExp(ignoredTopicRegexWithNameSpace));
+        const ignored = (0, common_1.parseTopicList)(this.config.ignoredTopics, adapter, this.config.prefix, this.config.dotToUnderscore);
+        this.ignoredTopics = ignored.patterns;
+        this.ignoredTopicsRegexes.push(...ignored.regexes);
+        if (ignored.patterns.length) {
+            this.adapter.log.info(`Ignoring topics: ${ignored.patterns.join(', ')} (RegExp: ${ignored.regexes.map(r => r.source).join(' ')})`);
         }
-        this.binaryTopics = this.config.binaryTopics?.split(',') ?? [];
-        for (const binaryTopicPattern of this.binaryTopics) {
-            if (!binaryTopicPattern) {
-                continue;
-            }
-            const binaryTopicRegexWithNameSpace = (0, common_1.pattern2RegEx)(`${this.adapter.namespace}.${binaryTopicPattern}`, adapter, this.config.prefix, this.config.dotToUnderscore);
-            const binaryTopicRegex = (0, common_1.pattern2RegEx)(binaryTopicPattern, adapter, this.config.prefix, this.config.dotToUnderscore);
-            this.adapter.log.info(`Storing topic as file with pattern: ${binaryTopicPattern} (RegExp: ${binaryTopicRegex} und ${binaryTopicRegexWithNameSpace})`);
-            this.binaryTopicsRegexes.push(new RegExp(binaryTopicRegex), new RegExp(binaryTopicRegexWithNameSpace));
+        const binary = (0, common_1.parseTopicList)(this.config.binaryTopics, adapter, this.config.prefix, this.config.dotToUnderscore);
+        this.binaryTopics = binary.patterns;
+        this.binaryTopicsRegexes.push(...binary.regexes);
+        if (binary.patterns.length) {
+            this.adapter.log.info(`Storing topics as file: ${binary.patterns.join(', ')} (RegExp: ${binary.regexes.map(r => r.source).join(' ')})`);
         }
         this.config.sendOnStartInterval = parseInt(this.config.sendOnStartInterval, 10) || 2000;
         this.config.sendInterval = parseInt(this.config.sendInterval, 10) || 0;

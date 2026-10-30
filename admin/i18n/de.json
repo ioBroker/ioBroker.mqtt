@@ -91,7 +91,7 @@
     "MQTT 3.1.1 (default)": "MQTT 3.1.1 (Standard)",
     "MQTT 5.0": "MQTT 5.0",
     "MQTT 3.1": "MQTT 3.1",
-    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Diese Topics werden beim Empfang ignoriert (durch Komma getrennt, z. B. 'mqtt.0.*,javascript.*')",
+    "ignoredTopics_help": "Empfangene Topics, die auf diese Einträge passen, werden ignoriert. Durch Komma getrennt, als ID ('evcc.loadpoints.*.planSoc') oder MQTT-Filter ('homeassistant/#'). '*' und '#' passen auf alles, '+' auf genau eine Ebene. Ein Eintrag ohne Platzhalter umfasst auch alles darunter",
     "Binary topics (stored as files):": "Binäre Topics (als Dateien gespeichert):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Die Nutzdaten dieser Topics werden als Dateien im Dateispeicher statt in States gespeichert. Der State enthält die URL der Datei. Platzhalter erlaubt (durch Komma getrennt, z. B. 'valetudo/+/map,zigbee.*.image')",
     "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Diese States werden veröffentlicht. (Durch Komma getrennt, z. B. 'mqtt.0.*,javascript.*')",
