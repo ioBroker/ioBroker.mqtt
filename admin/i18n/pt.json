@@ -91,8 +91,10 @@
     "MQTT 3.1.1 (default)": "MQTT 3.1.1 (padrão)",
     "MQTT 5.0": "MQTT 5.0",
     "MQTT 3.1": "MQTT 3.1",
-    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Estes tópicos serão ignorados na recepção (separados por vírgula, p. ex. 'mqtt.0.*,javascript.*')",
+    "ignoredTopics_help": "Os tópicos recebidos que correspondem a estas entradas são ignorados. Separados por vírgula, como ID ('evcc.loadpoints.*.planSoc') ou filtro MQTT ('homeassistant/#'). '*' e '#' correspondem a qualquer coisa, '+' a exatamente um nível. Uma entrada sem curinga abrange também tudo abaixo dela",
     "Binary topics (stored as files):": "Tópicos binários (armazenados como arquivos):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Os dados destes tópicos são armazenados como arquivos no armazenamento de arquivos em vez de estados. O estado contém a URL do arquivo. Curingas permitidos (separados por vírgula, p. ex. 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Estes estados serão publicados. (Separados por vírgula, p. ex. 'mqtt.0.*,javascript.*')"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Estes estados serão publicados. (Separados por vírgula, p. ex. 'mqtt.0.*,javascript.*')",
+    "Credentials:": "Credenciais",
+    "credentials_help": "Se selecionado, o nome de utilizador e a senha são obtidos do armazenamento central de credenciais (Configurações → Credenciais) em vez dos campos abaixo"
 }

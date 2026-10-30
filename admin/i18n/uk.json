@@ -91,8 +91,10 @@
     "MQTT 3.1.1 (default)": "MQTT 3.1.1 (за замовчуванням)",
     "MQTT 5.0": "MQTT 5.0",
     "MQTT 3.1": "MQTT 3.1",
-    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці топіки ігноруються під час отримання (через кому, наприклад 'mqtt.0.*,javascript.*')",
+    "ignoredTopics_help": "Отримані топіки, що відповідають цим записам, ігноруються. Через кому, як ID ('evcc.loadpoints.*.planSoc') або MQTT-фільтр ('homeassistant/#'). '*' і '#' відповідають будь-чому, '+' рівно одному рівню. Запис без символу підстановки охоплює й усе, що нижче",
     "Binary topics (stored as files):": "Двійкові топіки (зберігаються як файли):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Дані цих топіків зберігаються як файли у файловому сховищі замість станів. Стан містить URL файлу. Дозволені символи підстановки (через кому, наприклад 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці стани будуть опубліковані. (Через кому, наприклад 'mqtt.0.*,javascript.*')"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці стани будуть опубліковані. (Через кому, наприклад 'mqtt.0.*,javascript.*')",
+    "Credentials:": "Облікові дані",
+    "credentials_help": "Якщо вибрано, ім'я користувача та пароль беруться з центрального сховища облікових даних (Налаштування → Облікові дані), а не з полів нижче"
 }

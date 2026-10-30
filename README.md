@@ -28,6 +28,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **WebSockets** - if parallel to TCP Server, the WebSocket MQTT Server should run.
 - **Port** - Port where the server will run (Default 1883). **WebSockets** will always run on port+1 (Default 1884)
 - **SSL** - If TCP and WebSockets should run as secure server.
+- **Authentication/Credentials** - Credentials from the central credential storage, see [Credentials](#credentials). If selected, the two fields below are not used.
 - **Authentication/Username** - If authentication is required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
 - **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify a group of messages, e.g., `*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter `mqtt.0`
@@ -41,7 +42,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Force clean session** - Overwrite the client settings and clear or keep the session.
 - **Publish messages without "retain" flag** - Send messages to other clients without a retain flag (read more in the next paragraph)
-- **Ignored Topics** - You can provide certain topics that will be ignored by the broker. This is useful if you want to reduce some chatty clients. You can use wildcards to specify multiple topics, e.g. `test.*`.
+- **Ignored Topics** - You can provide certain topics that will be ignored by the broker. This is useful if you want to reduce some chatty clients. Entries are separated by comma (spaces around the comma are allowed) and can be written as ioBroker ID (`evcc.loadpoints.*.planSoc`, with or without `mqtt.0.`) or as MQTT topic filter (`homeassistant/#`, `instar/+/alarm`). `*` and `#` match any number of characters at any position, `+` exactly one level, and a trailing `.*` or `/#` also matches the parent itself. An entry without wildcard matches this topic and everything below it, but not a part of a name: `evcc` matches `evcc.site`, but not `evccTitle`, and to match a level at any position write `*.alarm.*`. The same rules apply to **Binary topics**.
 
 The ioBroker MQTT-Broker in server mode only simulates the behavior of real MQTT-Broker (like Mosquitto), but it is not the same.
 Real MQTT-Broker normally does not save the values of the topics and just forwards the message to other subscribed clients.
@@ -114,6 +115,7 @@ and "Retain As Published".
 - **URL** - name or ip address of the broker/server. Like `localhost`.
 - **Port** - Port of the MQTT broker. By default, 1883
 - **Secure** - If secure (SSL) connection must be used.
+- **Credentials** - Credentials from the central credential storage, see [Credentials](#credentials). If selected, user and password below are not used.
 - **User** - if broker required authentication, define here the username.
 - **Password** - if the username is not empty, the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
@@ -128,6 +130,18 @@ and "Retain As Published".
 - **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true).
 - **Send state object as mqtt message** - The client sends the states as parsed string JSON objects to the broker (example parsed string JSON object: `{"val":true,"ack":true,"ts":1584690242021,"q":0,"from":"system.adapter.deconz.0","user":"system.user.admin","lc":1584624242021,"expire":true}`); if not the values `states.val` is sent as a single value (example state.val as single value: `true`)
 - **Persistent Session** - When checked, the broker saves the session information of the adapter. This means it tracks which messages have been sent/received by the adapter (only QoS Level 1 and 2) and to which topics the adapter has subscribed. This information survives a disconnect and reconnect of the adapter.
+
+### Credentials
+Instead of typing user name and password into every instance, they can be stored once in the central
+credential storage of ioBroker (admin: Settings → Credentials, admin 7.9.0 or newer) and selected in the
+"Authentication settings" of the instance. The ➕ button next to the selector creates new credentials right there.
+Choose the form "Login & password": the login is used as the MQTT user name, the password as the MQTT password.
+The same credentials can be used by several instances, e.g. by a server instance and by the client instances
+that connect to it.
+
+When the selected credentials are changed in the admin, the instance restarts and uses the new values.
+If they cannot be read (e.g. because they were deleted), the instance logs an error and does not start,
+so a server never runs without authentication by accident.
 
 ## Usage
 
@@ -223,6 +237,12 @@ Note: If you have some client that connects and disconnects very often, the list
 * (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
 * (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
 
+### 9.0.0 (2026-10-30)
+* (@Schimi1983) **Breaking change** - Ignored topics and binary topics: entries are trimmed, so a space after the comma no longer breaks an entry, and a `*` in the middle of an entry (e.g. `evcc.loadpoints.*.planSoc`) matches any levels. An entry has to match the whole ID: an entry without wildcard matches this ID and everything below it, but no longer every ID that contains it (`alarm` no longer matches `instar.all.alarm.motion`, write `*.alarm.*`). Please check both settings after the update (#429)
+* (@GermanBluefox) Ignored topics and binary topics: a MQTT topic filter (e.g. `homeassistant/#`) also matches the ID with namespace when "Replace dots in topic names with underscore" is enabled. Dots at the start or the end of an ID entry are removed with a warning in the log. The help text in the settings describes the syntax
+* (@GermanBluefox) User name and password can be taken from the central credential storage of ioBroker (Settings → Credentials), so the same credentials can be used by several instances. Requires admin 7.9.0 or newer (#673)
+* (@GermanBluefox) Client mode: "Test connection" passes user name and password as options, so special characters in them no longer break the connection URL
+
 ### 8.1.5 (2026-10-27)
 * (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
 * (@GermanBluefox) Server mode: the packet identifiers of a client and of the broker are kept apart. A QoS 2 message of a client was dropped as duplicate when the broker had a message with the same identifier in flight to it. After the counter wrapped, an identifier still in flight is not handed out again, and an unacknowledged message keeps its identifier when it is sent again after a reconnect
@@ -238,9 +258,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 8.1.2 (2026-10-13)
 * (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
-
-### 8.1.1 (2026-10-13)
-* (@GermanBluefox) Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

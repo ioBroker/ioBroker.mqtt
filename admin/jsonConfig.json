@@ -180,7 +180,19 @@
                     "md": 12,
                     "lg": 12
                 },
+                "credentialId": {
+                    "type": "credential",
+                    "label": "Credentials:",
+                    "help": "credentials_help",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "user": {
+                    "newLine": true,
+                    "hidden": "!!data.credentialId",
                     "type": "text",
                     "label": "User:",
                     "xs": 12,
@@ -190,6 +202,7 @@
                     "xl": 4
                 },
                 "pass": {
+                    "hidden": "!!data.credentialId",
                     "type": "password",
                     "label": "Password:",
                     "xs": 12,
@@ -205,7 +218,7 @@
                     "label": "Test connection",
                     "command": "test",
                     "variant": "contained",
-                    "jsonData": "{\"user\": \"${data.user}\", \"pass\": \"${data.pass}\", \"url\": \"${data.url}\", \"port\": ${data.port}, \"ssl\": ${data.ssl}}",
+                    "jsonData": "{\"user\": \"${data.user}\", \"pass\": \"${data.pass}\", \"credentialId\": \"${data.credentialId || ''}\", \"url\": \"${data.url}\", \"port\": ${data.port}, \"ssl\": ${data.ssl}}",
                     "xs": 12,
                     "sm": 12,
                     "md": 6,
@@ -323,7 +336,7 @@
                     "lg": 12,
                     "xl": 12,
                     "delimiter": ",",
-                    "help": "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')"
+                    "help": "ignoredTopics_help"
                 },
                 "binaryTopics": {
                     "newLine": true,

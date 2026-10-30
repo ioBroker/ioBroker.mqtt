@@ -91,8 +91,10 @@
     "MQTT 3.1.1 (default)": "MQTT 3.1.1（默认）",
     "MQTT 5.0": "MQTT 5.0",
     "MQTT 3.1": "MQTT 3.1",
-    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "接收时将忽略这些主题（以逗号分隔，例如 'mqtt.0.*,javascript.*'）",
+    "ignoredTopics_help": "与这些条目匹配的接收主题将被忽略。以逗号分隔，可写为 ID（'evcc.loadpoints.*.planSoc'）或 MQTT 过滤器（'homeassistant/#'）。'*' 和 '#' 匹配任意内容，'+' 恰好匹配一级。不含通配符的条目也涵盖其下的所有内容",
     "Binary topics (stored as files):": "二进制主题（存储为文件）：",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "这些主题的负载将作为文件存储在文件存储中，而不是状态中。状态中保存文件的 URL。允许使用通配符（以逗号分隔，例如 'valetudo/+/map,zigbee.*.image'）",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "这些状态将被发布。（以逗号分隔，例如 'mqtt.0.*,javascript.*'）"
+    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "这些状态将被发布。（以逗号分隔，例如 'mqtt.0.*,javascript.*'）",
+    "Credentials:": "凭据",
+    "credentials_help": "如果已选择，则用户名和密码取自中央凭据存储（设置 → 凭据），而不是下面的字段"
 }

@@ -54,9 +54,41 @@ class MQTT extends adapter_core_1.Adapter {
             // Load certificates
             this.config.certificates = (await this.getCertificatesAsync())[0];
         }
+        // User and password from the central credential storage (#673)
+        if (this.config.credentialId && !(await this.readCredentials())) {
+            return;
+        }
         // Start
         await this.main();
     };
+    /**
+     * Takes user name and password from the credentials selected in the instance configuration
+     * (managed in admin under Settings → Credentials). A change of these credentials restarts the instance.
+     *
+     * @returns false if the credentials cannot be used. The instance is not started then, so the server
+     *          does not run without authentication.
+     */
+    async readCredentials() {
+        const id = this.config.credentialId;
+        try {
+            await adapter_core_1.Credentials.subscribeCredentials(this, id, () => {
+                this.log.info(`Credentials "${id}" were changed. Restarting...`);
+                this.restart();
+            });
+            const credentials = await adapter_core_1.Credentials.getCredentials(this, id);
+            if (!credentials.values.login) {
+                throw new Error('they have no login. Select credentials with login and password');
+            }
+            this.config.user = credentials.values.login;
+            this.config.pass = credentials.values.password || '';
+            this.log.info(`Using user name and password of the credentials "${credentials.name || id}"`);
+            return true;
+        }
+        catch (e) {
+            this.log.error(`Cannot use the credentials "${id}": ${e.message}. The instance is not started.`);
+            return false;
+        }
+    }
     async main() {
         this.config.forceCleanSession ||= 'no'; // default
         // Objects deleted by the user: the topics have to create them again (see onObjectChange)
@@ -216,30 +248,54 @@ class MQTT extends adapter_core_1.Adapter {
             case 'test': {
                 // Try to connect to mqtt broker
                 if (obj.callback && obj.message) {
-                    const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.user ? `${obj.message.user}:${obj.message.pass}@` : ''}${obj.message.url}${obj.message.port ? `:${obj.message.port}` : ''}?clientId=ioBroker.${this.namespace}`;
-                    const _client = (0, mqtt_1.connect)(_url);
-                    // Set timeout for connection
-                    const timeout = setTimeout(() => {
-                        _client.end();
-                        this.sendTo(obj.from, obj.command, 'timeout', obj.callback);
-                    }, 2000);
-                    // If connected, return success
-                    _client.on('connect', () => {
-                        _client.end();
-                        clearTimeout(timeout);
-                        this.sendTo(obj.from, obj.command, 'connected', obj.callback);
-                    });
-                    // If connected, return success
-                    _client.on('error', (err) => {
-                        _client.end();
-                        clearTimeout(timeout);
-                        this.log.warn(`Error on mqtt test: ${err}`);
-                        this.sendTo(obj.from, obj.command, 'error', obj.callback);
-                    });
+                    void this.testConnection(obj);
                 }
             }
         }
     };
+    /**
+     * Tries to connect to the broker with the settings from the admin UI and answers with
+     * `connected`, `timeout` or `error`.
+     *
+     * @param obj The `test` message: `url`, `port`, `ssl` and either `user`/`pass` or `credentialId`
+     */
+    async testConnection(obj) {
+        let user = obj.message.user || '';
+        let pass = obj.message.pass || '';
+        if (obj.message.credentialId) {
+            try {
+                const credentials = await adapter_core_1.Credentials.getCredentials(this, obj.message.credentialId);
+                user = credentials.values.login || '';
+                pass = credentials.values.password || '';
+            }
+            catch (e) {
+                this.log.warn(`Error on mqtt test: ${e.message}`);
+                this.sendTo(obj.from, obj.command, 'error', obj.callback);
+                return;
+            }
+        }
+        const _url = `mqtt${obj.message.ssl ? 's' : ''}://${obj.message.url}${obj.message.port ? `:${obj.message.port}` : ''}?clientId=ioBroker.${this.namespace}`;
+        // the credentials are passed as options, so special characters in them do not break the URL
+        const _client = (0, mqtt_1.connect)(_url, user ? { username: user, password: pass } : {});
+        // Set timeout for connection
+        const timeout = setTimeout(() => {
+            _client.end();
+            this.sendTo(obj.from, obj.command, 'timeout', obj.callback);
+        }, 2000);
+        // If connected, return success
+        _client.on('connect', () => {
+            _client.end();
+            clearTimeout(timeout);
+            this.sendTo(obj.from, obj.command, 'connected', obj.callback);
+        });
+        // If connected, return success
+        _client.on('error', (err) => {
+            _client.end();
+            clearTimeout(timeout);
+            this.log.warn(`Error on mqtt test: ${err}`);
+            this.sendTo(obj.from, obj.command, 'error', obj.callback);
+        });
+    }
     onObjectChange = (id, obj) => {
         if (!obj) {
             this.server?.onObjectDeleted(id);
