@@ -159,11 +159,14 @@ export function pattern2RegEx(
  * An entry may be written as MQTT topic filter (`instar/+/alarm/#`) or as ioBroker ID pattern
  * (`mqtt.0.instar.*.alarm.*`). `*` and `#` match any number of characters at any position,
  * `+` matches exactly one level. A trailing `.*` / `/#` also matches the parent itself.
+ * An entry without wildcard matches this ID and everything below it, so `evcc` matches `evcc`
+ * and `evcc.site`, but not `evccTitle`.
  *
  * @param pattern The entry, already trimmed
  * @param adapter The adapter instance (for the namespace)
  * @param prefix Configured topic prefix
  * @param dotToUnderscore Whether dots in topic names are replaced by underscores
+ * @param withNamespace Whether the expression is for the ID with the adapter namespace in front
  * @returns The anchored regular expression source
  */
 export function topicListPattern2RegEx(
@@ -171,13 +174,19 @@ export function topicListPattern2RegEx(
     adapter: ioBroker.Adapter,
     prefix: string,
     dotToUnderscore?: boolean,
+    withNamespace?: boolean,
 ): string {
     // An entry with "/" is a MQTT topic filter and goes through the same conversion as a
     // received topic. An ID pattern is used as is: converting it would turn its dots into "_" when
-    // "dotToUnderscore" is enabled, so it could never match.
-    const id = pattern.includes('/')
+    // "dotToUnderscore" is enabled, so it could never match. Only dots at the start and the end are
+    // removed, as the conversion does it for a topic.
+    let id = pattern.includes('/')
         ? convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore)
-        : pattern;
+        : pattern.replace(/^\.+|\.+$/g, '');
+    // The namespace is added after the conversion, otherwise "dotToUnderscore" would change its dots too
+    if (withNamespace) {
+        id = `${adapter.namespace}.${id}`;
+    }
 
     let regex = '';
     for (const char of id) {
@@ -189,8 +198,13 @@ export function topicListPattern2RegEx(
             regex += char.replace(/[\\^$.|?()[\]{}]/g, '\\$&');
         }
     }
-    // "a.*" also matches "a" itself, like the MQTT filter "a/#" matches "a"
-    regex = regex.replace(/\\\.\.\*$/, '(\\..*)?');
+    if (/[*#+]/.test(id)) {
+        // "a.*" also matches "a" itself, like the MQTT filter "a/#" matches "a"
+        regex = regex.replace(/\\\.\.\*$/, '(\\..*)?');
+    } else {
+        // Without wildcard the entry also covers everything below it ("evcc" works like "evcc.*")
+        regex += '(\\..*)?';
+    }
 
     return `^${regex}$`;
 }
@@ -219,9 +233,15 @@ export function parseTopicList(
 
     const regexes: RegExp[] = [];
     for (const pattern of patterns) {
+        if (!pattern.includes('/') && (pattern.startsWith('.') || pattern.endsWith('.'))) {
+            adapter.log.warn(
+                `Topic pattern "${pattern}" starts or ends with "." and is used as "${pattern.replace(/^\.+|\.+$/g, '')}". ` +
+                    `To match a level at any position, write e.g. "*.alarm.*"`,
+            );
+        }
         regexes.push(
             new RegExp(topicListPattern2RegEx(pattern, adapter, prefix, dotToUnderscore)),
-            new RegExp(topicListPattern2RegEx(`${adapter.namespace}.${pattern}`, adapter, prefix, dotToUnderscore)),
+            new RegExp(topicListPattern2RegEx(pattern, adapter, prefix, dotToUnderscore, true)),
         );
     }
     return { patterns, regexes };

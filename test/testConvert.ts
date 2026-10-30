@@ -220,6 +220,24 @@ describe('Test convert version', function () {
             assert.strictEqual(matches('evcc.site', 'xevcc.site'), false);
         });
 
+        it('an entry without wildcard also matches everything below it', () => {
+            assert.strictEqual(matches('evcc', 'evcc.site.title'), true);
+            assert.strictEqual(matches('evcc', 'mqtt.0.evcc.loadpoints.1.planSoc'), true);
+            assert.strictEqual(matches('homeassistant/sensor', 'homeassistant.sensor.temp'), true);
+            assert.strictEqual(matches('evcc', 'evccTitle'), false);
+        });
+
+        it('removes dots at the start and the end of an ID pattern', () => {
+            assert.strictEqual(matches('.instar.all.alarm.', 'instar.all.alarm.motion'), true);
+            assert.strictEqual(matches('.alarm.*', 'instar.all.alarm.motion'), false);
+            assert.strictEqual(matches('*.alarm.*', 'instar.all.alarm.motion'), true);
+        });
+
+        it('matches the ID with namespace also when dots are replaced by underscores', () => {
+            assert.strictEqual(matches('homeassistant/#', 'mqtt.0.homeassistant.sensor_x', true), true);
+            assert.strictEqual(matches('wolf/HK1.Vorlauf', 'mqtt.0.wolf.HK1_Vorlauf', true), true);
+        });
+
         it('takes regex characters in a pattern literally', () => {
             assert.strictEqual(matches('dev.a(1)', 'dev.a(1)'), true);
             assert.strictEqual(matches('dev.a(1)', 'dev.a1'), false);

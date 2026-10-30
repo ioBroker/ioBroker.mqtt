@@ -330,6 +330,46 @@
         "buttons": [
           "ok"
         ]
+      },
+      {
+        "condition": {
+          "operand": "and",
+          "rules": [
+            "oldVersion<9.0.0",
+            "newVersion>=9.0.0"
+          ]
+        },
+        "title": {
+          "en": "\"Ignored topics\" and \"Binary topics\" are evaluated differently",
+          "de": "\"Ignorierte Topics\" und \"Binäre Topics\" werden anders ausgewertet",
+          "ru": "\"Игнорируемые топики\" и \"Бинарные топики\" обрабатываются иначе",
+          "pt": "\"Tópicos ignorados\" e \"Tópicos binários\" são avaliados de forma diferente",
+          "nl": "\"Genegeerde topics\" en \"Binaire topics\" worden anders beoordeeld",
+          "fr": "Les \"topics ignorés\" et les \"topics binaires\" sont évalués différemment",
+          "it": "\"Topic ignorati\" e \"Topic binari\" vengono valutati diversamente",
+          "es": "\"Topics ignorados\" y \"Topics binarios\" se evalúan de otra manera",
+          "pl": "\"Ignorowane tematy\" i \"Tematy binarne\" są oceniane inaczej",
+          "uk": "\"Ігноровані топіки\" та \"Бінарні топіки\" обробляються інакше",
+          "zh-cn": "\"忽略的主题\"和\"二进制主题\"的匹配方式已更改"
+        },
+        "text": {
+          "en": "Many entries had no effect before and work now: spaces after the comma are allowed, and a '*' in the middle of an entry (e.g. 'evcc.loadpoints.*.planSoc') matches any levels. An entry always has to match the whole ID: an entry without wildcard matches this ID and everything below it, but no longer a part of a name. 'alarm' therefore no longer matches 'instar.all.alarm.motion', write '*.alarm.*' instead. Please check both settings in the instance configuration after the update.",
+          "de": "Viele Einträge hatten bisher keine Wirkung und funktionieren jetzt: Leerzeichen nach dem Komma sind erlaubt, und ein '*' mitten im Eintrag (z. B. 'evcc.loadpoints.*.planSoc') passt auf beliebige Ebenen. Ein Eintrag muss immer auf die ganze ID passen: Ein Eintrag ohne Platzhalter passt auf diese ID und alles darunter, aber nicht mehr auf einen Teil eines Namens. 'alarm' passt also nicht mehr auf 'instar.all.alarm.motion', dafür '*.alarm.*' schreiben. Bitte nach dem Update beide Einstellungen in der Instanzkonfiguration prüfen.",
+          "ru": "Многие записи раньше не действовали, а теперь работают: пробелы после запятой допустимы, а '*' в середине записи (например, 'evcc.loadpoints.*.planSoc') соответствует любым уровням. Запись всегда должна соответствовать всему ID: запись без подстановочного знака соответствует этому ID и всему, что ниже, но больше не части имени. Поэтому 'alarm' больше не соответствует 'instar.all.alarm.motion', пишите '*.alarm.*'. Пожалуйста, после обновления проверьте обе настройки в конфигурации экземпляра.",
+          "pt": "Muitas entradas antes não tinham efeito e agora funcionam: são permitidos espaços após a vírgula, e um '*' no meio de uma entrada (por exemplo, 'evcc.loadpoints.*.planSoc') corresponde a quaisquer níveis. Uma entrada tem sempre de corresponder ao ID inteiro: uma entrada sem curinga corresponde a este ID e a tudo o que está abaixo, mas já não a uma parte de um nome. Por isso, 'alarm' já não corresponde a 'instar.all.alarm.motion'; escreva '*.alarm.*'. Verifique as duas configurações na configuração da instância após a atualização.",
+          "nl": "Veel items hadden eerder geen effect en werken nu: spaties na de komma zijn toegestaan, en een '*' midden in een item (bijv. 'evcc.loadpoints.*.planSoc') komt overeen met willekeurige niveaus. Een item moet altijd met de hele ID overeenkomen: een item zonder jokerteken komt overeen met deze ID en alles eronder, maar niet meer met een deel van een naam. 'alarm' komt dus niet meer overeen met 'instar.all.alarm.motion', schrijf in plaats daarvan '*.alarm.*'. Controleer na de update beide instellingen in de instantieconfiguratie.",
+          "fr": "De nombreuses entrées n'avaient aucun effet auparavant et fonctionnent désormais : les espaces après la virgule sont autorisés, et un '*' au milieu d'une entrée (par ex. 'evcc.loadpoints.*.planSoc') correspond à n'importe quels niveaux. Une entrée doit toujours correspondre à l'ID entier : une entrée sans caractère générique correspond à cet ID et à tout ce qui se trouve en dessous, mais plus à une partie d'un nom. 'alarm' ne correspond donc plus à 'instar.all.alarm.motion', écrivez plutôt '*.alarm.*'. Veuillez vérifier les deux paramètres dans la configuration de l'instance après la mise à jour.",
+          "it": "Molte voci prima non avevano effetto e ora funzionano: gli spazi dopo la virgola sono consentiti e un '*' al centro di una voce (ad es. 'evcc.loadpoints.*.planSoc') corrisponde a livelli qualsiasi. Una voce deve sempre corrispondere all'intero ID: una voce senza carattere jolly corrisponde a questo ID e a tutto ciò che sta sotto, ma non più a una parte di un nome. 'alarm' quindi non corrisponde più a 'instar.all.alarm.motion', scrivere invece '*.alarm.*'. Dopo l'aggiornamento controllare entrambe le impostazioni nella configurazione dell'istanza.",
+          "es": "Muchas entradas antes no tenían efecto y ahora funcionan: se permiten espacios después de la coma, y un '*' en medio de una entrada (p. ej. 'evcc.loadpoints.*.planSoc') coincide con cualquier nivel. Una entrada siempre debe coincidir con el ID completo: una entrada sin comodín coincide con este ID y con todo lo que está debajo, pero ya no con una parte de un nombre. Por eso 'alarm' ya no coincide con 'instar.all.alarm.motion'; escriba '*.alarm.*'. Compruebe ambos ajustes en la configuración de la instancia después de la actualización.",
+          "pl": "Wiele wpisów wcześniej nie działało, a teraz działa: spacje po przecinku są dozwolone, a '*' w środku wpisu (np. 'evcc.loadpoints.*.planSoc') pasuje do dowolnych poziomów. Wpis musi zawsze pasować do całego ID: wpis bez symbolu wieloznacznego pasuje do tego ID i wszystkiego poniżej, ale już nie do części nazwy. 'alarm' nie pasuje więc już do 'instar.all.alarm.motion', zamiast tego należy wpisać '*.alarm.*'. Po aktualizacji sprawdź oba ustawienia w konfiguracji instancji.",
+          "uk": "Багато записів раніше не діяли, а тепер працюють: пробіли після коми дозволені, а '*' посередині запису (наприклад, 'evcc.loadpoints.*.planSoc') відповідає будь-яким рівням. Запис завжди має відповідати всьому ID: запис без символу підстановки відповідає цьому ID і всьому, що нижче, але вже не частині імені. Тому 'alarm' більше не відповідає 'instar.all.alarm.motion', пишіть '*.alarm.*'. Будь ласка, після оновлення перевірте обидва налаштування в конфігурації екземпляра.",
+          "zh-cn": "许多以前无效的条目现在可以生效：逗号后允许有空格，条目中间的 '*'（例如 'evcc.loadpoints.*.planSoc'）可匹配任意层级。条目必须始终匹配整个 ID：不含通配符的条目匹配该 ID 及其下的所有内容，但不再匹配名称的一部分。因此 'alarm' 不再匹配 'instar.all.alarm.motion'，请改写为 '*.alarm.*'。更新后请在实例配置中检查这两项设置。"
+        },
+        "level": "warn",
+        "buttons": [
+          "agree",
+          "cancel"
+        ]
       }
     ]
   },

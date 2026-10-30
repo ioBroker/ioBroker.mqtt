@@ -91,7 +91,7 @@
     "MQTT 3.1.1 (default)": "MQTT 3.1.1 (по умолчанию)",
     "MQTT 5.0": "MQTT 5.0",
     "MQTT 3.1": "MQTT 3.1",
-    "These topics will be ignored on receiving (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти топики игнорируются при получении (через запятую, например 'mqtt.0.*,javascript.*')",
+    "ignoredTopics_help": "Полученные топики, соответствующие этим записям, игнорируются. Через запятую, как ID ('evcc.loadpoints.*.planSoc') или MQTT-фильтр ('homeassistant/#'). '*' и '#' соответствуют чему угодно, '+' ровно одному уровню. Запись без подстановочного знака охватывает и всё, что ниже",
     "Binary topics (stored as files):": "Двоичные топики (сохраняются как файлы):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Данные этих топиков сохраняются как файлы в файловом хранилище, а не в состояниях. Состояние содержит URL файла. Допускаются подстановочные знаки (через запятую, например 'valetudo/+/map,zigbee.*.image')",
     "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Эти состояния будут опубликованы. (Через запятую, например 'mqtt.0.*,javascript.*')",

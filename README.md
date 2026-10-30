@@ -42,7 +42,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Force clean session** - Overwrite the client settings and clear or keep the session.
 - **Publish messages without "retain" flag** - Send messages to other clients without a retain flag (read more in the next paragraph)
-- **Ignored Topics** - You can provide certain topics that will be ignored by the broker. This is useful if you want to reduce some chatty clients. Entries are separated by comma (spaces around the comma are allowed) and can be written as ioBroker ID (`evcc.loadpoints.*.planSoc`, with or without `mqtt.0.`) or as MQTT topic filter (`homeassistant/#`, `instar/+/alarm`). `*` and `#` match any number of characters at any position, `+` exactly one level, and a trailing `.*` or `/#` also matches the parent itself. An entry without wildcard matches exactly this topic. The same rules apply to **Binary topics**.
+- **Ignored Topics** - You can provide certain topics that will be ignored by the broker. This is useful if you want to reduce some chatty clients. Entries are separated by comma (spaces around the comma are allowed) and can be written as ioBroker ID (`evcc.loadpoints.*.planSoc`, with or without `mqtt.0.`) or as MQTT topic filter (`homeassistant/#`, `instar/+/alarm`). `*` and `#` match any number of characters at any position, `+` exactly one level, and a trailing `.*` or `/#` also matches the parent itself. An entry without wildcard matches this topic and everything below it, but not a part of a name: `evcc` matches `evcc.site`, but not `evccTitle`, and to match a level at any position write `*.alarm.*`. The same rules apply to **Binary topics**.
 
 The ioBroker MQTT-Broker in server mode only simulates the behavior of real MQTT-Broker (like Mosquitto), but it is not the same.
 Real MQTT-Broker normally does not save the values of the topics and just forwards the message to other subscribed clients.
@@ -234,7 +234,8 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ## Changelog
 ### **WORK IN PROGRESS**
-* (@Schimi1983) Ignored topics and binary topics: entries are trimmed, so a space after the comma no longer breaks an entry, and a `*` in the middle of an entry (e.g. `evcc.loadpoints.*.planSoc`) matches any levels. An entry without wildcard now matches exactly this topic instead of every topic containing it (#429)
+* (@Schimi1983) **Breaking change** - Ignored topics and binary topics: entries are trimmed, so a space after the comma no longer breaks an entry, and a `*` in the middle of an entry (e.g. `evcc.loadpoints.*.planSoc`) matches any levels. An entry has to match the whole ID: an entry without wildcard matches this ID and everything below it, but no longer every ID that contains it (`alarm` no longer matches `instar.all.alarm.motion`, write `*.alarm.*`). Please check both settings after the update (#429)
+* (@GermanBluefox) Ignored topics and binary topics: a MQTT topic filter (e.g. `homeassistant/#`) also matches the ID with namespace when "Replace dots in topic names with underscore" is enabled. Dots at the start or the end of an ID entry are removed with a warning in the log. The help text in the settings describes the syntax
 * (@GermanBluefox) User name and password can be taken from the central credential storage of ioBroker (Settings → Credentials), so the same credentials can be used by several instances. Requires admin 7.9.0 or newer (#673)
 * (@GermanBluefox) Client mode: "Test connection" passes user name and password as options, so special characters in them no longer break the connection URL
 
