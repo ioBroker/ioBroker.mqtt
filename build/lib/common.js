@@ -4,6 +4,7 @@ exports.convertID2topic = convertID2topic;
 exports.findIdForTopic = findIdForTopic;
 exports.parseSharedTopic = parseSharedTopic;
 exports.pattern2RegEx = pattern2RegEx;
+exports.clientId2objectId = clientId2objectId;
 exports.topicListPattern2RegEx = topicListPattern2RegEx;
 exports.parseTopicList = parseTopicList;
 exports.isEmptyPayload = isEmptyPayload;
@@ -143,6 +144,19 @@ function pattern2RegEx(pattern, adapter, prefix, dotToUnderscore) {
     pattern = pattern.replace(/\\\.\*/g, '(\\..*)?$');
     pattern = pattern.replace(/\+/g, '[^.]*');
     return pattern;
+}
+/**
+ * Builds the object ID part for a connected client (`info.clients.<id>`).
+ * A MQTT client ID may contain any UTF-8 character, also binary data (#493), but an ioBroker object
+ * ID must not: characters that js-controller rejects become "_", like dots and whitespace that would
+ * otherwise create extra object levels.
+ *
+ * @param clientId The MQTT client ID
+ * @param forbiddenChars `adapter.FORBIDDEN_CHARS` of js-controller
+ * @returns The ID part to use below `info.clients.`
+ */
+function clientId2objectId(clientId, forbiddenChars) {
+    return clientId.replace(forbiddenChars, '_').replace(/[.\s]+/g, '_');
 }
 /**
  * Converts one entry of a topic list setting ("Ignored topics", "Binary topics") into a regular

@@ -184,7 +184,7 @@ class MQTTClient {
             });
             return;
         }
-        this.adapter.log.info(`send2Server ${id}[${topic}]`);
+        this.adapter.log.debug(`send2Server ${id}[${topic}]`);
         // Binary state: publish the raw bytes read back from the file storage
         if (this.topic2id[topic]?.obj?.native?.binary) {
             void this.publishBinaryFromFile(topic);
@@ -877,7 +877,7 @@ class MQTTClient {
                 const toPublish = [];
                 Object.keys(this.states).forEach(id => {
                     if (!messageboxRegex.test(id) && !(0, common_1.isIgnoredTopic)(id, this.ignoredTopicsRegexes)) {
-                        this.adapter.log.info(`Publishing state ${id}`);
+                        this.adapter.log.debug(`Publishing state ${id}`);
                         toPublish.push(id);
                     }
                 });
