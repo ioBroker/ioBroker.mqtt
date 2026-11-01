@@ -87,6 +87,9 @@ export default class MqttConnection extends EventEmitter {
     /** This side sent the CONNECT, i.e. it is the client (test broker emulator, connection tests). */
     private actsAsClient = false;
 
+    /** The peer broke the CONNECT order; everything it still sends is ignored. */
+    private violated = false;
+
     constructor(stream: Duplex) {
         super();
         this.stream = stream;
@@ -95,8 +98,9 @@ export default class MqttConnection extends EventEmitter {
         this.parser = createParser({ protocolVersion: 4 });
 
         this.parser.on('packet', (packet: Packet): void => {
-            // A chunk can hold several packets; after a protocol violation the rest is dropped
-            if (this.destroyed) {
+            // A chunk can hold several packets; after a protocol violation the rest is dropped. Packets
+            // that arrive with a regular close (e.g. the last PUBCOMP) are still processed.
+            if (this.violated) {
                 return;
             }
             if (!this.actsAsClient && this.violatesConnectOrder(packet)) {
@@ -159,6 +163,7 @@ export default class MqttConnection extends EventEmitter {
             return false;
         }
 
+        this.violated = true;
         const reason = packet.cmd === 'connect' ? 'second CONNECT' : `${packet.cmd} before CONNECT`;
         if (this.connectReceived) {
             this.disconnect({ reasonCode: 0x82 }); // protocol error, MQTT 5 only
