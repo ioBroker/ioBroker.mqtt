@@ -233,6 +233,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22.19.0 now
 ### 9.0.2 (2026-10-30)
 * (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
 * (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
