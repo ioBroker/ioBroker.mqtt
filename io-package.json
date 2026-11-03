@@ -80,19 +80,6 @@
         "pl": "Dostosowano testy integracyjne do @iobroker /testing 6, który szyfruje samo hasło",
         "uk": "Адаптував тести інтеграції до @iobroker /testing 6, який шифрує сам пароль",
         "zh-cn": "将集成测试改编为 @iobroker /testing 6，它会加密密码本身"
-      },
-      "8.1.1": {
-        "en": "Admin 7.6.20+ is required. Added missing translations. Compact mode no longer can exit the whole host process",
-        "de": "Admin 7.6.20+ ist nötig. Fehlende Übersetzungen. Der Kompaktmodus beendet nicht mehr den Host-Prozess",
-        "ru": "Требуется администратор версии 7.6.20+. Добавлены недостающие переводы. Компактный режим больше не может выходить из всего процесса хоста",
-        "pt": "Requer o Admin 7.6.20+. Adição de traduções faltantes. O modo compacto não sai mais do processo host",
-        "nl": "Admin 7.6.20+ is vereist. Ontbrekende vertalingen toegevoegd. Compacte modus kan niet langer het hele hostproces afsluiten",
-        "fr": "Admin 7.6.20+ est requis. Ajout de traductions manquantes. Le mode compact ne peut plus arrêter le processus hôte",
-        "it": "Serve Admin 7.6.20+. Aggiunte traduzioni mancanti. La modalità compatta non chiude più l'intero host",
-        "es": "Se necesita Admin 7.6.20+. Añadió las traducciones que faltaban El modo compacto ya no puede salir de todo el host",
-        "pl": "Wymagany jest Admin 7.6.20+. Dodano brakujące tłumaczenia. Tryb kompaktowy nie może już zakończyć całego procesu hosta",
-        "uk": "Адміністратор 7.6.20+ обов'язковий. Додані відсутні переклади. Компактний режим більше не може вийти з усього хост-процесу",
-        "zh-cn": "需要管理员 7.6.20+。添加了缺失的翻译。紧凑模式不再可以退出整个主机进程"
       }
     },
     "titleLang": {
