@@ -2525,9 +2525,10 @@ describe('MQTT server: CONNECT handling (MQTT 3.1, 3.1.1, 5.0)', function () {
      * Opens a TCP connection and writes the packets one after another
      *
      * @param packets The raw packets
+     * @param localAddress The loopback address to connect from, to act as another device
      */
-    async function session(packets: Buffer[]): Promise<RawSession> {
-        const socket = net.connect(suitePort, '127.0.0.1');
+    async function session(packets: Buffer[], localAddress?: string): Promise<RawSession> {
+        const socket = net.connect({ port: suitePort, host: '127.0.0.1', localAddress });
         let rx = Buffer.alloc(0);
         let isClosed = false;
         socket.on('data', (data: Buffer) => (rx = Buffer.concat([rx, data])));
@@ -2637,6 +2638,69 @@ describe('MQTT server: CONNECT handling (MQTT 3.1, 3.1.1, 5.0)', function () {
         const second = await session([rawConnect({ level: 3, clientId: 'p31', flags: 0x00 })]);
         assert.strictEqual(second.received(), '20020000');
         second.socket.destroy();
+    });
+
+    it('accepts an empty client ID with clean session = false when the instance forces clean sessions', async () => {
+        const config = adapter.config as any;
+        const previous = config.forceCleanSession;
+        config.forceCleanSession = 'clean';
+        try {
+            const s = await session([rawConnect({ clientId: '', flags: 0x00 })]);
+            assert.strictEqual(s.received(), '20020000');
+            assert.strictEqual(s.closed(), false);
+            s.socket.destroy();
+        } finally {
+            config.forceCleanSession = previous;
+        }
+    });
+
+    it('names the client object of a client without client ID after its address, not the assigned ID', async () => {
+        const { clientId2objectId } = require('../build/lib/common');
+        await new Promise<void>(resolve => setTimeout(resolve, 300));
+        const known = new Set(Object.keys(server.clients));
+        const s = await session([rawConnect({ clientId: '' })]);
+        const assigned = Object.keys(server.clients).find(id => !known.has(id)) ?? '';
+        assert.ok(assigned.startsWith('auto-'), `unexpected client ID ${assigned}`);
+        const address = server.clients[assigned].stream.remoteAddress;
+        // the client objects are updated 1 s after a connect
+        await new Promise<void>(resolve => setTimeout(resolve, 1500));
+        const byAddress = await adapter.getObjectAsync(
+            `info.clients.${clientId2objectId(address, adapter.FORBIDDEN_CHARS)}`,
+        );
+        assert.ok(byAddress, `no client object for the address ${address}`);
+        assert.ok(!(await adapter.getObjectAsync(`info.clients.${assigned}`)), 'object for the assigned ID created');
+        s.socket.destroy();
+    });
+
+    it('warns when a client ID is taken over from another address, not on a reconnect', async () => {
+        const warnings: string[] = [];
+        const warn = adapter.log.warn;
+        adapter.log.warn = (text: string): void => {
+            warnings.push(text);
+            warn(text);
+        };
+        try {
+            const first = await session([rawConnect({ clientId: 'twin' })], '127.0.0.1');
+            const again = await session([rawConnect({ clientId: 'twin' })], '127.0.0.1');
+            await new Promise<void>(resolve => setTimeout(resolve, 300));
+            assert.strictEqual(first.closed(), true);
+            assert.strictEqual(
+                warnings.length,
+                0,
+                `a reconnect from the same address is no reason to warn: ${JSON.stringify(warnings)}`,
+            );
+
+            const other = await session([rawConnect({ clientId: 'twin' })], '127.0.0.2');
+            await new Promise<void>(resolve => setTimeout(resolve, 300));
+            assert.strictEqual(again.closed(), true);
+            assert.ok(
+                warnings.some(w => w.includes('[twin]') && w.includes('takes over')),
+                `no warning: ${JSON.stringify(warnings)}`,
+            );
+            other.socket.destroy();
+        } finally {
+            adapter.log.warn = warn;
+        }
     });
 });
 
