@@ -220,7 +220,7 @@ If a device connects again with the same client ID while its old connection is s
 
 You can disable the creation of the client objects in the instance settings. (**Do not create client objects**)
 
-Note: If you have some client that connects and disconnects very often, the list of client objects will not be updated at all.
+Objects of clients that have not been connected for some days are removed automatically (**Remove client objects after**, default 7 days, `0` = never). This matters for devices that use a new client ID for every connection: without it, they leave a new object behind each time. The cleanup runs when the instance starts and then once a day.
 
 ## Todo
 * Implement resend of `QoS 2` messages after a while.
@@ -235,6 +235,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
+
 ### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now
 - (@Schimi1983) Server mode: a client with many unacknowledged messages no longer slows the broker down. Since 8.1.5, every new message to such a client searched the whole queue again for each packet ID still in use, which took up to half a second per message and could drive the CPU load to 100 %

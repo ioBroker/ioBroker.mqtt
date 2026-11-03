@@ -425,6 +425,7 @@
     "ignoredTopics": "",
     "binaryTopics": "",
     "doNotCreateClientObjects": false,
+    "removeClientsAfterDays": 7,
     "parseCharCodes": false,
     "payloadParsing": "full",
     "dotToUnderscore": false,
