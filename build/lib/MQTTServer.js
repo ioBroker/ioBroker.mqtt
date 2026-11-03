@@ -10,6 +10,7 @@ const https_1 = require("https");
 const http_1 = require("http");
 const tls_1 = require("tls");
 const net_1 = require("net");
+const node_crypto_1 = require("node:crypto");
 const ws_1 = require("ws");
 const websocket_stream_1 = __importDefault(require("websocket-stream"));
 // We cannot export it from @iobroker/adapter-core as this file is used in tests
@@ -230,7 +231,12 @@ class MQTTServer {
             const clientIds = [];
             if (this.clients) {
                 for (const id in this.clients) {
-                    const _id = id || this.clients[id]?.id || this.clients[id]?.stream?.remoteAddress;
+                    // A client without own ID gets a new one from the broker on every connection
+                    // (auto-…). An object per assigned ID would leave a new one behind on each
+                    // reconnect, so such a client is named after its address, as before.
+                    const _id = (this.clients[id]?._assignedClientId && this.clients[id].stream?.remoteAddress) ||
+                        id ||
+                        this.clients[id]?.stream?.remoteAddress;
                     const oid = `info.clients.${(0, common_1.clientId2objectId)(_id, this.adapter.FORBIDDEN_CHARS)}`;
                     clientIds.push(oid);
                     const clientObj = await this.adapter.getObjectAsync(oid);
@@ -772,19 +778,48 @@ class MQTTServer {
      * (MQTT-2.3.1-2). The counter is shared by all clients and wraps at 65535, so the identifiers
      * still in flight to this client are skipped.
      *
+     * Usually the next value is free and one look at the queue is enough. Only when it is taken (the
+     * counter has wrapped and reached unacknowledged messages) the identifiers in flight are
+     * collected once, so skipping a block of them does not search the whole queue for every value.
+     * Searching per value made each new message cost O(queue²): with 20000 unacknowledged messages
+     * about 0.4 s, which kept the broker busy and delayed the acknowledgements even more.
+     *
      * @param client The receiving client or offline session
      * @returns The packet identifier
      */
     getNextMessageId(client) {
+        let inFlight = null;
         for (let i = 0; i < 65535; i++) {
             const id = this.messageId;
             this.messageId = this.messageId >= 65535 ? 1 : this.messageId + 1;
-            if (!client || !this.isMessageIdInFlight(client, id)) {
+            if (!client) {
+                return id;
+            }
+            if (!inFlight) {
+                if (!this.isMessageIdInFlight(client, id)) {
+                    return id;
+                }
+                inFlight = this.messageIdsInFlight(client);
+            }
+            else if (!inFlight.has(id)) {
                 return id;
             }
         }
         // every identifier is in flight, which no client can take in
         return this.messageId;
+    }
+    /**
+     * Collects the packet identifiers of the QoS 1/2 messages in flight to a client, with the same
+     * rules as {@link isMessageIdInFlight}.
+     *
+     * @param client The receiving client or offline session
+     * @returns The identifiers that are taken
+     */
+    messageIdsInFlight(client) {
+        const ids = new Set();
+        client._messages?.forEach(m => m.cmd === 'publish' && ids.add(m.messageId));
+        client._pendingMessages?.forEach(m => ids.add(m.messageId));
+        return ids;
     }
     /**
      * Whether a QoS 1/2 message to a client already carries this packet identifier. Inbound QoS 2
@@ -1655,12 +1690,17 @@ class MQTTServer {
         if (!client) {
             return;
         }
-        if (this.persistentSessions[client.id]) {
+        // A connection that was taken over by a newer one with the same client ID must not touch
+        // the session or the shared subscriptions, they belong to the new connection now.
+        const isCurrent = !!this.clients[client.id] && client.__secret === this.clients[client.id].__secret;
+        if (isCurrent && this.persistentSessions[client.id]) {
             this.persistentSessions[client.id].connected = false;
         }
         // A shared subscription only makes sense while the client is there; on reconnect it
         // subscribes again. Leaving now keeps messages from being drawn for a gone member.
-        this.leaveSharedGroups(client.id);
+        if (isCurrent) {
+            this.leaveSharedGroups(client.id);
+        }
         // never keep a half finished authentication around
         client._scram = undefined;
         client._completeConnect = undefined;
@@ -1681,7 +1721,7 @@ class MQTTServer {
             client._resendonStart = null;
         }
         try {
-            if (this.clients[client.id] && client.__secret === this.clients[client.id].__secret) {
+            if (isCurrent) {
                 this.adapter.log.info(`Client [${client.id}] connection closed: ${reason}`);
                 delete this.clients[client.id];
                 this.updateClients();
@@ -1727,6 +1767,25 @@ class MQTTServer {
             // Store unique connection identifier
             client.__secret = `${Date.now()}_${Math.round(Math.random() * 10000)}`;
             client.on('connect', (options) => {
+                if (!options.clientId) {
+                    // An empty client ID is only allowed when the client does not ask for a stored
+                    // session (MQTT-3.1.3-7/-8); MQTT 3.1 requires 1 to 23 characters. The broker
+                    // then assigns a unique ID (MQTT-3.1.3-6) and tells a MQTT 5 client which one
+                    // (MQTT-5.0 3.2.2.3.7). Without this, all such clients shared the ID "".
+                    // When the instance forces clean sessions, no session is stored anyway, so such
+                    // a client is accepted instead of locked out as before.
+                    if (client.protocolVersion === 3 ||
+                        (client.protocolVersion === 4 &&
+                            !options.clean &&
+                            this.config.forceCleanSession !== 'clean')) {
+                        this.adapter.log.warn(`Client from ${client.stream?.remoteAddress} rejected: empty client ID ${client.protocolVersion === 3 ? 'is not allowed in MQTT 3.1' : 'with clean session = false'}`);
+                        client.connack({ returnCode: 2 }); // identifier rejected
+                        client.close();
+                        return;
+                    }
+                    options.clientId = `auto-${(0, node_crypto_1.randomBytes)(8).toString('hex')}`;
+                    client._assignedClientId = true;
+                }
                 // set client id
                 client.id = options.clientId;
                 // MQTT 5 replaced the "clean session" flag: "clean start" only says whether an
@@ -1762,17 +1821,25 @@ class MQTTServer {
                 // Everything that happens once the client is authenticated. Enhanced
                 // authentication needs another round trip first, so this cannot run inline.
                 const completeConnect = () => {
-                    if (oldClient) {
-                        this.adapter.log.info(`Client [${client.id}] reconnected. Old secret ${this.clients[client.id].__secret}. New secret ${client.__secret}`);
-                        // need to destroy the old client
-                        if (client.__secret !== this.clients[client.id].__secret) {
-                            // it is another socket!!
-                            // It was the following situation:
-                            // - old connection was active
-                            // - new connection is on the same TCP
-                            // Just forget him
-                            // oldClient.destroy();
+                    const previous = this.clients[client.id];
+                    if (previous && previous !== client) {
+                        const oldAddress = previous.stream?.remoteAddress;
+                        const newAddress = client.stream?.remoteAddress;
+                        if (oldAddress && newAddress && oldAddress !== newAddress) {
+                            // Usually two devices with the same client ID: they keep closing each
+                            // other's connection, so this has to be visible without debug logging.
+                            this.adapter.log.warn(`Client [${client.id}] from ${newAddress} takes over the connection of ${oldAddress}. If this repeats, two devices use the same client ID and keep disconnecting each other`);
                         }
+                        else {
+                            this.adapter.log.info(`Client [${client.id}] reconnected. Old secret ${previous.__secret}. New secret ${client.__secret}`);
+                        }
+                        // The new connection takes over the session, the old one has to be closed
+                        // (MQTT-3.1.4-2). A MQTT 5 client is told why (MQTT-5.0 3.1.4-3).
+                        previous.disconnect({ reasonCode: 0x8e }); // session taken over
+                        previous.close();
+                    }
+                    else if (oldClient) {
+                        this.adapter.log.info(`Client [${client.id}] reconnected with secret ${client.__secret}`);
                     }
                     else {
                         this.adapter.log.info(`Client [${client.id}] connected with secret ${client.__secret}`);
@@ -1801,12 +1868,14 @@ class MQTTServer {
                     client._messages ||= [];
                     client.connack({
                         returnCode: 0,
-                        sessionPresent,
+                        // The second byte of the CONNACK is reserved in MQTT 3.1
+                        sessionPresent: client.protocolVersion === 3 ? false : sessionPresent,
                         // Only MQTT 5 has CONNACK properties; MqttConnection drops them otherwise.
                         // Only what differs from the defaults is announced — "maximum QoS" for
                         // example must not be sent at all when it is 2 (MQTT-5.0 3.2.2.3.4).
                         properties: {
                             topicAliasMaximum: TOPIC_ALIAS_MAXIMUM,
+                            ...(client._assignedClientId ? { assignedClientIdentifier: client.id } : {}),
                             // The client verifies the server with this, so it knows it did not
                             // hand its proof to an impostor (MQTT-5.0 4.12).
                             ...(client._scramServerFinal
@@ -1910,13 +1979,9 @@ class MQTTServer {
                         // never log the credentials themselves
                         this.adapter.log.warn(`Client [${client.id}] has invalid credentials for user "${options.username ?? ''}"`);
                         client.authenticated = false;
+                        // A rejected login must not end the session of a client that is connected
+                        // with the same ID; only an accepted CONNECT takes it over.
                         client.connack({ returnCode: 4 });
-                        if (oldClient) {
-                            // delete existing client
-                            delete this.clients[client.id];
-                            this.updateClients();
-                            oldClient.destroy();
-                        }
                         client.close();
                         return;
                     }

@@ -42,6 +42,12 @@ class MqttConnection extends node_events_1.EventEmitter {
     parser;
     destroyed = false;
     closeEmitted = false;
+    /** A CONNECT was received; every connection has to start with exactly one (MQTT-3.1.0-1/-2). */
+    connectReceived = false;
+    /** This side sent the CONNECT, i.e. it is the client (test broker emulator, connection tests). */
+    actsAsClient = false;
+    /** The peer broke the CONNECT order; everything it still sends is ignored. */
+    violated = false;
     constructor(stream) {
         super();
         this.stream = stream;
@@ -49,6 +55,14 @@ class MqttConnection extends node_events_1.EventEmitter {
         // parsed with the protocol level the client announced.
         this.parser = (0, mqtt_packet_1.parser)({ protocolVersion: 4 });
         this.parser.on('packet', (packet) => {
+            // A chunk can hold several packets; after a protocol violation the rest is dropped. Packets
+            // that arrive with a regular close (e.g. the last PUBCOMP) are still processed.
+            if (this.violated) {
+                return;
+            }
+            if (!this.actsAsClient && this.violatesConnectOrder(packet)) {
+                return;
+            }
             if (packet.cmd === 'connect') {
                 const connect = packet;
                 this.setProtocolVersion(connect.protocolVersion);
@@ -57,6 +71,13 @@ class MqttConnection extends node_events_1.EventEmitter {
             this.emit(packet.cmd, packet);
         });
         this.parser.on('error', (error) => {
+            // A CONNECT with a protocol level the broker does not support is answered with return
+            // code 0x01 before the connection is closed (MQTT-3.1.2-2). mqtt-packet cannot parse it,
+            // so the MQTT 3.1.1 form of the CONNACK is used, as MQTT 5 allows too (MQTT-5.0 3.1.2.2).
+            if (!this.actsAsClient && !this.connectReceived && /Invalid protocol version/i.test(error.message)) {
+                this.connack({ returnCode: 1 });
+                this.close();
+            }
             this.emit('error', error);
         });
         stream.on('error', (error) => {
@@ -73,6 +94,33 @@ class MqttConnection extends node_events_1.EventEmitter {
                 });
             }
         });
+    }
+    /**
+     * Enforces that a connection starts with exactly one CONNECT. Any other packet before it, and a
+     * second CONNECT, are protocol violations after which the connection is closed (MQTT-3.1.0-1,
+     * MQTT-3.1.0-2). A MQTT 5 client is told why with DISCONNECT 0x82 (protocol error).
+     *
+     * @param packet The received packet
+     * @returns true if the packet violates the order and the connection was closed
+     */
+    violatesConnectOrder(packet) {
+        if (packet.cmd === 'connect') {
+            if (!this.connectReceived) {
+                this.connectReceived = true;
+                return false;
+            }
+        }
+        else if (this.connectReceived) {
+            return false;
+        }
+        this.violated = true;
+        const reason = packet.cmd === 'connect' ? 'second CONNECT' : `${packet.cmd} before CONNECT`;
+        if (this.connectReceived) {
+            this.disconnect({ reasonCode: 0x82 }); // protocol error, MQTT 5 only
+        }
+        this.close();
+        this.emit('error', new Error(`Protocol violation: ${reason}`));
+        return true;
     }
     /**
      * Applies the protocol level of this connection to the parser as well, so incoming packets are
@@ -234,6 +282,7 @@ class MqttConnection extends node_events_1.EventEmitter {
      * @param packet The CONNECT to send
      */
     connect(packet) {
+        this.actsAsClient = true;
         this.setProtocolVersion(packet.protocolVersion);
         this.send('connect', packet);
     }

@@ -1,4 +1,7 @@
 # Older changes
+## 8.1.3 (2026-10-14)
+* (@GermanBluefox) In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)
+
 ## 8.1.2 (2026-10-13)
 * (@GermanBluefox) Adapted the integration tests to @iobroker/testing 6, which encrypts the password itself
 

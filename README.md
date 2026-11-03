@@ -235,12 +235,12 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now
 - (@Schimi1983) Server mode: a client with many unacknowledged messages no longer slows the broker down. Since 8.1.5, every new message to such a client searched the whole queue again for each packet ID still in use, which took up to half a second per message and could drive the CPU load to 100 %
 - (@Schimi1983) Server mode: connections are handled as the MQTT specifications require (#687). A new connection with the client ID of a connected client closes the old one (MQTT 5: "session taken over"); a rejected login no longer ends the session of the connected client. Clients without client ID get a unique ID (`auto-…`) instead of sharing one; this is refused for MQTT 3.1 and for MQTT 3.1.1 with "clean session" off. An unsupported protocol version is answered with "unacceptable protocol version". A second CONNECT or any packet before CONNECT closes the connection
 - (@GermanBluefox) Server mode: a client without client ID keeps one object `info.clients.<IP address>` instead of leaving a new `info.clients.auto-…` object behind on every connection. A takeover of a client ID from another IP address is logged as a warning (two devices with the same client ID). If the instance forces clean sessions, an empty client ID with "clean session" off is accepted
+
 ### 9.0.2 (2026-10-30)
 * (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
 * (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
@@ -263,9 +263,6 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### 8.1.4 (2026-10-27)
 * (@GermanBluefox) Fixed: after the object of a topic was deleted while the instance was running, the next messages wrote the state without object - the object is created again now
-
-### 8.1.3 (2026-10-14)
-* (@GermanBluefox) In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
