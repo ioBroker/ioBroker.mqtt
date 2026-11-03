@@ -235,6 +235,9 @@ Note: If you have some client that connects and disconnects very often, the list
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@Schimi1983) Server mode: subscriptions are checked and matched as the MQTT specification says. A topic filter with a character like `(` or `[` no longer stops the adapter, `+` matches exactly one level (`temp/+` no longer delivers `sensors/0/temp/x`), invalid filters such as `a/#/b` or `sport+` are refused, and after unsubscribing from a filter with wildcards its topics are no longer delivered. A packet that cannot be processed closes only the connection of that client
+
 ### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now
 - (@Schimi1983) Server mode: a client with many unacknowledged messages no longer slows the broker down. Since 8.1.5, every new message to such a client searched the whole queue again for each packet ID still in use, which took up to half a second per message and could drive the CPU load to 100 %
