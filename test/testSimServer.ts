@@ -2470,6 +2470,135 @@ describe('MQTT server: client objects for unusual client IDs', function () {
     });
 });
 
+// Client objects (#518): only states that change are written, the time a client went offline is kept
+// in native.lastSeen, and objects of clients that did not connect for a while are removed.
+describe('MQTT server: client objects cleanup', function () {
+    const mqtt = require('mqtt');
+    const DAY = 24 * 3600 * 1000;
+    this.timeout(15000);
+
+    /** Creates a client object as an older or the current version left it behind */
+    async function addClientObject(
+        adapter: Adapter,
+        name: string,
+        offlineSince: number,
+        withLastSeen: boolean,
+    ): Promise<void> {
+        await adapter.setObjectAsync(`info.clients.${name}`, {
+            type: 'state',
+            common: { name, role: 'indicator.reachable', type: 'boolean', read: true, write: false },
+            native: withLastSeen ? { ip: '10.0.0.1', lastSeen: offlineSince } : { ip: '10.0.0.1' },
+        } as any);
+        await adapter.setStateAsync(`info.clients.${name}`, false, true);
+        // the simulator stamps "now"; the age of the state is what an object without lastSeen falls back to
+        const state = (await adapter.getStateAsync(`info.clients.${name}`)) as ioBroker.State;
+        state.ts = offlineSince;
+        state.lc = offlineSince;
+    }
+
+    async function connect(suitePort: number, clientId: string): Promise<any> {
+        const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            protocolVersion: 4,
+            clientId,
+            reconnectPeriod: 0,
+        });
+        await new Promise<void>(resolve => client.on('connect', () => resolve()));
+        return client;
+    }
+
+    // the client objects are updated 1 s after a connect or disconnect
+    const settle = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 1500));
+
+    describe('with removal after 7 days', function () {
+        let adapter: Adapter;
+        let server: any;
+        let suitePort: number;
+        const written: string[] = [];
+
+        before(async () => {
+            suitePort = ++port;
+            adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true, removeClientsAfterDays: 7 });
+            await addClientObject(adapter, 'old_lastseen', Date.now() - 8 * DAY, true);
+            await addClientObject(adapter, 'old_state', Date.now() - 10 * DAY, false);
+            await addClientObject(adapter, 'recent', Date.now() - DAY, true);
+            // count what is written to the client states
+            const setStateAsync = adapter.setStateAsync.bind(adapter);
+            adapter.setStateAsync = ((id: string, val: any, ack?: boolean) => {
+                if (id.includes('info.clients.')) {
+                    written.push(id.replace(`${adapter.namespace}.`, ''));
+                }
+                return setStateAsync(id, val, ack);
+            }) as any;
+            server = new Server(adapter, {});
+            await new Promise(resolve => setTimeout(resolve, 300));
+        });
+
+        after(done => {
+            server.destroy(done);
+        });
+
+        it('removes on start the objects of clients that were offline for longer', async () => {
+            assert.strictEqual(await adapter.getObjectAsync('info.clients.old_lastseen'), undefined);
+            assert.strictEqual(await adapter.getObjectAsync('info.clients.old_state'), undefined);
+            assert.ok(await adapter.getObjectAsync('info.clients.recent'), 'a recent client object was removed');
+        });
+
+        it('writes only the client states that change', async () => {
+            const first = await connect(suitePort, 'first');
+            await settle();
+            written.length = 0;
+
+            const second = await connect(suitePort, 'second');
+            await settle();
+            // "first" is still connected and "recent" still offline: nothing to write for them
+            assert.deepStrictEqual(written, ['info.clients.second']);
+
+            first.end(true);
+            second.end(true);
+            await settle();
+        });
+
+        it('keeps the time a client went offline', async () => {
+            const before = Date.now();
+            const client = await connect(suitePort, 'leaving');
+            await settle();
+            assert.strictEqual((await adapter.getStateAsync('info.clients.leaving'))?.val, true);
+
+            client.end(true);
+            await settle();
+            assert.strictEqual((await adapter.getStateAsync('info.clients.leaving'))?.val, false);
+            const lastSeen = (await adapter.getObjectAsync('info.clients.leaving'))?.native?.lastSeen;
+            assert.ok(typeof lastSeen === 'number' && lastSeen >= before, `lastSeen is ${lastSeen}`);
+            // the object itself (name, role, address) is kept
+            assert.strictEqual(
+                (await adapter.getObjectAsync('info.clients.leaving'))?.common?.role,
+                'indicator.reachable',
+            );
+        });
+    });
+
+    describe('with removal switched off (0)', function () {
+        let adapter: Adapter;
+        let server: any;
+
+        before(async () => {
+            const suitePort = ++port;
+            adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true, removeClientsAfterDays: 0 });
+            await addClientObject(adapter, 'very_old', Date.now() - 400 * DAY, true);
+            server = new Server(adapter, {});
+            await new Promise(resolve => setTimeout(resolve, 300));
+        });
+
+        after(done => {
+            server.destroy(done);
+        });
+
+        it('keeps all client objects', async () => {
+            assert.ok(await adapter.getObjectAsync('info.clients.very_old'), 'the object was removed');
+        });
+    });
+});
+
 // CONNECT handling as the MQTT specifications require it (#687). The packets are written raw,
 // because a regular client library refuses to send most of them.
 describe('MQTT server: CONNECT handling (MQTT 3.1, 3.1.1, 5.0)', function () {
