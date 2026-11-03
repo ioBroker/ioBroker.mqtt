@@ -24,6 +24,8 @@ export interface AdapterConfig {
     user?: string;
     pass?: string;
     maxTopicLength?: number;
+    doNotCreateClientObjects?: boolean;
+    removeClientsAfterDays?: number;
 }
 
 export default class AdapterSimulator {
@@ -171,7 +173,21 @@ export default class AdapterSimulator {
     }
 
     delForeignObjectAsync(id: string): Promise<void> {
-        return new Promise(resolve => this.getForeignObject(id, () => resolve()));
+        // like js-controller: the state of a deleted state object goes with it
+        this.deleteObject(id);
+        return Promise.resolve();
+    }
+
+    extendForeignObjectAsync(id: string, obj: Partial<ioBroker.Object>): Promise<{ id: string }> {
+        const existing = (this.#objects[id] || {}) as any;
+        this.#objects[id] = {
+            ...existing,
+            ...obj,
+            common: { ...existing.common, ...(obj as any).common },
+            native: { ...existing.native, ...(obj as any).native },
+            _id: id,
+        } as ioBroker.Object;
+        return Promise.resolve({ id });
     }
 
     setObject(id: string, obj: ioBroker.SettableObject, cb?: ioBroker.SetObjectCallback): void {
