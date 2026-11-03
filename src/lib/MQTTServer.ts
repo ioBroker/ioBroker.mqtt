@@ -1060,19 +1060,48 @@ export default class MQTTServer {
      * (MQTT-2.3.1-2). The counter is shared by all clients and wraps at 65535, so the identifiers
      * still in flight to this client are skipped.
      *
+     * Usually the next value is free and one look at the queue is enough. Only when it is taken (the
+     * counter has wrapped and reached unacknowledged messages) the identifiers in flight are
+     * collected once, so skipping a block of them does not search the whole queue for every value.
+     * Searching per value made each new message cost O(queue²): with 20000 unacknowledged messages
+     * about 0.4 s, which kept the broker busy and delayed the acknowledgements even more.
+     *
      * @param client The receiving client or offline session
      * @returns The packet identifier
      */
     private getNextMessageId(client?: MessageQueue): number {
+        let inFlight: Set<number> | null = null;
         for (let i = 0; i < 65535; i++) {
             const id = this.messageId;
             this.messageId = this.messageId >= 65535 ? 1 : this.messageId + 1;
-            if (!client || !this.isMessageIdInFlight(client, id)) {
+            if (!client) {
+                return id;
+            }
+            if (!inFlight) {
+                if (!this.isMessageIdInFlight(client, id)) {
+                    return id;
+                }
+                inFlight = this.messageIdsInFlight(client);
+            } else if (!inFlight.has(id)) {
                 return id;
             }
         }
         // every identifier is in flight, which no client can take in
         return this.messageId;
+    }
+
+    /**
+     * Collects the packet identifiers of the QoS 1/2 messages in flight to a client, with the same
+     * rules as {@link isMessageIdInFlight}.
+     *
+     * @param client The receiving client or offline session
+     * @returns The identifiers that are taken
+     */
+    private messageIdsInFlight(client: MessageQueue): Set<number> {
+        const ids = new Set<number>();
+        client._messages?.forEach(m => m.cmd === 'publish' && ids.add(m.messageId));
+        client._pendingMessages?.forEach(m => ids.add(m.messageId));
+        return ids;
     }
 
     /**

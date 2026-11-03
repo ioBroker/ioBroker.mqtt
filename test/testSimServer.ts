@@ -2073,6 +2073,29 @@ describe('MQTT server: packet identifiers', function () {
         assert.strictEqual(new Set(ids).size, ids.length, `duplicate packet ids: ${JSON.stringify(ids)}`);
         assert.strictEqual(server.clients?.packetIds?._messages?.length ?? 0, 0);
     });
+
+    it('skips a large block of identifiers in flight without searching the queue for every value', () => {
+        // 30000 unacknowledged messages with consecutive identifiers (1000-30999), the counter has
+        // wrapped and stands at the first of them
+        const queue = { _messages: [] as any[], _pendingMessages: [] as any[] };
+        for (let i = 0; i < 30000; i++) {
+            if (i !== 20000) {
+                queue._messages.push({ cmd: 'publish', messageId: 1000 + i, topic: 't', payload: '1' });
+            }
+        }
+        // 21000 is only used by an inbound QoS 2 message, i.e. an identifier of the client: still free
+        queue._messages.push({ cmd: 'pubrel', messageId: 21000, topic: 't', payload: '1' });
+        server.messageId = 1000;
+
+        const start = Date.now();
+        const first = server.getNextMessageId(queue);
+        const elapsed = Date.now() - start;
+        assert.strictEqual(first, 21000, 'the free identifier in the block is used');
+        assert.ok(elapsed < 100, `handing out one identifier took ${elapsed} ms`);
+
+        queue._messages.push({ cmd: 'publish', messageId: first, topic: 't', payload: '1' });
+        assert.strictEqual(server.getNextMessageId(queue), 31000, 'the next one comes after the block');
+    });
 });
 
 // The identifiers of the broker and of the client are separate, the counter must not hand out an

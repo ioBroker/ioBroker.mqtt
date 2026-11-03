@@ -236,6 +236,7 @@ Note: If you have some client that connects and disconnects very often, the list
 
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22.19.0 now
+- (@Schimi1983) Server mode: a client with many unacknowledged messages no longer slows the broker down. Since 8.1.5, every new message to such a client searched the whole queue again for each packet ID still in use, which took up to half a second per message and could drive the CPU load to 100 %
 ### 9.0.2 (2026-10-30)
 * (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
 * (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
