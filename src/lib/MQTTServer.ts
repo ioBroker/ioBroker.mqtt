@@ -229,6 +229,7 @@ export default class MQTTServer {
     private resendTimer: NodeJS.Timeout | null = null;
     private readonly verifiedObjects = {};
     private updateClientsTimeout: ioBroker.Timeout | undefined;
+    private clientsCleanupTimer: NodeJS.Timeout | null = null;
     private updateClientsRunning = false;
     private updateClientsRestart = false;
 
@@ -281,6 +282,10 @@ export default class MQTTServer {
         if (this.resendTimer) {
             clearInterval(this.resendTimer);
             this.resendTimer = null;
+        }
+        if (this.clientsCleanupTimer) {
+            clearInterval(this.clientsCleanupTimer);
+            this.clientsCleanupTimer = null;
         }
         // pending wills must not fire into a torn down adapter
         for (const clientId of Object.keys(this.delayedWills)) {
@@ -429,7 +434,10 @@ export default class MQTTServer {
         }
         this.updateClientsRunning = true;
         try {
-            const clientIds = [];
+            const clientIds: string[] = [];
+            // Only what changes is written: with many client objects, rewriting all of them on every
+            // connect or disconnect of any client caused a burst of state events each time (#518).
+            const allStates = await this.adapter.getStatesAsync('info.clients.*');
 
             if (this.clients) {
                 for (const id in this.clients) {
@@ -466,15 +474,18 @@ export default class MQTTServer {
                         clientObj.native.ip = this.clients[id]?.stream?.remoteAddress;
                         await this.adapter.setObjectAsync(clientObj._id, clientObj);
                     }
-                    await this.adapter.setStateAsync(oid, true, true);
+                    if (allStates[`${this.adapter.namespace}.${oid}`]?.val !== true) {
+                        await this.adapter.setStateAsync(oid, true, true);
+                    }
                 }
             }
 
-            // read all other states and set alive to false
-            const allStates = await this.adapter.getStatesAsync('info.clients.*');
+            // all other clients are offline; the time they went offline decides when their object
+            // is removed (removeStaleClientObjects)
             for (const id in allStates) {
-                if (!clientIds.includes(id.replace(`${this.adapter.namespace}.`, ''))) {
-                    await this.adapter.setState(id, false, true);
+                if (!clientIds.includes(id.replace(`${this.adapter.namespace}.`, '')) && allStates[id]?.val !== false) {
+                    await this.adapter.setStateAsync(id, false, true);
+                    await this.adapter.extendForeignObjectAsync(id, { native: { lastSeen: Date.now() } });
                 }
             }
         } finally {
@@ -484,6 +495,40 @@ export default class MQTTServer {
         if (this.updateClientsRestart) {
             this.updateClientsRestart = false;
             this.startUpdateClientObjects();
+        }
+    }
+
+    /**
+     * Removes the objects of clients that have not been connected for the configured number of days.
+     * Devices that use a new client ID for every connection leave one object per connection behind,
+     * which otherwise grow without limit (#518). The time a client went offline is taken from
+     * `native.lastSeen`, for objects of older versions from the last change of the state.
+     */
+    private async removeStaleClientObjects(): Promise<void> {
+        const days = this.config.removeClientsAfterDays;
+        if (this.config.doNotCreateClientObjects || !days || days <= 0) {
+            return;
+        }
+        const limit = Date.now() - days * 24 * 3600 * 1000;
+        const allStates = await this.adapter.getStatesAsync('info.clients.*');
+        let removed = 0;
+        for (const id in allStates) {
+            const state = allStates[id];
+            if (!state || state.val === true) {
+                continue;
+            }
+            const obj = await this.adapter.getForeignObjectAsync(id);
+            const lastSeen = Number(obj?.native?.lastSeen) || state.lc || state.ts;
+            // the client may have connected again while this loop was running
+            if (obj && lastSeen && lastSeen < limit && (await this.adapter.getForeignStateAsync(id))?.val !== true) {
+                await this.adapter.delForeignObjectAsync(id);
+                removed++;
+            }
+        }
+        if (removed) {
+            this.adapter.log.info(
+                `Removed ${removed} client object(s) without connection for more than ${days} day(s)`,
+            );
         }
     }
 
@@ -3330,6 +3375,14 @@ export default class MQTTServer {
         } else {
             this.config.storeClientsTime = parseInt(this.config.storeClientsTime as unknown as string, 10) || 0;
         }
+        // instances of older versions have no value: 7 days, as for new instances
+        this.config.removeClientsAfterDays = parseInt(
+            (this.config.removeClientsAfterDays ?? 7) as unknown as string,
+            10,
+        );
+        if (isNaN(this.config.removeClientsAfterDays) || this.config.removeClientsAfterDays < 0) {
+            this.config.removeClientsAfterDays = 0;
+        }
 
         try {
             // If using MQTTs, then create a TLS server with tls.createServer(), it's better for the TLS handshake.
@@ -3358,6 +3411,17 @@ export default class MQTTServer {
             () => !this.resending && this.checkResends(),
             this.config.retransmitInterval || 2000,
         );
+
+        // remove the objects of clients that did not connect for a while: now and once a day
+        if (!this.config.doNotCreateClientObjects && this.config.removeClientsAfterDays > 0) {
+            const cleanup = (): void => {
+                this.removeStaleClientObjects().catch(e =>
+                    this.adapter.log.warn(`Cannot remove old client objects: ${(e as Error)?.message ?? e}`),
+                );
+            };
+            cleanup();
+            this.clientsCleanupTimer = setInterval(cleanup, 24 * 3600 * 1000);
+        }
     }
 
     /** The ports this server listens on: MQTT and, if enabled, MQTT over WebSocket on the next one */
