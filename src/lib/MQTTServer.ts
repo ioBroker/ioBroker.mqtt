@@ -10,6 +10,8 @@ import {
     clientId2objectId,
     isBinaryTopic,
     pattern2RegEx,
+    idPattern2RegEx,
+    isValidTopicFilter,
     convertMessage,
     topic2filename,
     findIdForTopic,
@@ -561,6 +563,50 @@ export default class MQTTServer {
             pattern = pattern.substring(1);
         }
         return pattern;
+    }
+
+    /**
+     * Builds the two regular expressions of a topic filter: one for the IDs as they are and one for
+     * the IDs of the own namespace, whose topics are published without "mqtt.N".
+     *
+     * @param filter The topic filter as the client sent it, without "$share/<name>/"
+     * @returns The expression texts for foreign IDs and for the IDs of the own namespace
+     */
+    private filterRegExps(filter: MqttTopic): { plain: string; namespaced: string } {
+        const id = convertTopic2id(
+            filter,
+            true,
+            this.config.prefix,
+            this.adapter.namespace,
+            this.config.dotToUnderscore,
+        );
+        return {
+            plain: idPattern2RegEx(id),
+            namespaced: idPattern2RegEx(`${this.adapter.namespace}.${id}`),
+        };
+    }
+
+    /**
+     * A wildcard subscription remembers the IDs it matched in `_subsID`. When the subscription is
+     * removed or replaced, these entries have to go too, or the IDs are still delivered with the old
+     * QoS and options (MQTT-3.10.4-2, MQTT-3.8.4-3).
+     *
+     * @param client The client or offline session
+     * @param client._subsID The IDs the wildcard subscriptions matched so far
+     * @param subscriptions The subscriptions that end
+     */
+    private forgetCachedMatches(
+        client: { _subsID?: Record<string, MqttSubscription> },
+        ...subscriptions: (MqttSubscription | undefined)[]
+    ): void {
+        if (!client._subsID) {
+            return;
+        }
+        for (const id of Object.keys(client._subsID)) {
+            if (subscriptions.includes(client._subsID[id])) {
+                delete client._subsID[id];
+            }
+        }
     }
 
     private joinSharedGroup(shareName: string, pattern: MqttPattern, regex: RegExp, clientId: string): void {
@@ -2834,6 +2880,8 @@ export default class MQTTServer {
                     const granted: number[] = [];
                     client._subsID ||= {};
                     client._subs ||= {};
+                    // MQTT 5 names the reason (0x8F Topic Filter invalid), MQTT 3.1.1 only knows 0x80
+                    const failure = client.protocolVersion === 5 ? 0x8f : 0x80;
 
                     for (let i = 0; i < packet.subscriptions.length; i++) {
                         this.adapter.log.debug(
@@ -2851,6 +2899,16 @@ export default class MQTTServer {
                         // differs (MQTT-5.0 4.8.2).
                         const { shareName, filter } = parseSharedTopic(packet.subscriptions[i].topic);
 
+                        // "#" only at the end, "+" only as a whole level, not empty (MQTT-4.7.1-2,
+                        // MQTT-4.7.1-3, MQTT-4.7.3-1): such a filter cannot be subscribed to
+                        if (!isValidTopicFilter(filter)) {
+                            this.adapter.log.warn(
+                                `Client [${client.id}] subscribed to the invalid topic filter "${packet.subscriptions[i].topic}"`,
+                            );
+                            granted[i] = failure;
+                            continue;
+                        }
+
                         // "No Local" is not allowed on a shared subscription (MQTT-5.0 3.8.3.1)
                         if (shareName && nl) {
                             this.adapter.log.warn(
@@ -2867,11 +2925,13 @@ export default class MQTTServer {
                         const sendKnownValue = this.config.publishOnSubscribe && rh !== 2 && !shareName;
 
                         if (shareName) {
-                            const sharePattern = this.sharedPatternFor(filter);
+                            // the group matches the IDs of the own namespace too, like a normal
+                            // subscription does with its second entry below
+                            const { plain, namespaced } = this.filterRegExps(filter);
                             this.joinSharedGroup(
                                 shareName,
-                                sharePattern,
-                                new RegExp(pattern2RegEx(sharePattern, this.adapter, this.config.prefix)),
+                                this.sharedPatternFor(filter),
+                                new RegExp(`${plain}|${namespaced}`),
                                 client.id,
                             );
                         }
@@ -2962,10 +3022,16 @@ export default class MQTTServer {
                                 pattern = pattern.substring(1);
                             }
 
+                            const { plain, namespaced } = this.filterRegExps(topic);
+                            const namespacedTopic = `${this.adapter.namespace}/${topic}`;
+
+                            // A SUBSCRIBE to a filter that is already subscribed replaces it (MQTT-3.8.4-3),
+                            // so the IDs the old one matched must not keep its QoS and options
+                            this.forgetCachedMatches(client, client._subs[topic], client._subs[namespacedTopic]);
+
                             // add a simple pattern
-                            let regText = pattern2RegEx(pattern, this.adapter, this.config.prefix);
                             client._subs[topic] = {
-                                regex: new RegExp(regText),
+                                regex: new RegExp(plain),
                                 qos: packet.subscriptions[i].qos,
                                 pattern: pattern,
                                 nl,
@@ -2976,16 +3042,14 @@ export default class MQTTServer {
                             };
 
                             this.adapter.log.debug(
-                                `Client [${client.id}] subscribes on "${topic}" with regex /${regText}/`,
+                                `Client [${client.id}] subscribes on "${topic}" with regex /${plain}/`,
                             );
 
                             // add simple mqtt.0.pattern
-                            pattern = `${this.adapter.namespace}/${pattern}`;
-                            regText = pattern2RegEx(pattern, this.adapter, this.config.prefix);
-                            client._subs[`${this.adapter.namespace}/${topic}`] = {
-                                regex: new RegExp(regText),
+                            client._subs[namespacedTopic] = {
+                                regex: new RegExp(namespaced),
                                 qos: packet.subscriptions[i].qos,
-                                pattern,
+                                pattern: `${this.adapter.namespace}/${pattern}`,
                                 nl,
                                 rap,
                                 rh,
@@ -2993,7 +3057,7 @@ export default class MQTTServer {
                                 shareName,
                             };
                             this.adapter.log.debug(
-                                `Client [${client.id}] subscribes on "${topic}"  with regex /${regText}/`,
+                                `Client [${client.id}] subscribes on "${topic}"  with regex /${namespaced}/`,
                             );
 
                             if (sendKnownValue) {
@@ -3100,6 +3164,13 @@ export default class MQTTServer {
                         // add a simple pattern
                         if (client._subs?.[topic]) {
                             this.adapter.log.debug(`Client [${client.id}] unsubscribes on "${topic}"`);
+                            // the IDs this filter matched are cached and would still be delivered
+                            // (MQTT-3.10.4-2)
+                            this.forgetCachedMatches(
+                                client,
+                                client._subs[topic],
+                                client._subs[`${this.adapter.namespace}/${topic}`],
+                            );
                             delete client._subs[topic];
                             if (client._subs[`${this.adapter.namespace}/${topic}`]) {
                                 // add simple mqtt.0.pattern

@@ -2750,3 +2750,205 @@ describe('MQTT server: rejected login does not take over a session', function ()
         good.end(true);
     });
 });
+
+// Topic filters of SUBSCRIBE: matching per MQTT-4.7, invalid filters, characters that are special
+// in regular expressions, and the end of a subscription
+describe('MQTT server: topic filters', function () {
+    const mqtt = require('mqtt');
+    const net = require('net');
+    const { generate, parser } = require('mqtt-packet');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    const wait = (ms: number): Promise<void> => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+    /** A connected test client that records what it receives */
+    async function connectClient(clientId: string): Promise<any> {
+        const client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            clientId,
+            clean: true,
+            reconnectPeriod: 0,
+            protocolVersion: 4,
+        });
+        client.got = [] as { topic: string; payload: string; qos: number }[];
+        client.on('message', (topic: string, payload: Buffer, packet: any) =>
+            client.got.push({ topic, payload: payload.toString(), qos: packet.qos }),
+        );
+        await new Promise<void>(resolve => client.on('connect', () => resolve()));
+        return client;
+    }
+
+    function subscribe(client: any, filter: string, qos: 0 | 1 | 2 = 0): Promise<void> {
+        return new Promise<void>(resolve => client.subscribe(filter, { qos }, () => resolve()));
+    }
+
+    /** Creates a state of the own namespace and lets the broker forward its change */
+    async function changeState(id: string, val: number): Promise<void> {
+        await adapter.setForeignObjectAsync(id, {
+            _id: id,
+            type: 'state',
+            common: { name: id, type: 'number', role: 'value', read: true, write: true },
+            native: {},
+        });
+        await adapter.setForeignStateAsync(id, val, true);
+        server.onStateChange(id, { val, ack: true });
+    }
+
+    /**
+     * Sends a SUBSCRIBE byte by byte (a client library refuses invalid filters) and returns the
+     * granted codes of the SUBACK
+     *
+     * @param filters The topic filters
+     * @param protocolVersion 4 for MQTT 3.1.1, 5 for MQTT 5
+     */
+    async function rawSubscribe(filters: string[], protocolVersion: 4 | 5 = 4): Promise<number[]> {
+        const socket = net.connect(suitePort, '127.0.0.1');
+        const p = parser({ protocolVersion });
+        const suback = new Promise<number[]>(resolve =>
+            p.on('packet', (packet: any) => packet.cmd === 'suback' && resolve(packet.granted)),
+        );
+        socket.on('data', (data: Buffer) => p.parse(data));
+        socket.on('error', () => {});
+        await new Promise<void>(resolve => socket.on('connect', () => resolve()));
+        socket.write(
+            generate({
+                cmd: 'connect',
+                protocolId: 'MQTT',
+                protocolVersion,
+                clean: true,
+                clientId: `raw${protocolVersion}`,
+            }),
+        );
+        await wait(100);
+        socket.write(
+            generate(
+                { cmd: 'subscribe', messageId: 7, subscriptions: filters.map(topic => ({ topic, qos: 1 })) },
+                { protocolVersion },
+            ),
+        );
+        const granted = await Promise.race([suback, wait(2000).then(() => [] as number[])]);
+        socket.destroy();
+        return granted;
+    }
+
+    before('MQTT server (topic filters): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: false });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (topic filters): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('"+" matches exactly one whole level (MQTT-4.7.1-3)', async () => {
+        const client = await connectClient('plusLevel');
+        await subscribe(client, 'temp/+');
+        await changeState('mqtt.0.sensors.0.temp.x', 1); // "temp" not at the start
+        await changeState('mqtt.0.mytemp.x', 2); // "temp" only part of a level
+        await changeState('mqtt.0.temp.a.b', 3); // two levels below "temp"
+        await changeState('mqtt.0.temp.a', 4);
+        await wait(300);
+        client.end(true);
+        assert.deepStrictEqual(
+            client.got.map((m: any) => m.topic),
+            ['temp/a'],
+        );
+    });
+
+    it('a single "+" does not match a topic with two levels', async () => {
+        const client = await connectClient('plusOnly');
+        await subscribe(client, '+');
+        await changeState('mqtt.0.one', 1);
+        await changeState('mqtt.0.one.two', 2);
+        await wait(300);
+        client.end(true);
+        assert.deepStrictEqual(
+            client.got.map((m: any) => m.topic),
+            ['one'],
+        );
+    });
+
+    it('answers invalid topic filters with 0x80 and keeps the valid ones (MQTT-4.7.1-2, MQTT-4.7.1-3)', async () => {
+        assert.deepStrictEqual(await rawSubscribe(['a/#/b', 'sport+', 'a#', 'valid/#']), [0x80, 0x80, 0x80, 1]);
+    });
+
+    it('answers an invalid topic filter of a MQTT 5 client with 0x8F', async () => {
+        assert.deepStrictEqual(await rawSubscribe(['a/#/b', 'valid/+'], 5), [0x8f, 1]);
+    });
+
+    it('takes characters that are special in regular expressions literally', async () => {
+        const client = await connectClient('regexChars');
+        // threw "Invalid regular expression" as an unhandled rejection, which stops the instance
+        await subscribe(client, 'a/(/#');
+        await subscribe(client, 'b/[x]/+');
+        await changeState('mqtt.0.a.(.x', 1);
+        await changeState('mqtt.0.b.[x].y', 2);
+        await changeState('mqtt.0.b.x.y', 3); // "[x]" is not a character class
+        await wait(300);
+        client.end(true);
+        assert.deepStrictEqual(client.got.map((m: any) => m.topic).sort(), ['a/(/x', 'b/[x]/y']);
+    });
+
+    it('stops delivering the topics a wildcard matched after UNSUBSCRIBE (MQTT-3.10.4-2)', async () => {
+        const client = await connectClient('unsubWildcard');
+        await subscribe(client, 'gone/#');
+        await changeState('mqtt.0.gone.t1', 1);
+        await wait(200);
+        await new Promise<void>(resolve => client.unsubscribe('gone/#', () => resolve()));
+        await changeState('mqtt.0.gone.t1', 2);
+        await wait(300);
+        client.end(true);
+        assert.deepStrictEqual(
+            client.got.map((m: any) => m.payload),
+            ['1'],
+        );
+    });
+
+    it('a new SUBSCRIBE to the same filter replaces the QoS for topics already matched (MQTT-3.8.4-3)', async () => {
+        const client = await connectClient('resubscribe');
+        await subscribe(client, 'qos/#', 0);
+        await changeState('mqtt.0.qos.t1', 1);
+        await wait(200);
+        await subscribe(client, 'qos/#', 1);
+        await changeState('mqtt.0.qos.t1', 2);
+        await wait(300);
+        client.end(true);
+        assert.deepStrictEqual(
+            client.got.map((m: any) => m.qos),
+            [0, 1],
+        );
+    });
+
+    it('a shared subscription with a wildcard filter delivers the states of the own namespace', async () => {
+        const client = await connectClient('sharedWildcard');
+        await subscribe(client, '$share/group/shared/#');
+        await changeState('mqtt.0.shared.work', 5);
+        await wait(300);
+        client.end(true);
+        assert.deepStrictEqual(
+            client.got.map((m: any) => m.topic),
+            ['shared/work'],
+        );
+    });
+
+    it('a handler that fails closes only the connection of that client', async () => {
+        const victim = await connectClient('failingHandler');
+        const bystander = await connectClient('bystander');
+        let victimClosed = false;
+        victim.on('close', () => (victimClosed = true));
+        const receivedTopic = server.receivedTopic;
+        server.receivedTopic = () => Promise.reject(new Error('simulated failure'));
+        victim.publish('fail/now', '1', { qos: 0 });
+        await wait(300);
+        server.receivedTopic = receivedTopic;
+        assert.strictEqual(victimClosed, true, 'the client of the failed packet is disconnected');
+        assert.strictEqual(bystander.connected, true, 'other clients stay connected');
+        victim.end(true);
+        bystander.end(true);
+    });
+});
