@@ -2469,3 +2469,220 @@ describe('MQTT server: client objects for unusual client IDs', function () {
         assert.deepStrictEqual(errors, []);
     });
 });
+
+// CONNECT handling as the MQTT specifications require it (#687). The packets are written raw,
+// because a regular client library refuses to send most of them.
+describe('MQTT server: CONNECT handling (MQTT 3.1, 3.1.1, 5.0)', function () {
+    const net = require('net');
+    const { generate } = require('mqtt-packet');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(15000);
+    let suitePort: number;
+
+    /** A raw TCP connection that collects what the broker sends */
+    interface RawSession {
+        socket: any;
+        received: () => string;
+        closed: () => boolean;
+    }
+
+    /**
+     * Encodes a length-prefixed MQTT string
+     *
+     * @param text The string
+     */
+    function mqttString(text: string): Buffer {
+        const data = Buffer.from(text);
+        return Buffer.concat([Buffer.from([data.length >> 8, data.length & 0xff]), data]);
+    }
+
+    /**
+     * Builds a CONNECT packet byte by byte, so also invalid ones can be sent
+     *
+     * @param opts Protocol name, level, connect flags, client ID and optional MQTT 5 properties
+     * @param opts.name Protocol name
+     * @param opts.level Protocol level
+     * @param opts.flags Connect flags
+     * @param opts.clientId Client ID
+     */
+    function rawConnect(opts: { name?: string; level?: number; flags?: number; clientId?: string }): Buffer {
+        const level = opts.level ?? 4;
+        const parts = [
+            mqttString(opts.name ?? (level === 3 ? 'MQIsdp' : 'MQTT')),
+            Buffer.from([level, opts.flags ?? 0x02, 0, 30]),
+        ];
+        if (level === 5) {
+            parts.push(Buffer.from([0])); // no properties
+        }
+        parts.push(mqttString(opts.clientId ?? ''));
+        const body = Buffer.concat(parts);
+        return Buffer.concat([Buffer.from([0x10, body.length]), body]);
+    }
+
+    /**
+     * Opens a TCP connection and writes the packets one after another
+     *
+     * @param packets The raw packets
+     */
+    async function session(packets: Buffer[]): Promise<RawSession> {
+        const socket = net.connect(suitePort, '127.0.0.1');
+        let rx = Buffer.alloc(0);
+        let isClosed = false;
+        socket.on('data', (data: Buffer) => (rx = Buffer.concat([rx, data])));
+        socket.on('close', () => (isClosed = true));
+        socket.on('error', () => {});
+        await new Promise<void>(resolve => socket.on('connect', () => resolve()));
+        for (const packet of packets) {
+            socket.write(packet);
+            await new Promise<void>(resolve => setTimeout(resolve, 100));
+        }
+        await new Promise<void>(resolve => setTimeout(resolve, 400));
+        return { socket, received: () => rx.toString('hex'), closed: () => isClosed };
+    }
+
+    before('MQTT server (CONNECT handling): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (CONNECT handling): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('answers an unsupported protocol level with CONNACK 0x01 and closes (MQTT-3.1.2-2)', async () => {
+        const s = await session([rawConnect({ level: 6, clientId: 'level6' })]);
+        assert.strictEqual(s.received(), '20020001');
+        assert.strictEqual(s.closed(), true);
+    });
+
+    it('closes the connection on a second CONNECT (MQTT-3.1.0-2)', async () => {
+        const s = await session([rawConnect({ clientId: 'twice' }), rawConnect({ clientId: 'twice' })]);
+        assert.strictEqual(s.received(), '20020000', 'only the first CONNECT is answered');
+        assert.strictEqual(s.closed(), true);
+    });
+
+    it('closes the connection when the first packet is not CONNECT (MQTT-3.1.0-1)', async () => {
+        const s = await session([generate({ cmd: 'publish', topic: 'before/connect', payload: '1', qos: 0 })]);
+        assert.strictEqual(s.received(), '');
+        assert.strictEqual(s.closed(), true);
+        assert.strictEqual(await adapter.getForeignObjectAsync('mqtt.0.before.connect'), undefined);
+    });
+
+    it('assigns a unique ID to clients with an empty client ID (MQTT-3.1.3-6)', async () => {
+        const a = await session([rawConnect({ clientId: '' })]);
+        const b = await session([rawConnect({ clientId: '' })]);
+        assert.strictEqual(a.received(), '20020000');
+        assert.strictEqual(b.received(), '20020000');
+        assert.strictEqual(a.closed(), false, 'the first client must not be replaced by the second');
+        assert.strictEqual(b.closed(), false);
+        const ids = Object.keys(server.clients).filter(id => id.startsWith('auto-'));
+        assert.strictEqual(ids.length, 2);
+        a.socket.destroy();
+        b.socket.destroy();
+    });
+
+    it('rejects an empty client ID with clean session = false (MQTT-3.1.3-8)', async () => {
+        const s = await session([rawConnect({ clientId: '', flags: 0x00 })]);
+        assert.strictEqual(s.received(), '20020002');
+        assert.strictEqual(s.closed(), true);
+    });
+
+    it('rejects an empty client ID in MQTT 3.1', async () => {
+        const s = await session([rawConnect({ level: 3, clientId: '' })]);
+        assert.strictEqual(s.received(), '20020002');
+        assert.strictEqual(s.closed(), true);
+    });
+
+    it('returns the assigned client ID to a MQTT 5 client (MQTT-3.2.2-16)', async () => {
+        const s = await session([rawConnect({ level: 5, clientId: '' })]);
+        const connack = Buffer.from(s.received(), 'hex');
+        assert.strictEqual(connack[0], 0x20);
+        assert.strictEqual(connack[3], 0x00, 'reason code success');
+        // property 0x12 = Assigned Client Identifier, followed by a length-prefixed string
+        const at = connack.indexOf(0x12, 4);
+        assert.ok(at > 0, 'Assigned Client Identifier is missing');
+        assert.strictEqual(connack.subarray(at + 3, at + 8).toString(), 'auto-');
+        s.socket.destroy();
+    });
+
+    it('closes the old connection when a client with the same ID connects (MQTT-3.1.4-2)', async () => {
+        const oldOne = await session([rawConnect({ clientId: 'dup4' })]);
+        const newOne = await session([rawConnect({ clientId: 'dup4' })]);
+        await new Promise<void>(resolve => setTimeout(resolve, 300));
+        assert.strictEqual(oldOne.closed(), true, 'the old connection must be closed');
+        assert.strictEqual(newOne.closed(), false);
+        assert.strictEqual(server.clients.dup4 !== undefined, true, 'the new connection keeps the session');
+        newOne.socket.destroy();
+    });
+
+    it('sends DISCONNECT 0x8E to the old MQTT 5 connection (MQTT-3.1.4-3)', async () => {
+        const oldOne = await session([rawConnect({ level: 5, clientId: 'dup5' })]);
+        const before = oldOne.received();
+        const newOne = await session([rawConnect({ level: 5, clientId: 'dup5' })]);
+        await new Promise<void>(resolve => setTimeout(resolve, 300));
+        const after = oldOne.received().substring(before.length);
+        assert.ok(after.startsWith('e0') && after.substring(4, 6) === '8e', `expected DISCONNECT 0x8E, got ${after}`);
+        assert.strictEqual(oldOne.closed(), true);
+        newOne.socket.destroy();
+    });
+
+    it('does not set the session present flag for MQTT 3.1 (reserved byte)', async () => {
+        const first = await session([rawConnect({ level: 3, clientId: 'p31', flags: 0x00 })]);
+        first.socket.destroy();
+        await new Promise<void>(resolve => setTimeout(resolve, 300));
+        const second = await session([rawConnect({ level: 3, clientId: 'p31', flags: 0x00 })]);
+        assert.strictEqual(second.received(), '20020000');
+        second.socket.destroy();
+    });
+});
+
+// A rejected login with the client ID of a connected client must not end that client's session
+describe('MQTT server: rejected login does not take over a session', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    before('MQTT server (rejected login): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0, onchange: true, user: 'user', pass: 'pass' });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (rejected login): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('keeps the connected client when a login with the same ID fails', async () => {
+        const good = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            clientId: 'victim',
+            username: 'user',
+            password: 'pass',
+            reconnectPeriod: 0,
+        });
+        await new Promise<void>(resolve => good.on('connect', () => resolve()));
+        let goodClosed = false;
+        good.on('close', () => (goodClosed = true));
+
+        const bad = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, {
+            clientId: 'victim',
+            username: 'user',
+            password: 'wrong',
+            reconnectPeriod: 0,
+        });
+        bad.on('error', () => {});
+        await new Promise<void>(resolve => setTimeout(resolve, 800));
+        bad.end(true);
+
+        assert.strictEqual(goodClosed, false, 'the connected client must stay connected');
+        assert.ok(server.clients.victim, 'the session must still belong to the connected client');
+        good.end(true);
+    });
+});

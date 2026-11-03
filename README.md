@@ -214,7 +214,9 @@ The broker was tested with the following clients:
 - http://www.eclipse.org/paho/clients/tool/
 
 ### Client objects
-In server mode, the mqtt broker creates for every connected client the corresponding object in the ioBroker. The object will be created with the name `mqtt.0.info.clients.<clientId>`. The clientId is the unique identifier of the client. Dots, whitespace and characters that are not allowed in an ioBroker object ID (e.g. `*` or binary data) are replaced by `_`.
+In server mode, the mqtt broker creates for every connected client the corresponding object in the ioBroker. The object will be created with the name `mqtt.0.info.clients.<clientId>`. The clientId is the unique identifier of the client. Dots, whitespace and characters that are not allowed in an ioBroker object ID (e.g. `*` or binary data) are replaced by `_`. A device that connects without client ID gets one from the broker (`auto-…`).
+
+If a device connects again with the same client ID while its old connection is still open, the old connection is closed. Every client ID can only be used by one connection at a time.
 
 You can disable the creation of the client objects in the instance settings. (**Do not create client objects**)
 
@@ -237,6 +239,7 @@ Note: If you have some client that connects and disconnects very often, the list
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22.19.0 now
 - (@Schimi1983) Server mode: a client with many unacknowledged messages no longer slows the broker down. Since 8.1.5, every new message to such a client searched the whole queue again for each packet ID still in use, which took up to half a second per message and could drive the CPU load to 100 %
+- (@Schimi1983) Server mode: connections are handled as the MQTT specifications require (#687). A new connection with the client ID of a connected client closes the old one (MQTT 5: "session taken over"); a rejected login no longer ends the session of the connected client. Clients without client ID get a unique ID (`auto-…`) instead of sharing one; this is refused for MQTT 3.1 and for MQTT 3.1.1 with "clean session" off. An unsupported protocol version is answered with "unacceptable protocol version". A second CONNECT or any packet before CONNECT closes the connection
 ### 9.0.2 (2026-10-30)
 * (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
 * (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
