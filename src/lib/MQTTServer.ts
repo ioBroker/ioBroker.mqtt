@@ -433,7 +433,13 @@ export default class MQTTServer {
 
             if (this.clients) {
                 for (const id in this.clients) {
-                    const _id = id || this.clients[id]?.id || this.clients[id]?.stream?.remoteAddress;
+                    // A client without own ID gets a new one from the broker on every connection
+                    // (auto-…). An object per assigned ID would leave a new one behind on each
+                    // reconnect, so such a client is named after its address, as before.
+                    const _id =
+                        (this.clients[id]?._assignedClientId && this.clients[id].stream?.remoteAddress) ||
+                        id ||
+                        this.clients[id]?.stream?.remoteAddress;
                     const oid = `info.clients.${clientId2objectId(_id, this.adapter.FORBIDDEN_CHARS)}`;
                     clientIds.push(oid);
                     const clientObj = await this.adapter.getObjectAsync(oid);
@@ -2331,7 +2337,14 @@ export default class MQTTServer {
                         // session (MQTT-3.1.3-7/-8); MQTT 3.1 requires 1 to 23 characters. The broker
                         // then assigns a unique ID (MQTT-3.1.3-6) and tells a MQTT 5 client which one
                         // (MQTT-5.0 3.2.2.3.7). Without this, all such clients shared the ID "".
-                        if (client.protocolVersion === 3 || (client.protocolVersion === 4 && !options.clean)) {
+                        // When the instance forces clean sessions, no session is stored anyway, so such
+                        // a client is accepted instead of locked out as before.
+                        if (
+                            client.protocolVersion === 3 ||
+                            (client.protocolVersion === 4 &&
+                                !options.clean &&
+                                this.config.forceCleanSession !== 'clean')
+                        ) {
                             this.adapter.log.warn(
                                 `Client from ${client.stream?.remoteAddress} rejected: empty client ID ${client.protocolVersion === 3 ? 'is not allowed in MQTT 3.1' : 'with clean session = false'}`,
                             );
@@ -2384,9 +2397,19 @@ export default class MQTTServer {
                     const completeConnect = (): void => {
                         const previous = this.clients[client.id];
                         if (previous && previous !== client) {
-                            this.adapter.log.info(
-                                `Client [${client.id}] reconnected. Old secret ${previous.__secret}. New secret ${client.__secret}`,
-                            );
+                            const oldAddress = previous.stream?.remoteAddress;
+                            const newAddress = client.stream?.remoteAddress;
+                            if (oldAddress && newAddress && oldAddress !== newAddress) {
+                                // Usually two devices with the same client ID: they keep closing each
+                                // other's connection, so this has to be visible without debug logging.
+                                this.adapter.log.warn(
+                                    `Client [${client.id}] from ${newAddress} takes over the connection of ${oldAddress}. If this repeats, two devices use the same client ID and keep disconnecting each other`,
+                                );
+                            } else {
+                                this.adapter.log.info(
+                                    `Client [${client.id}] reconnected. Old secret ${previous.__secret}. New secret ${client.__secret}`,
+                                );
+                            }
                             // The new connection takes over the session, the old one has to be closed
                             // (MQTT-3.1.4-2). A MQTT 5 client is told why (MQTT-5.0 3.1.4-3).
                             previous.disconnect({ reasonCode: 0x8e }); // session taken over
