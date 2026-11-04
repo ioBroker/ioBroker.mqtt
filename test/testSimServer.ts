@@ -2879,3 +2879,137 @@ describe('MQTT server: rejected login does not take over a session', function ()
         good.end(true);
     });
 });
+
+// MQTT over TLS and over secure WebSocket (#341). The certificate is created with openssl for the test
+// (no private key in the repository); without openssl the suite is skipped.
+describe('MQTT server: TLS', function () {
+    const mqtt = require('mqtt');
+    const { execFileSync } = require('node:child_process');
+    const { mkdtempSync, readFileSync, rmSync } = require('node:fs');
+    const { join } = require('node:path');
+    const { tmpdir } = require('node:os');
+    let adapter: Adapter;
+    let server: any;
+    let suitePort: number;
+    let certDir = '';
+    const warnings: string[] = [];
+    this.timeout(15000);
+
+    before(function (done) {
+        try {
+            certDir = mkdtempSync(join(tmpdir(), 'mqtt-tls-'));
+            execFileSync(
+                'openssl',
+                [
+                    'req',
+                    '-x509',
+                    '-newkey',
+                    'ec',
+                    '-pkeyopt',
+                    'ec_paramgen_curve:prime256v1',
+                    '-nodes',
+                    '-days',
+                    '1',
+                    '-subj',
+                    '/CN=localhost',
+                    '-keyout',
+                    join(certDir, 'key.pem'),
+                    '-out',
+                    join(certDir, 'cert.pem'),
+                ],
+                { stdio: 'ignore' },
+            );
+        } catch {
+            this.skip();
+        }
+        suitePort = ++port;
+        port++; // WebSocket on the next port
+        adapter = new Adapter({
+            port: suitePort,
+            ssl: true,
+            webSocket: true,
+            defaultQoS: 0,
+            certificates: {
+                cert: readFileSync(join(certDir, 'cert.pem'), 'utf8'),
+                key: readFileSync(join(certDir, 'key.pem'), 'utf8'),
+            },
+        });
+        adapter.log.warn = (text: string): void => {
+            warnings.push(text);
+        };
+        server = new Server(adapter, {});
+        setTimeout(done, 300);
+    });
+
+    after(done => {
+        if (certDir) {
+            rmSync(certDir, { recursive: true, force: true });
+        }
+        server ? server.destroy(done) : done();
+    });
+
+    /** Connects and resolves with "connected" or the error message */
+    function tryConnect(url: string, options: Record<string, any>): Promise<string> {
+        return new Promise(resolve => {
+            const client = mqtt.connect(url, { reconnectPeriod: 0, connectTimeout: 3000, ...options });
+            const timer = setTimeout(() => {
+                client.end(true);
+                resolve('timeout');
+            }, 3500);
+            client.on('connect', () => {
+                clearTimeout(timer);
+                client.end(true);
+                resolve('connected');
+            });
+            client.on('error', (err: Error) => {
+                clearTimeout(timer);
+                client.end(true);
+                resolve(err.message);
+            });
+        });
+    }
+
+    const wait = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+    it('accepts MQTT over TLS', async () => {
+        const result = await tryConnect(`mqtts://127.0.0.1:${suitePort}`, {
+            rejectUnauthorized: false,
+            clientId: 'tls',
+        });
+        assert.strictEqual(result, 'connected');
+    });
+
+    it('accepts MQTT over secure WebSocket', async () => {
+        const result = await tryConnect(`wss://127.0.0.1:${suitePort + 1}`, {
+            rejectUnauthorized: false,
+            clientId: 'wss',
+        });
+        assert.strictEqual(result, 'connected');
+    });
+
+    it('logs a client that does not trust the certificate once', async () => {
+        warnings.length = 0;
+        for (let i = 0; i < 3; i++) {
+            await tryConnect(`mqtts://127.0.0.1:${suitePort}`, { rejectUnauthorized: true, clientId: 'strict' });
+        }
+        await wait(200);
+        assert.strictEqual(warnings.length, 1, JSON.stringify(warnings));
+        assert.match(warnings[0], /TLS connection from 127\.0\.0\.1 failed: the client closed the connection/);
+    });
+
+    it('logs a client without TLS on the TLS port', async () => {
+        warnings.length = 0;
+        await tryConnect(`mqtt://127.0.0.1:${suitePort}`, { clientId: 'plain', connectTimeout: 1000 });
+        await wait(200);
+        assert.strictEqual(warnings.length, 1, JSON.stringify(warnings));
+        assert.match(warnings[0], /the client does not use TLS/);
+    });
+
+    it('logs a failure again after a successful connection of that address', async () => {
+        await tryConnect(`mqtts://127.0.0.1:${suitePort}`, { rejectUnauthorized: false, clientId: 'tls2' });
+        warnings.length = 0;
+        await tryConnect(`mqtts://127.0.0.1:${suitePort}`, { rejectUnauthorized: true, clientId: 'strict2' });
+        await wait(200);
+        assert.strictEqual(warnings.length, 1, JSON.stringify(warnings));
+    });
+});
