@@ -503,6 +503,8 @@ export default class MQTTServer {
      * Devices that use a new client ID for every connection leave one object per connection behind,
      * which otherwise grow without limit (#518). The time a client went offline is taken from
      * `native.lastSeen`, for objects of older versions from the last change of the state.
+     * Objects with settings of other adapters (e.g. history or influxdb in `common.custom`) are kept,
+     * because removing them would lose those settings.
      */
     private async removeStaleClientObjects(): Promise<void> {
         const days = this.config.removeClientsAfterDays;
@@ -511,16 +513,25 @@ export default class MQTTServer {
         }
         const limit = Date.now() - days * 24 * 3600 * 1000;
         const allStates = await this.adapter.getStatesAsync('info.clients.*');
+        // one query for all objects instead of one per client
+        const allObjects = await this.adapter.getForeignObjectsAsync(
+            `${this.adapter.namespace}.info.clients.*`,
+            'state',
+        );
         let removed = 0;
         for (const id in allStates) {
             const state = allStates[id];
-            if (!state || state.val === true) {
+            const obj = allObjects[id];
+            if (!state || state.val === true || !obj) {
                 continue;
             }
-            const obj = await this.adapter.getForeignObjectAsync(id);
-            const lastSeen = Number(obj?.native?.lastSeen) || state.lc || state.ts;
+            const custom = obj.common?.custom;
+            if (custom && Object.values(custom).some(settings => settings)) {
+                continue;
+            }
+            const lastSeen = Number(obj.native?.lastSeen) || state.lc || state.ts;
             // the client may have connected again while this loop was running
-            if (obj && lastSeen && lastSeen < limit && (await this.adapter.getForeignStateAsync(id))?.val !== true) {
+            if (lastSeen && lastSeen < limit && (await this.adapter.getForeignStateAsync(id))?.val !== true) {
                 await this.adapter.delForeignObjectAsync(id);
                 removed++;
             }
