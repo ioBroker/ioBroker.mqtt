@@ -11,6 +11,7 @@ const {
     findIdForTopic,
     parseSharedTopic,
     clientId2objectId,
+    plainAddress,
 } = require('../build/lib/common');
 
 // Minimal adapter stub – convertMessage only uses `log` (for the invalid-JSON debug branch).
@@ -376,5 +377,17 @@ describe('Test convert version', function () {
         it('returns false when nothing was received yet', () => {
             assert.strictEqual(isEchoOfReceived(undefined, '"on"', 1000, 2000), false);
         });
+    });
+});
+
+describe('plainAddress', () => {
+    it('shows an IPv4 client of a dual-stack server as plain IPv4 address', () => {
+        assert.strictEqual(plainAddress('::ffff:192.168.1.10'), '192.168.1.10');
+    });
+    it('keeps IPv4 and real IPv6 addresses', () => {
+        assert.strictEqual(plainAddress('192.168.1.10'), '192.168.1.10');
+        assert.strictEqual(plainAddress('::1'), '::1');
+        assert.strictEqual(plainAddress('::ffff:abcd'), '::ffff:abcd');
+        assert.strictEqual(plainAddress(undefined), undefined);
     });
 });
