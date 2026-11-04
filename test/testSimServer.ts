@@ -2526,7 +2526,7 @@ describe('MQTT server: client objects cleanup', function () {
             await addClientObject(adapter, 'old_logged', Date.now() - 30 * DAY, true, {
                 'history.0': { enabled: true },
             });
-            // switched off again: admin leaves null behind
+            // admin removes a switched-off entry; a leftover null must not count as logging either
             await addClientObject(adapter, 'old_unlogged', Date.now() - 30 * DAY, true, { 'history.0': null });
             // count what is written to the client states
             const setStateAsync = adapter.setStateAsync.bind(adapter);
