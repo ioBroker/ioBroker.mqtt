@@ -230,6 +230,8 @@ export default class MQTTServer {
     private readonly verifiedObjects = {};
     private updateClientsTimeout: ioBroker.Timeout | undefined;
     private clientsCleanupTimer: NodeJS.Timeout | null = null;
+    /** Per address the failed TLS handshake that was last logged as warning (see onTlsClientError) */
+    private readonly tlsErrorsLogged = new Map<string, string>();
     private updateClientsRunning = false;
     private updateClientsRestart = false;
 
@@ -2335,20 +2337,28 @@ export default class MQTTServer {
         ssl: boolean,
         ws: boolean,
     ): void {
-        // Event variable to hold a connection event type
-        let connectionEvent: 'secureConnection' | 'connection';
+        // A TLS server reports a connection after the TLS handshake ("secureConnection"). The WebSocket
+        // server always reports "connection", also over HTTPS: listening for "secureConnection" there
+        // never accepted a client, so MQTT over secure WebSocket did not work at all.
+        const connectionEvent = ssl && !ws ? 'secureConnection' : 'connection';
 
-        // Check if SSL/TLS connection is required
-        if (this.config.ssl) {
-            // Set event variable to SSL/TLS connection
-            connectionEvent = 'secureConnection';
-        } else {
-            // Set event variable to plain TCP connection
-            connectionEvent = 'connection';
+        // a failed TLS handshake ends before any MQTT packet, so it is logged here or not at all
+        if (ssl) {
+            const tlsServer: any = ws ? server : socket;
+            // remember the address on the TCP socket: after a reset during the handshake the TLS socket has lost it
+            tlsServer?.on('connection', (tcpSocket: any) => {
+                tcpSocket.__mqttAddress = tcpSocket.remoteAddress;
+            });
+            tlsServer?.on('tlsClientError', (err: Error & { code?: string }, tlsSocket: any) =>
+                this.onTlsClientError(err, tlsSocket),
+            );
         }
 
-        // Use event variable to start the connection
         socket.on(connectionEvent, (stream: any) => {
+            if (ssl && !ws && stream?.remoteAddress) {
+                // the next failure of this address is worth a warning again
+                this.tlsErrorsLogged.delete(stream.remoteAddress);
+            }
             const client = new MqttConnection(ws ? wsStream(stream) : stream) as MqttClientConnection;
 
             // Store unique connection identifier
@@ -3422,6 +3432,43 @@ export default class MQTTServer {
             cleanup();
             this.clientsCleanupTimer = setInterval(cleanup, 24 * 3600 * 1000);
         }
+    }
+
+    /**
+     * Logs a TLS handshake that failed, with the most likely reason. A client retries every few seconds,
+     * so each address is logged once as warning and then at debug level, until it connects successfully
+     * or fails for another reason.
+     * The list of addresses is limited, so a port scan cannot make it grow without limit.
+     *
+     * @param err the error of the TLS server
+     * @param tlsSocket the TLS socket of the failed connection
+     */
+    private onTlsClientError(err: Error & { code?: string }, tlsSocket: any): void {
+        // @KI_HINWEIS: When the client closes the connection during the handshake, the TLS socket no longer
+        // knows the address. The address noted on the TCP socket below it (_parent, not documented) is used then.
+        const address: string = tlsSocket?.remoteAddress || tlsSocket?._parent?.__mqttAddress || 'unknown address';
+        let reason: string;
+        if (err.code === 'ECONNRESET') {
+            reason =
+                'the client closed the connection during the TLS handshake. Usually it does not trust the certificate of this server (self-signed?), or it was only a port check';
+        } else if (err.code === 'ERR_SSL_WRONG_VERSION_NUMBER' || err.code === 'ERR_SSL_HTTP_REQUEST') {
+            reason = 'the client does not use TLS. Switch on TLS (SSL) in the client or switch off "SSL" here';
+        } else if (err.code === 'ERR_SSL_UNSUPPORTED_PROTOCOL' || err.code === 'ERR_SSL_UNEXPECTED_MESSAGE') {
+            reason = 'the client uses a TLS version that is too old or not supported';
+        } else {
+            reason = err.message;
+        }
+        const text = `TLS connection from ${address} failed: ${reason} (${err.code || 'TLS error'})`;
+        const code = err.code || err.message;
+        if (this.tlsErrorsLogged.get(address) === code) {
+            this.adapter.log.debug(text);
+            return;
+        }
+        if (this.tlsErrorsLogged.size >= 100 && !this.tlsErrorsLogged.has(address)) {
+            this.tlsErrorsLogged.clear();
+        }
+        this.tlsErrorsLogged.set(address, code);
+        this.adapter.log.warn(text);
     }
 
     /** The ports this server listens on: MQTT and, if enabled, MQTT over WebSocket on the next one */
