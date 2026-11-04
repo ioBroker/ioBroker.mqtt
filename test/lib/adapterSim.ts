@@ -210,6 +210,20 @@ export default class AdapterSimulator {
         return new Promise(resolve => this.getForeignObject(id, (err, obj) => resolve(obj)));
     }
 
+    getForeignObjectsAsync(pattern: string, type?: string): Promise<Record<string, ioBroker.Object>> {
+        const prefix = pattern.endsWith('*') ? pattern.substring(0, pattern.length - 1) : pattern;
+        const result: Record<string, ioBroker.Object> = {};
+        for (const id in this.#objects) {
+            if (
+                (pattern.endsWith('*') ? id.startsWith(prefix) : id === prefix) &&
+                (!type || this.#objects[id].type === type)
+            ) {
+                result[id] = this.#objects[id];
+            }
+        }
+        return Promise.resolve(result);
+    }
+
     getObjectAsync(id: string): Promise<ioBroker.Object | null | undefined> {
         return new Promise(resolve => this.getObject(id, (err, obj) => resolve(obj)));
     }
