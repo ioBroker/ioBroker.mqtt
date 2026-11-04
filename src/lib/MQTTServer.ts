@@ -15,6 +15,7 @@ import {
     findIdForTopic,
     parseSharedTopic,
     isEmptyPayload,
+    plainAddress,
 } from './common';
 import type { ScramError } from './scram';
 import { createSalt, saltPassword, ScramExchange, SCRAM_SHA_256 } from './scram';
@@ -2357,7 +2358,7 @@ export default class MQTTServer {
         socket.on(connectionEvent, (stream: any) => {
             if (ssl && !ws && stream?.remoteAddress) {
                 // the next failure of this address is worth a warning again
-                this.tlsErrorsLogged.delete(stream.remoteAddress);
+                this.tlsErrorsLogged.delete(plainAddress(stream.remoteAddress) ?? '');
             }
             const client = new MqttConnection(ws ? wsStream(stream) : stream) as MqttClientConnection;
 
@@ -3446,7 +3447,8 @@ export default class MQTTServer {
     private onTlsClientError(err: Error & { code?: string }, tlsSocket: any): void {
         // @KI_HINWEIS: When the client closes the connection during the handshake, the TLS socket no longer
         // knows the address. The address noted on the TCP socket below it (_parent, not documented) is used then.
-        const address: string = tlsSocket?.remoteAddress || tlsSocket?._parent?.__mqttAddress || 'unknown address';
+        const address =
+            plainAddress(tlsSocket?.remoteAddress || tlsSocket?._parent?.__mqttAddress) || 'unknown address';
         let reason: string;
         if (err.code === 'ECONNRESET') {
             reason =
