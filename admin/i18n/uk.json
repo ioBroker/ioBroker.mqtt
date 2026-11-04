@@ -96,5 +96,7 @@
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Дані цих топіків зберігаються як файли у файловому сховищі замість станів. Стан містить URL файлу. Дозволені символи підстановки (через кому, наприклад 'valetudo/+/map,zigbee.*.image')",
     "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Ці стани будуть опубліковані. (Через кому, наприклад 'mqtt.0.*,javascript.*')",
     "Credentials:": "Облікові дані",
-    "credentials_help": "Якщо вибрано, ім'я користувача та пароль беруться з центрального сховища облікових даних (Налаштування → Облікові дані), а не з полів нижче"
+    "credentials_help": "Якщо вибрано, ім'я користувача та пароль беруться з центрального сховища облікових даних (Налаштування → Облікові дані), а не з полів нижче",
+    "Remove client objects after": "Видаляти об'єкти клієнтів через",
+    "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Днів без підключення, 0 = ніколи. Інакше пристрої, що використовують новий ID клієнта при кожному підключенні, щоразу залишають новий об'єкт."
 }

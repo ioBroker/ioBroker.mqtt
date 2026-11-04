@@ -61,6 +61,8 @@ export interface MqttAdapterConfig {
     ignoredTopics: string;
     binaryTopics: string;
     doNotCreateClientObjects: boolean;
+    /** Days without connection after which a client object is removed, 0 = never (#518) */
+    removeClientsAfterDays: number;
     parseCharCodes: boolean;
     payloadParsing: PayloadParsing;
     dotToUnderscore: boolean;

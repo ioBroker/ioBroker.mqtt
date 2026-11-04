@@ -359,6 +359,19 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "removeClientsAfterDays": {
+                    "type": "number",
+                    "label": "Remove client objects after",
+                    "help": "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.",
+                    "min": 0,
+                    "max": 3650,
+                    "hidden": "!!data.doNotCreateClientObjects",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
