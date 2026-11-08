@@ -11,6 +11,8 @@ const {
     findIdForTopic,
     parseSharedTopic,
     clientId2objectId,
+    idPattern2RegEx,
+    isValidTopicFilter,
     plainAddress,
 } = require('../build/lib/common');
 
@@ -172,6 +174,56 @@ describe('Test convert version', function () {
             const regex = new RegExp(pattern2RegEx('wolf/#', adapter, '', true));
             const id = convertTopic2id('wolf/HK1.Vorlauftemperatur', false, '', 'mqtt.0', true);
             assert.strictEqual(regex.test(id), true);
+        });
+    });
+
+    describe('idPattern2RegEx', () => {
+        const matches = (pattern: string, id: string): boolean => new RegExp(idPattern2RegEx(pattern)).test(id);
+
+        it('"+" is exactly one whole level', () => {
+            assert.strictEqual(matches('sport.+', 'sport.tennis'), true);
+            assert.strictEqual(matches('sport.+', 'sport.tennis.player1'), false);
+            assert.strictEqual(matches('sport.+', 'xsport.tennis'), false);
+            assert.strictEqual(matches('+', 'sport'), true);
+            assert.strictEqual(matches('+', 'sport.tennis'), false);
+            assert.strictEqual(matches('+.tennis', 'sport.tennis'), true);
+            assert.strictEqual(matches('+.tennis', 'sport.tennisx'), false);
+        });
+
+        it('a trailing "#" or "*" matches the parent and everything below', () => {
+            assert.strictEqual(matches('sport.#', 'sport'), true);
+            assert.strictEqual(matches('sport.#', 'sport.tennis.player1'), true);
+            assert.strictEqual(matches('sport.#', 'sports.tennis'), false);
+            assert.strictEqual(matches('mqtt.0.*', 'mqtt.0.a.b'), true);
+            assert.strictEqual(matches('#', 'anything.at.all'), true);
+        });
+
+        it('an exact filter matches only the whole ID', () => {
+            assert.strictEqual(matches('a.b', 'a.b'), true);
+            assert.strictEqual(matches('a.b', 'xa.b.c'), false);
+        });
+
+        it('characters that are special in regular expressions are literal', () => {
+            for (const pattern of ['a.(.#', 'b.[x].+', 'c.?', 'd.{1}', 'e.$x', 'f.a|b', 'g.\\']) {
+                assert.doesNotThrow(() => new RegExp(idPattern2RegEx(pattern)), pattern);
+            }
+            assert.strictEqual(matches('b.[x].+', 'b.[x].y'), true);
+            assert.strictEqual(matches('b.[x].+', 'b.x.y'), false);
+            assert.strictEqual(matches('f.a|b', 'b'), false);
+        });
+    });
+
+    describe('isValidTopicFilter (MQTT-4.7.1)', () => {
+        it('accepts the valid examples of the specification', () => {
+            for (const filter of ['#', 'sport/#', '+', '+/tennis/#', 'sport/+/player1', '/+', 'a/(/[x]']) {
+                assert.strictEqual(isValidTopicFilter(filter), true, filter);
+            }
+        });
+
+        it('rejects the invalid examples of the specification and an empty filter', () => {
+            for (const filter of ['sport/tennis#', 'sport/tennis/#/ranking', 'sport+', 'a/b+/c', '', 'a\u0000b']) {
+                assert.strictEqual(isValidTopicFilter(filter), false, JSON.stringify(filter));
+            }
         });
     });
 

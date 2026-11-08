@@ -119,37 +119,78 @@ export function parseSharedTopic(topic: MqttTopic): { shareName?: string; filter
  ·         “sport/+/player1” is valid
  ·         “/finance” matches “+/+” and “/+”, but not “+”
  */
+
+/**
+ * Builds the regular expression text that matches the state IDs of a MQTT topic filter.
+ *
+ * @param pattern The topic filter, e.g. "sensors/+/temperature" or "evcc/#"
+ * @param adapter The adapter (for its namespace)
+ * @param prefix The configured topic prefix, removed from the filter
+ * @param dotToUnderscore Whether "." in a topic level becomes "_" in the ID
+ * @returns The anchored regular expression text
+ */
 export function pattern2RegEx(
     pattern: MqttPattern,
     adapter: ioBroker.Adapter,
     prefix: string,
     dotToUnderscore?: boolean,
 ): string {
-    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore);
-    pattern = pattern.replace(/#/g, '*');
-    pattern = pattern.replace(/\$/g, '\\$');
-    pattern = pattern.replace(/\^/g, '\\^');
+    return idPattern2RegEx(convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore));
+}
 
-    if (pattern !== '*') {
-        if (pattern[0] === '*' && pattern[pattern.length - 1] !== '*') {
-            pattern += '$';
-        }
-        if (pattern[0] !== '*' && pattern[pattern.length - 1] === '*') {
-            pattern = `^${pattern}`;
-        }
-        if (pattern[0] === '+') {
-            pattern = `^[^.]*${pattern.substring(1)}`;
-        }
-        if (pattern[pattern.length - 1] === '+') {
-            pattern = `${pattern.substring(0, pattern.length - 1)}[^.]*$`;
-        }
-    } else {
-        return '.*';
+/**
+ * Builds the regular expression text for a topic filter that is already written as ioBroker ID
+ * ("." between the levels). The result is anchored and every character apart from the wildcards
+ * is taken literally, so "(", "[" or "?" in a filter neither break the expression nor widen it.
+ *
+ * - "+" as a whole level matches exactly one level (MQTT-4.7.1-3)
+ * - "#" (or "*") as the last level matches the parent and everything below it (MQTT-4.7.1-2)
+ * - "*" inside a level matches any characters (ioBroker notation, kept for existing settings)
+ *
+ * @param pattern The filter in ID notation, e.g. "sensors.+.temperature" or "evcc.#"
+ * @returns The regular expression text, e.g. "^sensors\\.[^.]*\\.temperature$"
+ */
+export function idPattern2RegEx(pattern: string): string {
+    if (pattern === '#' || pattern === '*') {
+        return '^.*$';
     }
-    pattern = pattern.replace(/\./g, '\\.');
-    pattern = pattern.replace(/\\\.\*/g, '(\\..*)?$');
-    pattern = pattern.replace(/\+/g, '[^.]*');
-    return pattern;
+    const levels = pattern.split('.');
+    const last = levels[levels.length - 1];
+    const multiLevel = levels.length > 1 && (last === '#' || last === '*');
+    if (multiLevel) {
+        levels.pop();
+    }
+    const body = levels
+        .map(level =>
+            level === '+'
+                ? '[^.]*'
+                : level
+                      .split('*')
+                      .map(part => part.replace(/[\\^$.|?+()[\]{}]/g, '\\$&'))
+                      .join('.*'),
+        )
+        .join('\\.');
+
+    return `^${body}${multiLevel ? '(\\..*)?' : ''}$`;
+}
+
+/**
+ * Checks a topic filter of a SUBSCRIBE: not empty, no U+0000, "#" only as the last level and
+ * "+" only as a whole level (MQTT-4.7.1-2, MQTT-4.7.1-3, MQTT-4.7.3-1, MQTT-4.7.3-2).
+ *
+ * @param filter The topic filter as the client sent it, without "$share/<name>/"
+ * @returns Whether the filter may be subscribed to
+ */
+export function isValidTopicFilter(filter: MqttTopic): boolean {
+    if (!filter || filter.includes('\u0000')) {
+        return false;
+    }
+    const levels = filter.split('/');
+    return levels.every(
+        (level, i) =>
+            (!level.includes('#') || (level === '#' && i === levels.length - 1)) &&
+            (!level.includes('+') || level === '+'),
+    );
 }
 
 /**
