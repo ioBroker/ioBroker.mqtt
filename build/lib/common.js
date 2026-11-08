@@ -497,7 +497,8 @@ function convertMessage(topic, message, adapter, parseCharCodes, payloadParsing 
     if (type === 'string') {
         // Try to convert value
         const _val = message.replace(',', '.');
-        if (isFinite(_val)) {
+        // isFinite('') is true too, but an empty payload is no number (it was stored as NaN, #499)
+        if (_val.trim() !== '' && isFinite(_val)) {
             return { message: parseFloat(_val), isStateObject: false };
         }
         if (message === 'true') {

@@ -98,5 +98,7 @@
     "Credentials:": "Учётные данные",
     "credentials_help": "Если выбрано, имя пользователя и пароль берутся из центрального хранилища учётных данных (Настройки → Учётные данные), а не из полей ниже",
     "Remove client objects after": "Удалять объекты клиентов через",
-    "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Дней без подключения, 0 = никогда. Иначе устройства, использующие новый ID клиента при каждом подключении, каждый раз оставляют новый объект."
+    "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Дней без подключения, 0 = никогда. Иначе устройства, использующие новый ID клиента при каждом подключении, каждый раз оставляют новый объект.",
+    "Keep alive (seconds)": "Keep alive (секунды)",
+    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Как часто проверяется соединение с брокером. Потерянное соединение обнаруживается примерно через 1,5 этого времени."
 }

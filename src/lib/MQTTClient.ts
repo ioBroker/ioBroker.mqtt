@@ -321,24 +321,26 @@ export default class MQTTClient {
     }
 
     private publishMessage(topic: MqttTopic, message: any, retain?: boolean, binary?: boolean): void {
+        // The topic is published as it is: the prefix is already part of the topic of a state, and
+        // "sendMessage2Client" sends exactly the topic it was given (#448)
         if (message === null || message === undefined) {
             message = null;
             this.adapter.log.debug(`Send to server "${topic}": deleted`);
         } else {
-            this.adapter.log.debug(`Send to server "${this.config.prefix}${topic}": ${JSON.stringify(message)}`);
+            this.adapter.log.debug(`Send to server "${topic}": ${JSON.stringify(message)}`);
         }
 
         if (!this.topic2id[topic]) {
             // it is from messageBox, so try to detect binary state
             if (!binary) {
-                message = state2string(message, this.config.sendStateObject);
+                message = this.toPayload(message);
             }
         } else {
             message =
                 // @ts-expect-error binary states are deprecated but could happen
                 this.topic2id[topic].obj?.common && this.topic2id[topic].obj.common.type === 'file'
                     ? message
-                    : state2string(message, this.config.sendStateObject);
+                    : this.toPayload(message);
         }
 
         this.client?.publish(
@@ -347,6 +349,25 @@ export default class MQTTClient {
             { qos: this.config.defaultQoS, retain: retain ?? this.config.retain },
             err => err && this.adapter.log.error(`client publishMessage: ${err}`),
         );
+    }
+
+    /**
+     * Converts a state or a value into the payload to publish. A deleted state and a value of null go
+     * out as an empty payload, which is how MQTT deletes a value. As the string "null" a device took
+     * it as the new value, e.g. Tasmota as its "FullTopic" (#499). The server does the same since #682.
+     *
+     * @param state The state or the plain value
+     * @returns The payload
+     */
+    private toPayload(state: ioBroker.State | ioBroker.StateValue | undefined): string {
+        if (
+            state === null ||
+            state === undefined ||
+            (!this.config.sendStateObject && typeof state === 'object' && state.val === null)
+        ) {
+            return '';
+        }
+        return state2string(state, this.config.sendStateObject);
     }
 
     /**
@@ -536,7 +557,7 @@ export default class MQTTClient {
         if (this.config.extraSet && this.states[id] && !this.states[id].ack) {
             this.client.publish(
                 `${this.id2topic[id]}/set`,
-                state2string(this.states[id], this.config.sendStateObject),
+                this.toPayload(this.states[id]),
                 { qos: this.config.defaultQoS, retain: this.config.retain },
                 err => {
                     if (err) {
@@ -549,7 +570,7 @@ export default class MQTTClient {
             if (this.states[id]) {
                 this.client.publish(
                     this.id2topic[id],
-                    state2string(this.states[id], this.config.sendStateObject),
+                    this.toPayload(this.states[id]),
                     { qos: this.config.defaultQoS, retain: this.config.retain },
                     err => {
                         err && this.adapter.log.error(`client.publish AllStates: ${err}`);
@@ -592,7 +613,7 @@ export default class MQTTClient {
         try {
             const opts: IClientOptions = {
                 clientId: clientId,
-                keepalive: this.config.keepalive || 10 /* in seconds */,
+                keepalive: parseInt(this.config.keepalive as unknown as string, 10) || 60 /* in seconds */,
                 // MQTT 3.1 uses the older "MQIsdp" protocol name
                 protocolId: this.protocolVersion === 3 ? 'MQIsdp' : 'MQTT',
                 protocolVersion: this.protocolVersion,

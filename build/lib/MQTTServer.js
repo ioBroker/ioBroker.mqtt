@@ -211,7 +211,7 @@ class MQTTServer {
                 if (this.publishedItself(this.clients[k], id)) {
                     return;
                 }
-                if (!this.isRecipient(this.clients[k], id, sharedRecipients)) {
+                if (!this.isRecipient(this.clients[k], id, sharedRecipients, state)) {
                     return;
                 }
                 this.sendState2Client(this.clients[k], id, state, this.config.defaultQoS, !this.config.noRetain);
@@ -353,20 +353,23 @@ class MQTTServer {
     /**
      * Decides whether a state change may be forwarded to a client.
      *
-     * `extraSet` normally lets the publisher receive its own message back, because "get" and "set"
-     * then use different topics. An MQTT 5 client that subscribed with the "No Local" option has
-     * explicitly asked not to get its own messages, and that wins (MQTT-5.0 3.8.3.1).
+     * `extraSet` normally lets the publisher receive its own command back, because "get" and "set"
+     * then use different topics. A value the client reported itself (ack=true) is not sent back to
+     * it: a device that confirms a command got its own confirmation again (#349). An MQTT 5 client
+     * that subscribed with the "No Local" option has explicitly asked not to get its own messages,
+     * and that wins (MQTT-5.0 3.8.3.1).
      *
      * @param client The client the message would be sent to
      * @param ignoreClient The client the message came from
      * @param id The state id that changed
+     * @param state The state that would be sent
      * @returns Whether the message may be sent
      */
-    mayReceiveOwnMessage(client, ignoreClient, id) {
+    mayReceiveOwnMessage(client, ignoreClient, id, state) {
         if (client !== ignoreClient) {
             return true;
         }
-        if (!this.config.extraSet) {
+        if (!this.isCommand(state)) {
             return false;
         }
         return !this.isNoLocal(client, id);
@@ -503,13 +506,43 @@ class MQTTServer {
      * @param client The client in question
      * @param id The state id that changed
      * @param sharedRecipients The clients drawn for this message
+     * @param state The new state, a command goes out on its own "/set" topic with `extraSet`
      * @returns Whether the message may be sent to this client
      */
-    isRecipient(client, id, sharedRecipients) {
+    isRecipient(client, id, sharedRecipients, state) {
         if (sharedRecipients.has(client.id)) {
             return true;
         }
-        return this.hasUnsharedMatch(client, id);
+        return (this.hasUnsharedMatch(client, id) || (this.isCommand(state) && this.hasUnsharedMatch(client, `${id}.set`)));
+    }
+    /**
+     * With `extraSet` a command (ack=false) is published on "<topic>/set". A client that subscribed
+     * to exactly that topic, e.g. "zwave/+/+/set", has to get it, although its filter does not match
+     * the state id itself (#494).
+     *
+     * @param state The state to send
+     * @returns Whether the state goes out on the "/set" topic
+     */
+    isCommand(state) {
+        return !!(this.config.extraSet && state && !state.ack);
+    }
+    /**
+     * Finds the subscription of a client that matches an id and remembers it for the next message.
+     *
+     * @param client The subscribing client
+     * @param id The state id (or "<id>.set" for the "/set" topic of a command)
+     * @returns The matching subscription, or null if there is none
+     */
+    matchSubscription(client, id) {
+        if (client._subsID?.[id]) {
+            return client._subsID[id];
+        }
+        const pattern = client._subs ? this.checkPattern(client._subs, id) : null;
+        if (pattern) {
+            client._subsID ||= {};
+            client._subsID[id] = pattern;
+        }
+        return pattern;
     }
     /**
      * Checks whether a client has a normal (not shared) subscription matching a state.
@@ -806,40 +839,22 @@ class MQTTServer {
         }
         // client has subscription for this ID
         let message;
-        let topic;
-        let pattern;
         // A deleted state and a value of null go out as an empty payload, which is how MQTT deletes
         // a value. As the string "null", a client that deleted a topic got a value back (#682).
         const payload = state?.val != null ? (0, common_1.state2string)(state.val) : null;
-        if (client._subsID?.[id]) {
-            topic = this.id2topic[id];
+        const isCommand = this.isCommand(state);
+        const subscription = this.matchSubscription(client, id) || (isCommand ? this.matchSubscription(client, `${id}.set`) : null);
+        if (subscription) {
+            const topic = this.id2topic[id];
             message = {
-                topic: this.config.extraSet && state && !state.ack ? `${topic}/set` : topic,
+                topic: isCommand ? `${topic}/set` : topic,
                 payload,
-                qos: client._subsID[id].qos,
+                qos: subscription.qos,
                 retain: false,
                 ts: Date.now(),
                 count: 0,
                 messageId: 0,
             };
-        }
-        else {
-            //  Check patterns
-            if (client._subs && (pattern = this.checkPattern(client._subs, id)) !== null) {
-                topic = this.id2topic[id];
-                // Cache the value
-                client._subsID ||= {};
-                client._subsID[id] = pattern;
-                message = {
-                    topic: this.config.extraSet && state && !state.ack ? `${topic}/set` : topic,
-                    payload,
-                    qos: pattern.qos,
-                    retain: false,
-                    ts: Date.now(),
-                    count: 0,
-                    messageId: 0,
-                };
-            }
         }
         if (message) {
             message = this.addMessageAttributes(message, {
@@ -1241,8 +1256,8 @@ class MQTTServer {
                 const sharedRecipients = this.resolveSharedRecipients(id);
                 Object.keys(this.clients).forEach(k => {
                     // if 'get' and 'set' have different topic names, send state to issuing a client too.
-                    if (this.mayReceiveOwnMessage(this.clients[k], ignoreClient, id) &&
-                        this.isRecipient(this.clients[k], id, sharedRecipients)) {
+                    if (this.mayReceiveOwnMessage(this.clients[k], ignoreClient, id, state) &&
+                        this.isRecipient(this.clients[k], id, sharedRecipients, state)) {
                         this.sendState2Client(this.clients[k], id, state, qos, retain);
                     }
                 });
@@ -1514,8 +1529,8 @@ class MQTTServer {
             setImmediate(() => {
                 const sharedRecipients = this.resolveSharedRecipients(entry.id);
                 Object.keys(this.clients).forEach(k => {
-                    if (this.mayReceiveOwnMessage(this.clients[k], ignoreClient, entry.id) &&
-                        this.isRecipient(this.clients[k], entry.id, sharedRecipients)) {
+                    if (this.mayReceiveOwnMessage(this.clients[k], ignoreClient, entry.id, state) &&
+                        this.isRecipient(this.clients[k], entry.id, sharedRecipients, state)) {
                         this.sendState2Client(this.clients[k], entry.id, state, qos, retain);
                     }
                 });

@@ -98,5 +98,7 @@
   "Credentials:": "Credentials",
   "credentials_help": "If selected, user name and password are taken from the central credential storage (Settings → Credentials) instead of the fields below",
   "Remove client objects after": "Remove client objects after",
-  "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time."
+  "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.",
+  "Keep alive (seconds)": "Keep alive (seconds)",
+  "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time."
 }

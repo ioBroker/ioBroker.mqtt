@@ -30,6 +30,15 @@ describe('Test convert version', function () {
         });
     });
 
+    it('an empty payload is no number (#499)', () => {
+        assert.deepStrictEqual(convertMessage('data', '', adapter, false), { message: '', isStateObject: false });
+        assert.deepStrictEqual(convertMessage('data', Buffer.from(''), adapter, false), {
+            message: '',
+            isStateObject: false,
+        });
+        assert.deepStrictEqual(convertMessage('data', ' ', adapter, false), { message: ' ', isStateObject: false });
+    });
+
     describe('parseCharCodes', () => {
         it('converts valid comma-separated char codes when enabled', () => {
             assert.deepStrictEqual(convertMessage('data', '72,101,108,108,111', adapter, true), {

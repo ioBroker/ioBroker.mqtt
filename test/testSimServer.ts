@@ -1140,7 +1140,8 @@ describe('MQTT server with MQTT 5 clients', function () {
         await wait(700);
         received.length = 0;
 
-        await client.publishAsync(topic, 'x');
+        // a command: only that goes back to its publisher with extraSet (#349)
+        await client.publishAsync(`${topic}/set`, 'x');
         await wait(800);
 
         assert.deepStrictEqual(received, [], 'a "No Local" subscriber must not get its own message back');
@@ -1156,10 +1157,47 @@ describe('MQTT server with MQTT 5 clients', function () {
         await wait(700);
         received.length = 0;
 
-        await client.publishAsync(topic, 'y');
+        await client.publishAsync(`${topic}/set`, 'y');
         await wait(800);
 
-        assert.ok(received.includes(topic), 'without "No Local" extraSet sends the message back');
+        assert.ok(received.includes(`${topic}/set`), 'without "No Local" extraSet sends the command back');
+    });
+
+    it('extraSet: a value the client reports itself (ack=true) is not sent back to it (#349)', async () => {
+        const topic = 'echo/ack';
+        const { client } = await connectTracked('v4echo', 4);
+        const received: string[] = [];
+        client.on('message', (t: string) => received.push(t));
+
+        await client.subscribeAsync({ [topic]: { qos: 0 } });
+        await wait(700);
+        received.length = 0;
+
+        await client.publishAsync(topic, 'z');
+        await wait(800);
+
+        assert.deepStrictEqual(received, [], 'the confirmation of a device must not come back to it');
+    });
+
+    it('extraSet: a command reaches a client that subscribed to the "/set" topic (#494)', async () => {
+        const id = 'mqtt.0.zwave.node1.switch';
+        await adapter.setForeignObjectAsync(id, {
+            type: 'state',
+            common: { name: 'switch', type: 'boolean', read: true, write: true, role: 'switch' },
+            native: {},
+        });
+        const { client } = await connectTracked('v4setsub', 4);
+        const received: { topic: string; payload: string }[] = [];
+        client.on('message', (t: string, payload: Buffer) => received.push({ topic: t, payload: payload.toString() }));
+
+        await client.subscribeAsync({ 'zwave/+/+/set': { qos: 0 } });
+        await wait(300);
+
+        server.onStateChange(id, { val: true, ack: false });
+        server.onStateChange(id, { val: false, ack: true }); // the reported value is not a command
+        await wait(500);
+
+        assert.deepStrictEqual(received, [{ topic: 'zwave/node1/switch/set', payload: 'true' }]);
     });
 
     it('MQTT 5: "Retain Handling" 2 skips the stored value, 0 delivers it', async () => {

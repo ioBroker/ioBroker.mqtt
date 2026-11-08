@@ -37,7 +37,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g., if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
 - **Trace output for every message** - Debug outputs.
 - **Send states (ack=true) too** - Normally only the states/commands with `ack=false` will be sent to partner. If this flag is set, every state independent of ack will be sent to partner. 
-- **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). The client will receive sent messages back in this mode.
+- **Use different topic names for set and get** - if active, so every state will have two topics: `adapter/instance/stateName` and `adapter/instance/stateName/set`. In this case, a topic with `/set` will be used to send non acknowledged commands (ack: false) and topic without `/set` to receive state updates (with ack: true). A client gets the commands it sent back in this mode, but not the values it reported itself (ack: true). A command reaches a client that subscribed to the `/set` topic, e.g. `zwave/+/+/set`.
 - **Interval before sending topics by connection** - Pause between connection and when all topics will be sent to a client (if activated).
 - **Send interval** - Interval between packets by sending all topics (if activated). Used only by once after the connection establishment.
 - **Force clean session** - Overwrite the client settings and clear or keep the session.
@@ -164,6 +164,7 @@ You may send / publish messages on topics using `sendTo` method from your adapte
  * @param {string}  payload.topic     Topic to publish message on
  * @param {string}  payload.message   Message to be published on specified topic
  *
+ * The topic is published exactly as given: the "Prefix for all topics" is not added.
  */
 adapter.sendTo('mqtt.0', 'sendMessage2Client', { topic: 'your/topic/here', message: 'your message', retain: true });
 ```
@@ -240,6 +241,10 @@ Objects of clients that have not been connected for some days are removed automa
 - (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
 - (@Schimi1983) Server mode: MQTT over secure WebSocket (SSL + WebSocket) accepts clients again (broken since 6.1.3), and a failed TLS connection is logged with the likely reason (e.g. the client does not trust the certificate or does not use TLS). Client mode: the same connection error is logged only once instead of on every reconnect, certificate errors get a hint which setting helps (#341)
 - (@Schimi1983) Server mode: subscriptions are checked and matched as the MQTT specification says. A topic filter with a character like `(` or `[` no longer stops the adapter, `+` matches exactly one level (`temp/+` no longer delivers `sensors/0/temp/x`), invalid filters such as `a/#/b` or `sport+` are refused, and after unsubscribing from a filter with wildcards its topics are no longer delivered. A packet that cannot be processed closes only the connection of that client
+- (@GermanBluefox) Client mode: the keep alive can be set in the admin, the default is 60 seconds instead of 1000 (existing instances with 1000 are changed to 60). A lost broker was noticed only after about 25 minutes (#339, #508)
+- (@GermanBluefox) Client mode: an empty payload is no longer stored as `NaN`, and a deleted state or a value of null is sent as an empty payload instead of the string "null", like in server mode since 8.1.5 (#499)
+- (@GermanBluefox) Client mode: the debug log of sent messages no longer shows the prefix, which is not added (and never was) to topics of `sendMessage2Client` (#448)
+- (@GermanBluefox) Server mode with "different topic names for set and get": a command reaches clients that subscribed to its `/set` topic, e.g. Z-Wave JS UI (#494), and a client no longer gets back the value it reported itself (ack=true) (#349)
 
 ### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now

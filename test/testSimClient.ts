@@ -296,6 +296,23 @@ describe('MQTT client with extraSet (commands)', function () {
         );
     }).timeout(3000);
 
+    it('MQTT client: a deleted state and a value of null go out as an empty payload (#499)', () => {
+        const sent: string[] = [];
+        const publish = client.client.publish;
+        client.client.publish = (_topic: string, message: string, _options: any, cb?: () => void): void => {
+            sent.push(message);
+            cb?.();
+        };
+        try {
+            client.publishMessage(topic, null);
+            client.publishMessage(topic, { val: null, ack: true });
+            client.publishMessage(topic, { val: 0, ack: true });
+        } finally {
+            client.client.publish = publish;
+        }
+        assert.deepStrictEqual(sent, ['', '', '0']);
+    });
+
     after('MQTT client (extraSet): Stop MQTT simulatedServer', done => {
         simulatedServer.stop(done);
         client.destroy();

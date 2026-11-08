@@ -98,5 +98,7 @@
     "Credentials:": "Dane logowania",
     "credentials_help": "Jeśli wybrano, nazwa użytkownika i hasło są pobierane z centralnego magazynu danych logowania (Ustawienia → Dane logowania) zamiast z pól poniżej",
     "Remove client objects after": "Usuń obiekty klientów po",
-    "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Dni bez połączenia, 0 = nigdy. Urządzenia, które przy każdym połączeniu używają nowego ID klienta, w przeciwnym razie za każdym razem pozostawiają nowy obiekt."
+    "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Dni bez połączenia, 0 = nigdy. Urządzenia, które przy każdym połączeniu używają nowego ID klienta, w przeciwnym razie za każdym razem pozostawiają nowy obiekt.",
+    "Keep alive (seconds)": "Keep alive (sekundy)",
+    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Jak często sprawdzane jest połączenie z brokerem. Utracone połączenie zostanie wykryte po około 1,5-krotności tego czasu."
 }

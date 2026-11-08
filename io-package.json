@@ -409,7 +409,7 @@
     "sendOnStartInterval": 2000,
     "sendInterval": 10,
     "protocolVersion": 4,
-    "keepalive": 1000,
+    "keepalive": 60,
     "reconnectPeriod": 10,
     "connectTimeout": 30,
     "persistent": false,

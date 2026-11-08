@@ -232,17 +232,19 @@ class MQTTClient {
         cb?.(id);
     }
     publishMessage(topic, message, retain, binary) {
+        // The topic is published as it is: the prefix is already part of the topic of a state, and
+        // "sendMessage2Client" sends exactly the topic it was given (#448)
         if (message === null || message === undefined) {
             message = null;
             this.adapter.log.debug(`Send to server "${topic}": deleted`);
         }
         else {
-            this.adapter.log.debug(`Send to server "${this.config.prefix}${topic}": ${JSON.stringify(message)}`);
+            this.adapter.log.debug(`Send to server "${topic}": ${JSON.stringify(message)}`);
         }
         if (!this.topic2id[topic]) {
             // it is from messageBox, so try to detect binary state
             if (!binary) {
-                message = (0, common_1.state2string)(message, this.config.sendStateObject);
+                message = this.toPayload(message);
             }
         }
         else {
@@ -250,9 +252,25 @@ class MQTTClient {
                 // @ts-expect-error binary states are deprecated but could happen
                 this.topic2id[topic].obj?.common && this.topic2id[topic].obj.common.type === 'file'
                     ? message
-                    : (0, common_1.state2string)(message, this.config.sendStateObject);
+                    : this.toPayload(message);
         }
         this.client?.publish(topic, message, { qos: this.config.defaultQoS, retain: retain ?? this.config.retain }, err => err && this.adapter.log.error(`client publishMessage: ${err}`));
+    }
+    /**
+     * Converts a state or a value into the payload to publish. A deleted state and a value of null go
+     * out as an empty payload, which is how MQTT deletes a value. As the string "null" a device took
+     * it as the new value, e.g. Tasmota as its "FullTopic" (#499). The server does the same since #682.
+     *
+     * @param state The state or the plain value
+     * @returns The payload
+     */
+    toPayload(state) {
+        if (state === null ||
+            state === undefined ||
+            (!this.config.sendStateObject && typeof state === 'object' && state.val === null)) {
+            return '';
+        }
+        return (0, common_1.state2string)(state, this.config.sendStateObject);
     }
     /**
      * Stores a received binary payload as a file in the adapter's file storage and updates the
@@ -413,7 +431,7 @@ class MQTTClient {
             return;
         }
         if (this.config.extraSet && this.states[id] && !this.states[id].ack) {
-            this.client.publish(`${this.id2topic[id]}/set`, (0, common_1.state2string)(this.states[id], this.config.sendStateObject), { qos: this.config.defaultQoS, retain: this.config.retain }, err => {
+            this.client.publish(`${this.id2topic[id]}/set`, this.toPayload(this.states[id]), { qos: this.config.defaultQoS, retain: this.config.retain }, err => {
                 if (err) {
                     this.adapter.log.error(`client.publish /set: ${err}`);
                 }
@@ -422,7 +440,7 @@ class MQTTClient {
         }
         else {
             if (this.states[id]) {
-                this.client.publish(this.id2topic[id], (0, common_1.state2string)(this.states[id], this.config.sendStateObject), { qos: this.config.defaultQoS, retain: this.config.retain }, err => {
+                this.client.publish(this.id2topic[id], this.toPayload(this.states[id]), { qos: this.config.defaultQoS, retain: this.config.retain }, err => {
                     err && this.adapter.log.error(`client.publish AllStates: ${err}`);
                     setImmediate(() => this.publishAllStates(toPublish));
                 });
@@ -455,7 +473,7 @@ class MQTTClient {
         try {
             const opts = {
                 clientId: clientId,
-                keepalive: this.config.keepalive || 10 /* in seconds */,
+                keepalive: parseInt(this.config.keepalive, 10) || 60 /* in seconds */,
                 // MQTT 3.1 uses the older "MQIsdp" protocol name
                 protocolId: this.protocolVersion === 3 ? 'MQIsdp' : 'MQTT',
                 protocolVersion: this.protocolVersion,

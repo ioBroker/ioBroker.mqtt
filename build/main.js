@@ -91,6 +91,15 @@ class MQTT extends adapter_core_1.Adapter {
     }
     async main() {
         this.config.forceCleanSession ||= 'no'; // default
+        // Keep alive could not be set in the admin until 9.2.0, so 1000 seconds is the untouched old
+        // default: a lost broker was noticed only after about 25 minutes (#339, #508)
+        if (this.config.type === 'client' && Number(this.config.keepalive) === 1000) {
+            this.log.warn('Default "keepalive" setting changed from 1000 to 60 seconds. Restarting...');
+            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
+                native: { keepalive: 60 },
+            });
+            return; // Adapter will be restarted soon, no need to initialize now
+        }
         // Objects deleted by the user: the topics have to create them again (see onObjectChange)
         await this.subscribeObjectsAsync('*');
         // Subscribe on own variables to publish it.

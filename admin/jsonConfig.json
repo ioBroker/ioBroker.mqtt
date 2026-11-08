@@ -282,6 +282,20 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 4
+                },
+                "keepalive": {
+                    "newLine": true,
+                    "type": "number",
+                    "hidden": "data.type !== 'client'",
+                    "label": "Keep alive (seconds)",
+                    "help": "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.",
+                    "min": 5,
+                    "max": 65535,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 }
             }
         },
