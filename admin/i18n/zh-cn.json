@@ -100,5 +100,7 @@
     "Remove client objects after": "在以下时间后删除客户端对象",
     "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "无连接的天数，0 = 从不。否则，每次连接都使用新客户端 ID 的设备每次都会留下一个新对象。",
     "Keep alive (seconds)": "保活时间（秒）",
-    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "检查与代理连接的频率。连接丢失后大约在此时间的 1.5 倍后被发现。"
+    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "检查与代理连接的频率。连接丢失后大约在此时间的 1.5 倍后被发现。",
+    "Do not subscribe": "不订阅",
+    "Only send ioBroker states to the broker and receive nothing. An empty pattern field subscribes to all topics.": "仅向代理发送 ioBroker 状态，不接收任何内容。模式字段为空时订阅所有主题。"
 }
