@@ -236,7 +236,7 @@ Objects of clients that have not been connected for some days are removed automa
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 9.2.0 (2026-11-08)
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
 - (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
 - (@Schimi1983) Server mode: MQTT over secure WebSocket (SSL + WebSocket) accepts clients again (broken since 6.1.3), and a failed TLS connection is logged with the likely reason (e.g. the client does not trust the certificate or does not use TLS). Client mode: the same connection error is logged only once instead of on every reconnect, certificate errors get a hint which setting helps (#341)
@@ -272,9 +272,6 @@ Objects of clients that have not been connected for some days are removed automa
 * (@GermanBluefox) Server mode: a deleted value (empty payload) and a value of `null` are sent as empty payload instead of `"null"` or `"NaN"`, so a client that deletes its retained topics does not get values back. A received empty payload sets the state to `null` and keeps its type (#682)
 * (@GermanBluefox) The default of "Maximum topic name length" is 255 characters for new instances (was 100). The warning about a too long topic names this setting and comes only once per topic (#560)
 * (@GermanBluefox) Client mode: a reconnect attempt no longer reports the connection as established (#508)
-
-### 8.1.4 (2026-10-27)
-* (@GermanBluefox) Fixed: after the object of a topic was deleted while the instance was running, the next messages wrote the state without object - the object is created again now
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

@@ -1,4 +1,7 @@
 # Older changes
+## 8.1.4 (2026-10-27)
+* (@GermanBluefox) Fixed: after the object of a topic was deleted while the instance was running, the next messages wrote the state without object - the object is created again now
+
 ## 8.1.3 (2026-10-14)
 * (@GermanBluefox) In server mode the occupied TCP ports are reported to js-controller 8 (`registerUsedResource`)
 
