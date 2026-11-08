@@ -27,6 +27,7 @@ export interface AdapterConfig {
     doNotCreateClientObjects?: boolean;
     removeClientsAfterDays?: number;
     reconnectPeriod?: number;
+    noSubscriptions?: boolean;
 }
 
 export default class AdapterSimulator {
