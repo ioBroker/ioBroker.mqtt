@@ -100,5 +100,7 @@
     "Remove client objects after": "Видаляти об'єкти клієнтів через",
     "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Днів без підключення, 0 = ніколи. Інакше пристрої, що використовують новий ID клієнта при кожному підключенні, щоразу залишають новий об'єкт.",
     "Keep alive (seconds)": "Keep alive (секунди)",
-    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Як часто перевіряється з'єднання з брокером. Втрачене з'єднання виявляється приблизно через 1,5 цього часу."
+    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Як часто перевіряється з'єднання з брокером. Втрачене з'єднання виявляється приблизно через 1,5 цього часу.",
+    "Do not subscribe": "Не підписуватися",
+    "Only send ioBroker states to the broker and receive nothing. An empty pattern field subscribes to all topics.": "Лише надсилати стани ioBroker брокеру й нічого не отримувати. Порожнє поле шаблонів підписується на всі топіки."
 }

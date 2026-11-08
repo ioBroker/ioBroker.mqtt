@@ -649,11 +649,17 @@ export default class MQTTClient {
             return;
         }
 
-        // By default, subscribe on all topics
-        this.patterns = (this.config.patterns || '#')
-            .split(',')
-            .map(pattern => pattern.trim())
-            .filter(pattern => pattern);
+        // An empty field subscribes to all topics, as it always did; to only publish, nothing is
+        // subscribed when "Do not subscribe" is set (#319)
+        this.patterns = this.config.noSubscriptions
+            ? []
+            : (this.config.patterns || '#')
+                  .split(',')
+                  .map(pattern => pattern.trim())
+                  .filter(pattern => pattern);
+        if (this.config.noSubscriptions) {
+            this.adapter.log.info('No topics are subscribed ("Do not subscribe"), only ioBroker states are published');
+        }
 
         // delete all server connection information
         void this.adapter.getStatesAsync('info.clients.*').then(async states => {

@@ -512,3 +512,53 @@ describe('MQTT client: connection errors', function () {
         }, 1500);
     });
 });
+
+// "Do not subscribe" (#319): the client only publishes and receives nothing of the broker. The broker is
+// the adapter in server mode, because the simulated broker forwards every message to every client.
+describe('MQTT client: do not subscribe', function () {
+    const Server = require('../build/lib/MQTTServer').default;
+    let brokerAdapter: Adapter;
+    let broker: any;
+    let adapter: Adapter;
+    let client: any;
+    this.timeout(5000);
+
+    before('MQTT client (no subscriptions): start broker and client', done => {
+        brokerAdapter = new Adapter({ port: ++port, defaultQoS: 0, onchange: true });
+        broker = new Server(brokerAdapter, {});
+        adapter = new Adapter({
+            port,
+            url: '127.0.0.1',
+            clientId: 'testAdapterNoSubscriptions',
+            noSubscriptions: true,
+        });
+        client = new Client(adapter, {});
+        setTimeout(done, 800);
+    });
+
+    after(done => {
+        client.destroy();
+        broker.destroy(done);
+    });
+
+    it('receives nothing although the pattern field is empty (= all topics)', done => {
+        const publisher = new ClientEmitter(
+            isConnected => {
+                if (isConnected) {
+                    publisher.publish('nosub/value', '42');
+                    setTimeout(async () => {
+                        // the broker got it ...
+                        assert.strictEqual((await brokerAdapter.getStateAsync('nosub.value'))?.val, 42);
+                        // ... the client adapter did not
+                        assert.strictEqual(await adapter.getForeignObjectAsync('mqtt.0.nosub.value'), undefined);
+                        assert.strictEqual((await adapter.getStateAsync('info.connection'))?.val, true);
+                        publisher.destroy();
+                        done();
+                    }, 700);
+                }
+            },
+            null,
+            { url: `127.0.0.1:${port}`, clean: true, clientId: 'noSubscriptionsPublisher', subscribe: false },
+        );
+    });
+});

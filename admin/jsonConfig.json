@@ -243,7 +243,19 @@
                     "lg": 12,
                     "xl": 12,
                     "delimiter": ",",
-                    "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')"
+                    "help": "Subscribe for topics. (Divided by comma, e.g. 'mqtt/0/#,javascript/#')",
+                    "disabled": "data.noSubscriptions"
+                },
+                "noSubscriptions": {
+                    "type": "checkbox",
+                    "hidden": "data.type !== 'client'",
+                    "label": "Do not subscribe",
+                    "help": "Only send ioBroker states to the broker and receive nothing. An empty pattern field subscribes to all topics.",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
                 },
                 "clientId": {
                     "newLine": true,

@@ -100,5 +100,7 @@
     "Remove client objects after": "Eliminar objetos de cliente después de",
     "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Días sin conexión, 0 = nunca. Los dispositivos que usan un nuevo ID de cliente en cada conexión dejan de lo contrario un objeto nuevo cada vez.",
     "Keep alive (seconds)": "Keep alive (segundos)",
-    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Con qué frecuencia se comprueba la conexión con el broker. Una conexión perdida se detecta tras aproximadamente 1,5 veces este tiempo."
+    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Con qué frecuencia se comprueba la conexión con el broker. Una conexión perdida se detecta tras aproximadamente 1,5 veces este tiempo.",
+    "Do not subscribe": "No suscribirse",
+    "Only send ioBroker states to the broker and receive nothing. An empty pattern field subscribes to all topics.": "Solo enviar los estados de ioBroker al broker y no recibir nada. Un campo de patrones vacío se suscribe a todos los topics."
 }

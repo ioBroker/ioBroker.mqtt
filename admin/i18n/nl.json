@@ -100,5 +100,7 @@
     "Remove client objects after": "Clientobjecten verwijderen na",
     "Days without connection, 0 = never. Devices that use a new client ID for every connection otherwise leave a new object behind each time.": "Dagen zonder verbinding, 0 = nooit. Apparaten die bij elke verbinding een nieuwe client-ID gebruiken, laten anders telkens een nieuw object achter.",
     "Keep alive (seconds)": "Keep alive (seconden)",
-    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Hoe vaak de verbinding met de broker wordt gecontroleerd. Een verbroken verbinding wordt na ongeveer 1,5 keer deze tijd opgemerkt."
+    "How often the connection to the broker is checked. A lost connection is noticed after about 1.5 times this time.": "Hoe vaak de verbinding met de broker wordt gecontroleerd. Een verbroken verbinding wordt na ongeveer 1,5 keer deze tijd opgemerkt.",
+    "Do not subscribe": "Niets abonneren",
+    "Only send ioBroker states to the broker and receive nothing. An empty pattern field subscribes to all topics.": "Alleen ioBroker-states naar de broker sturen en niets ontvangen. Een leeg patroonveld abonneert op alle topics."
 }
