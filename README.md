@@ -120,7 +120,8 @@ and "Retain As Published".
 - **Password** - if the username is not empty, the password must be set. It can be empty.
 - **Password confirmation** - repeat here the password.
 - **MQTT version** - Protocol level used to connect to the broker: MQTT 3.1.1 (default), MQTT 5.0 or the legacy MQTT 3.1. If the broker refuses the selected version, the adapter logs a warning and falls back to MQTT 3.1.1.
-- **Subscribe Patterns** - Subscribe by the pattern. See the chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. `mqtt/0/#,javascript/#` to subscribe for states of `mqtt.0` and `javascript`
+- **Subscribe Patterns** - Subscribe by the pattern. See the chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. `mqtt/0/#,javascript/#` to subscribe for states of `mqtt.0` and `javascript`. An empty field also subscribes to all topics
+- **Do not subscribe** - The adapter subscribes to nothing and only sends ioBroker states to the broker. Use it if ioBroker should only report values
 - **Publish only on change** - Store incoming messages only if the payload differs from the actual stored.
 - **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter.  
 - **Publish all states at start** - Publish all states (defined by the state mask) every time by connection establishment to announce own available states and their values.
@@ -236,6 +237,9 @@ Objects of clients that have not been connected for some days are removed automa
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@Schimi1983) Client mode: new setting "Do not subscribe" to only send ioBroker states to the broker; an empty pattern field still subscribes to all topics (#319)
+
 ### 9.2.0 (2026-11-08)
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
 - (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
