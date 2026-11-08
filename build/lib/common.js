@@ -4,6 +4,8 @@ exports.convertID2topic = convertID2topic;
 exports.findIdForTopic = findIdForTopic;
 exports.parseSharedTopic = parseSharedTopic;
 exports.pattern2RegEx = pattern2RegEx;
+exports.idPattern2RegEx = idPattern2RegEx;
+exports.isValidTopicFilter = isValidTopicFilter;
 exports.clientId2objectId = clientId2objectId;
 exports.topicListPattern2RegEx = topicListPattern2RegEx;
 exports.parseTopicList = parseTopicList;
@@ -16,6 +18,7 @@ exports.state2string = state2string;
 exports.convertTopic2id = convertTopic2id;
 exports.ensureObjectStructure = ensureObjectStructure;
 exports.convertMessage = convertMessage;
+exports.plainAddress = plainAddress;
 const IOBROKER_STATE_PROPERTIES = ['val', 'ack', 'ts', 'q', 'lc', 'from', 'expire', 'user', 'c'];
 function convertID2topic(id, pattern, prefix, namespace, removePrefix) {
     let topic;
@@ -118,32 +121,64 @@ function parseSharedTopic(topic) {
  ·         “sport/+/player1” is valid
  ·         “/finance” matches “+/+” and “/+”, but not “+”
  */
+/**
+ * Builds the regular expression text that matches the state IDs of a MQTT topic filter.
+ *
+ * @param pattern The topic filter, e.g. "sensors/+/temperature" or "evcc/#"
+ * @param adapter The adapter (for its namespace)
+ * @param prefix The configured topic prefix, removed from the filter
+ * @param dotToUnderscore Whether "." in a topic level becomes "_" in the ID
+ * @returns The anchored regular expression text
+ */
 function pattern2RegEx(pattern, adapter, prefix, dotToUnderscore) {
-    pattern = convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore);
-    pattern = pattern.replace(/#/g, '*');
-    pattern = pattern.replace(/\$/g, '\\$');
-    pattern = pattern.replace(/\^/g, '\\^');
-    if (pattern !== '*') {
-        if (pattern[0] === '*' && pattern[pattern.length - 1] !== '*') {
-            pattern += '$';
-        }
-        if (pattern[0] !== '*' && pattern[pattern.length - 1] === '*') {
-            pattern = `^${pattern}`;
-        }
-        if (pattern[0] === '+') {
-            pattern = `^[^.]*${pattern.substring(1)}`;
-        }
-        if (pattern[pattern.length - 1] === '+') {
-            pattern = `${pattern.substring(0, pattern.length - 1)}[^.]*$`;
-        }
+    return idPattern2RegEx(convertTopic2id(pattern, true, prefix, adapter.namespace, dotToUnderscore));
+}
+/**
+ * Builds the regular expression text for a topic filter that is already written as ioBroker ID
+ * ("." between the levels). The result is anchored and every character apart from the wildcards
+ * is taken literally, so "(", "[" or "?" in a filter neither break the expression nor widen it.
+ *
+ * - "+" as a whole level matches exactly one level (MQTT-4.7.1-3)
+ * - "#" (or "*") as the last level matches the parent and everything below it (MQTT-4.7.1-2)
+ * - "*" inside a level matches any characters (ioBroker notation, kept for existing settings)
+ *
+ * @param pattern The filter in ID notation, e.g. "sensors.+.temperature" or "evcc.#"
+ * @returns The regular expression text, e.g. "^sensors\\.[^.]*\\.temperature$"
+ */
+function idPattern2RegEx(pattern) {
+    if (pattern === '#' || pattern === '*') {
+        return '^.*$';
     }
-    else {
-        return '.*';
+    const levels = pattern.split('.');
+    const last = levels[levels.length - 1];
+    const multiLevel = levels.length > 1 && (last === '#' || last === '*');
+    if (multiLevel) {
+        levels.pop();
     }
-    pattern = pattern.replace(/\./g, '\\.');
-    pattern = pattern.replace(/\\\.\*/g, '(\\..*)?$');
-    pattern = pattern.replace(/\+/g, '[^.]*');
-    return pattern;
+    const body = levels
+        .map(level => level === '+'
+        ? '[^.]*'
+        : level
+            .split('*')
+            .map(part => part.replace(/[\\^$.|?+()[\]{}]/g, '\\$&'))
+            .join('.*'))
+        .join('\\.');
+    return `^${body}${multiLevel ? '(\\..*)?' : ''}$`;
+}
+/**
+ * Checks a topic filter of a SUBSCRIBE: not empty, no U+0000, "#" only as the last level and
+ * "+" only as a whole level (MQTT-4.7.1-2, MQTT-4.7.1-3, MQTT-4.7.3-1, MQTT-4.7.3-2).
+ *
+ * @param filter The topic filter as the client sent it, without "$share/<name>/"
+ * @returns Whether the filter may be subscribed to
+ */
+function isValidTopicFilter(filter) {
+    if (!filter || filter.includes('\u0000')) {
+        return false;
+    }
+    const levels = filter.split('/');
+    return levels.every((level, i) => (!level.includes('#') || (level === '#' && i === levels.length - 1)) &&
+        (!level.includes('+') || level === '+'));
 }
 /**
  * Builds the object ID part for a connected client (`info.clients.<id>`).
@@ -502,5 +537,14 @@ function convertMessage(topic, message, adapter, parseCharCodes, payloadParsing 
         }
     }
     return { message, isStateObject: false };
+}
+/**
+ * An IPv4 address the way people know it: a server listening on all addresses reports IPv4 clients as
+ * IPv6-mapped addresses ("::ffff:192.168.1.10").
+ *
+ * @param address the remote address of a socket
+ */
+function plainAddress(address) {
+    return address?.replace(/^::ffff:(?=\d+\.\d+\.\d+\.\d+$)/, '');
 }
 //# sourceMappingURL=common.js.map

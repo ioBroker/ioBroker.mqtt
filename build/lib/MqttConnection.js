@@ -49,7 +49,10 @@ class MqttConnection extends node_events_1.EventEmitter {
     /** The peer broke the CONNECT order; everything it still sends is ignored. */
     violated = false;
     constructor(stream) {
-        super();
+        // An async packet handler that fails rejects its promise. Captured, the rejection becomes an
+        // 'error' of this connection (see below) instead of an unhandled rejection that stops the
+        // whole instance, so a client cannot restart the broker with one malformed packet.
+        super({ captureRejections: true });
         this.stream = stream;
         // The parser adopts the CONNECT packet as its settings, so everything that follows is
         // parsed with the protocol level the client announced.
@@ -68,7 +71,13 @@ class MqttConnection extends node_events_1.EventEmitter {
                 this.setProtocolVersion(connect.protocolVersion);
                 this.maximumPacketSize = connect.properties?.maximumPacketSize || undefined;
             }
-            this.emit(packet.cmd, packet);
+            try {
+                this.emit(packet.cmd, packet);
+            }
+            catch (error) {
+                // A handler that throws would otherwise propagate out of the stream's 'data' event
+                this.emit('error', new Error(`Cannot process ${packet.cmd}: ${error?.message ?? error}`));
+            }
         });
         this.parser.on('error', (error) => {
             // A CONNECT with a protocol level the broker does not support is answered with return
@@ -94,6 +103,16 @@ class MqttConnection extends node_events_1.EventEmitter {
                 });
             }
         });
+    }
+    /**
+     * Receives the rejection of an async packet handler (EventEmitter `captureRejections`) and turns
+     * it into an 'error' of this connection, which closes only this client.
+     *
+     * @param error What the handler threw
+     * @param event The packet type that was handled
+     */
+    [node_events_1.EventEmitter.captureRejectionSymbol](error, event) {
+        this.emit('error', new Error(`Cannot process ${String(event)}: ${error?.message ?? error}`));
     }
     /**
      * Enforces that a connection starts with exactly one CONNECT. Any other packet before it, and a

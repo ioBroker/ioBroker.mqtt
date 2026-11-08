@@ -67,6 +67,9 @@ class MQTTServer {
     resendTimer = null;
     verifiedObjects = {};
     updateClientsTimeout;
+    clientsCleanupTimer = null;
+    /** Per address the failed TLS handshake that was last logged as warning (see onTlsClientError) */
+    tlsErrorsLogged = new Map();
     updateClientsRunning = false;
     updateClientsRestart = false;
     ignoredTopicsRegexes = [];
@@ -99,6 +102,10 @@ class MQTTServer {
         if (this.resendTimer) {
             clearInterval(this.resendTimer);
             this.resendTimer = null;
+        }
+        if (this.clientsCleanupTimer) {
+            clearInterval(this.clientsCleanupTimer);
+            this.clientsCleanupTimer = null;
         }
         // pending wills must not fire into a torn down adapter
         for (const clientId of Object.keys(this.delayedWills)) {
@@ -229,6 +236,9 @@ class MQTTServer {
         this.updateClientsRunning = true;
         try {
             const clientIds = [];
+            // Only what changes is written: with many client objects, rewriting all of them on every
+            // connect or disconnect of any client caused a burst of state events each time (#518).
+            const allStates = await this.adapter.getStatesAsync('info.clients.*');
             if (this.clients) {
                 for (const id in this.clients) {
                     // A client without own ID gets a new one from the broker on every connection
@@ -262,14 +272,17 @@ class MQTTServer {
                         clientObj.native.ip = this.clients[id]?.stream?.remoteAddress;
                         await this.adapter.setObjectAsync(clientObj._id, clientObj);
                     }
-                    await this.adapter.setStateAsync(oid, true, true);
+                    if (allStates[`${this.adapter.namespace}.${oid}`]?.val !== true) {
+                        await this.adapter.setStateAsync(oid, true, true);
+                    }
                 }
             }
-            // read all other states and set alive to false
-            const allStates = await this.adapter.getStatesAsync('info.clients.*');
+            // all other clients are offline; the time they went offline decides when their object
+            // is removed (removeStaleClientObjects)
             for (const id in allStates) {
-                if (!clientIds.includes(id.replace(`${this.adapter.namespace}.`, ''))) {
-                    await this.adapter.setState(id, false, true);
+                if (!clientIds.includes(id.replace(`${this.adapter.namespace}.`, '')) && allStates[id]?.val !== false) {
+                    await this.adapter.setStateAsync(id, false, true);
+                    await this.adapter.extendForeignObjectAsync(id, { native: { lastSeen: Date.now() } });
                 }
             }
         }
@@ -279,6 +292,45 @@ class MQTTServer {
         if (this.updateClientsRestart) {
             this.updateClientsRestart = false;
             this.startUpdateClientObjects();
+        }
+    }
+    /**
+     * Removes the objects of clients that have not been connected for the configured number of days.
+     * Devices that use a new client ID for every connection leave one object per connection behind,
+     * which otherwise grow without limit (#518). The time a client went offline is taken from
+     * `native.lastSeen`, for objects of older versions from the last change of the state.
+     * Objects with settings of other adapters (e.g. history or influxdb in `common.custom`) are kept,
+     * because removing them would lose those settings.
+     */
+    async removeStaleClientObjects() {
+        const days = this.config.removeClientsAfterDays;
+        if (this.config.doNotCreateClientObjects || !days || days <= 0) {
+            return;
+        }
+        const limit = Date.now() - days * 24 * 3600 * 1000;
+        const allStates = await this.adapter.getStatesAsync('info.clients.*');
+        // one query for all objects instead of one per client
+        const allObjects = await this.adapter.getForeignObjectsAsync(`${this.adapter.namespace}.info.clients.*`, 'state');
+        let removed = 0;
+        for (const id in allStates) {
+            const state = allStates[id];
+            const obj = allObjects[id];
+            if (!state || state.val === true || !obj) {
+                continue;
+            }
+            const custom = obj.common?.custom;
+            if (custom && Object.values(custom).some(settings => settings)) {
+                continue;
+            }
+            const lastSeen = Number(obj.native?.lastSeen) || state.lc || state.ts;
+            // the client may have connected again while this loop was running
+            if (lastSeen && lastSeen < limit && (await this.adapter.getForeignStateAsync(id))?.val !== true) {
+                await this.adapter.delForeignObjectAsync(id);
+                removed++;
+            }
+        }
+        if (removed) {
+            this.adapter.log.info(`Removed ${removed} client object(s) without connection for more than ${days} day(s)`);
         }
     }
     startUpdateClientObjects() {
@@ -347,6 +399,39 @@ class MQTTServer {
             pattern = pattern.substring(1);
         }
         return pattern;
+    }
+    /**
+     * Builds the two regular expressions of a topic filter: one for the IDs as they are and one for
+     * the IDs of the own namespace, whose topics are published without "mqtt.N".
+     *
+     * @param filter The topic filter as the client sent it, without "$share/<name>/"
+     * @returns The expression texts for foreign IDs and for the IDs of the own namespace
+     */
+    filterRegExps(filter) {
+        const id = (0, common_1.convertTopic2id)(filter, true, this.config.prefix, this.adapter.namespace, this.config.dotToUnderscore);
+        return {
+            plain: (0, common_1.idPattern2RegEx)(id),
+            namespaced: (0, common_1.idPattern2RegEx)(`${this.adapter.namespace}.${id}`),
+        };
+    }
+    /**
+     * A wildcard subscription remembers the IDs it matched in `_subsID`. When the subscription is
+     * removed or replaced, these entries have to go too, or the IDs are still delivered with the old
+     * QoS and options (MQTT-3.10.4-2, MQTT-3.8.4-3).
+     *
+     * @param client The client or offline session
+     * @param client._subsID The IDs the wildcard subscriptions matched so far
+     * @param subscriptions The subscriptions that end
+     */
+    forgetCachedMatches(client, ...subscriptions) {
+        if (!client._subsID) {
+            return;
+        }
+        for (const id of Object.keys(client._subsID)) {
+            if (subscriptions.includes(client._subsID[id])) {
+                delete client._subsID[id];
+            }
+        }
     }
     joinSharedGroup(shareName, pattern, regex, clientId) {
         const key = JSON.stringify([shareName, pattern]);
@@ -1750,19 +1835,24 @@ class MQTTServer {
         return true;
     }
     startServer(socket, server, port, bind, ssl, ws) {
-        // Event variable to hold a connection event type
-        let connectionEvent;
-        // Check if SSL/TLS connection is required
-        if (this.config.ssl) {
-            // Set event variable to SSL/TLS connection
-            connectionEvent = 'secureConnection';
+        // A TLS server reports a connection after the TLS handshake ("secureConnection"). The WebSocket
+        // server always reports "connection", also over HTTPS: listening for "secureConnection" there
+        // never accepted a client, so MQTT over secure WebSocket did not work at all.
+        const connectionEvent = ssl && !ws ? 'secureConnection' : 'connection';
+        // a failed TLS handshake ends before any MQTT packet, so it is logged here or not at all
+        if (ssl) {
+            const tlsServer = ws ? server : socket;
+            // remember the address on the TCP socket: after a reset during the handshake the TLS socket has lost it
+            tlsServer?.on('connection', (tcpSocket) => {
+                tcpSocket.__mqttAddress = tcpSocket.remoteAddress;
+            });
+            tlsServer?.on('tlsClientError', (err, tlsSocket) => this.onTlsClientError(err, tlsSocket));
         }
-        else {
-            // Set event variable to plain TCP connection
-            connectionEvent = 'connection';
-        }
-        // Use event variable to start the connection
         socket.on(connectionEvent, (stream) => {
+            if (ssl && !ws && stream?.remoteAddress) {
+                // the next failure of this address is worth a warning again
+                this.tlsErrorsLogged.delete((0, common_1.plainAddress)(stream.remoteAddress) ?? '');
+            }
             const client = new MqttConnection_1.default(ws ? (0, websocket_stream_1.default)(stream) : stream);
             // Store unique connection identifier
             client.__secret = `${Date.now()}_${Math.round(Math.random() * 10000)}`;
@@ -2148,6 +2238,8 @@ class MQTTServer {
                 const granted = [];
                 client._subsID ||= {};
                 client._subs ||= {};
+                // MQTT 5 names the reason (0x8F Topic Filter invalid), MQTT 3.1.1 only knows 0x80
+                const failure = client.protocolVersion === 5 ? 0x8f : 0x80;
                 for (let i = 0; i < packet.subscriptions.length; i++) {
                     this.adapter.log.debug(`Client [${client.id}] Handle subscribe: ${JSON.stringify(packet.subscriptions[i])}`);
                     granted.push(packet.subscriptions[i].qos);
@@ -2159,6 +2251,13 @@ class MQTTServer {
                     // messages. Everything below works on the plain filter; only the delivery
                     // differs (MQTT-5.0 4.8.2).
                     const { shareName, filter } = (0, common_1.parseSharedTopic)(packet.subscriptions[i].topic);
+                    // "#" only at the end, "+" only as a whole level, not empty (MQTT-4.7.1-2,
+                    // MQTT-4.7.1-3, MQTT-4.7.3-1): such a filter cannot be subscribed to
+                    if (!(0, common_1.isValidTopicFilter)(filter)) {
+                        this.adapter.log.warn(`Client [${client.id}] subscribed to the invalid topic filter "${packet.subscriptions[i].topic}"`);
+                        granted[i] = failure;
+                        continue;
+                    }
                     // "No Local" is not allowed on a shared subscription (MQTT-5.0 3.8.3.1)
                     if (shareName && nl) {
                         this.adapter.log.warn(`Client [${client.id}] used "No Local" on the shared subscription "${packet.subscriptions[i].topic}"`);
@@ -2171,8 +2270,10 @@ class MQTTServer {
                     // gets the stored value on subscribe either.
                     const sendKnownValue = this.config.publishOnSubscribe && rh !== 2 && !shareName;
                     if (shareName) {
-                        const sharePattern = this.sharedPatternFor(filter);
-                        this.joinSharedGroup(shareName, sharePattern, new RegExp((0, common_1.pattern2RegEx)(sharePattern, this.adapter, this.config.prefix)), client.id);
+                        // the group matches the IDs of the own namespace too, like a normal
+                        // subscription does with its second entry below
+                        const { plain, namespaced } = this.filterRegExps(filter);
+                        this.joinSharedGroup(shareName, this.sharedPatternFor(filter), new RegExp(`${plain}|${namespaced}`), client.id);
                     }
                     const topic = filter;
                     let id;
@@ -2235,10 +2336,14 @@ class MQTTServer {
                         if (pattern[0] === '.') {
                             pattern = pattern.substring(1);
                         }
+                        const { plain, namespaced } = this.filterRegExps(topic);
+                        const namespacedTopic = `${this.adapter.namespace}/${topic}`;
+                        // A SUBSCRIBE to a filter that is already subscribed replaces it (MQTT-3.8.4-3),
+                        // so the IDs the old one matched must not keep its QoS and options
+                        this.forgetCachedMatches(client, client._subs[topic], client._subs[namespacedTopic]);
                         // add a simple pattern
-                        let regText = (0, common_1.pattern2RegEx)(pattern, this.adapter, this.config.prefix);
                         client._subs[topic] = {
-                            regex: new RegExp(regText),
+                            regex: new RegExp(plain),
                             qos: packet.subscriptions[i].qos,
                             pattern: pattern,
                             nl,
@@ -2247,21 +2352,19 @@ class MQTTServer {
                             subscriptionIdentifier,
                             shareName,
                         };
-                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}" with regex /${regText}/`);
+                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}" with regex /${plain}/`);
                         // add simple mqtt.0.pattern
-                        pattern = `${this.adapter.namespace}/${pattern}`;
-                        regText = (0, common_1.pattern2RegEx)(pattern, this.adapter, this.config.prefix);
-                        client._subs[`${this.adapter.namespace}/${topic}`] = {
-                            regex: new RegExp(regText),
+                        client._subs[namespacedTopic] = {
+                            regex: new RegExp(namespaced),
                             qos: packet.subscriptions[i].qos,
-                            pattern,
+                            pattern: `${this.adapter.namespace}/${pattern}`,
                             nl,
                             rap,
                             rh,
                             subscriptionIdentifier,
                             shareName,
                         };
-                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}"  with regex /${regText}/`);
+                        this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}"  with regex /${namespaced}/`);
                         if (sendKnownValue) {
                             setTimeout(() => {
                                 this.adapter.log.debug(`Client [${client.id}] publishOnSubscribe send all known states`);
@@ -2333,6 +2436,9 @@ class MQTTServer {
                         // add a simple pattern
                         if (client._subs?.[topic]) {
                             this.adapter.log.debug(`Client [${client.id}] unsubscribes on "${topic}"`);
+                            // the IDs this filter matched are cached and would still be delivered
+                            // (MQTT-3.10.4-2)
+                            this.forgetCachedMatches(client, client._subs[topic], client._subs[`${this.adapter.namespace}/${topic}`]);
                             delete client._subs[topic];
                             if (client._subs[`${this.adapter.namespace}/${topic}`]) {
                                 // add simple mqtt.0.pattern
@@ -2518,6 +2624,11 @@ class MQTTServer {
         else {
             this.config.storeClientsTime = parseInt(this.config.storeClientsTime, 10) || 0;
         }
+        // instances of older versions have no value: 7 days, as for new instances
+        this.config.removeClientsAfterDays = parseInt((this.config.removeClientsAfterDays ?? 7), 10);
+        if (isNaN(this.config.removeClientsAfterDays) || this.config.removeClientsAfterDays < 0) {
+            this.config.removeClientsAfterDays = 0;
+        }
         try {
             // If using MQTTs, then create a TLS server with tls.createServer(), it's better for the TLS handshake.
             // Otherwise, the server may not send MQTT-CONNACK, and protocol handling could fail.
@@ -2541,6 +2652,53 @@ class MQTTServer {
             this.startListeners();
         }
         this.resendTimer = setInterval(() => !this.resending && this.checkResends(), this.config.retransmitInterval || 2000);
+        // remove the objects of clients that did not connect for a while: now and once a day
+        if (!this.config.doNotCreateClientObjects && this.config.removeClientsAfterDays > 0) {
+            const cleanup = () => {
+                this.removeStaleClientObjects().catch(e => this.adapter.log.warn(`Cannot remove old client objects: ${e?.message ?? e}`));
+            };
+            cleanup();
+            this.clientsCleanupTimer = setInterval(cleanup, 24 * 3600 * 1000);
+        }
+    }
+    /**
+     * Logs a TLS handshake that failed, with the most likely reason. A client retries every few seconds,
+     * so each address is logged once as warning and then at debug level, until it connects successfully
+     * or fails for another reason.
+     * The list of addresses is limited, so a port scan cannot make it grow without limit.
+     *
+     * @param err the error of the TLS server
+     * @param tlsSocket the TLS socket of the failed connection
+     */
+    onTlsClientError(err, tlsSocket) {
+        // When the client closes the connection during the handshake, the TLS socket no longer
+        // knows the address. The address noted on the TCP socket below it (_parent, not documented) is used then.
+        const address = (0, common_1.plainAddress)(tlsSocket?.remoteAddress || tlsSocket?._parent?.__mqttAddress) || 'unknown address';
+        let reason;
+        if (err.code === 'ECONNRESET') {
+            reason =
+                'the client closed the connection during the TLS handshake. Usually it does not trust the certificate of this server (self-signed?), or it was only a port check';
+        }
+        else if (err.code === 'ERR_SSL_WRONG_VERSION_NUMBER' || err.code === 'ERR_SSL_HTTP_REQUEST') {
+            reason = 'the client does not use TLS. Switch on TLS (SSL) in the client or switch off "SSL" here';
+        }
+        else if (err.code === 'ERR_SSL_UNSUPPORTED_PROTOCOL' || err.code === 'ERR_SSL_UNEXPECTED_MESSAGE') {
+            reason = 'the client uses a TLS version that is too old or not supported';
+        }
+        else {
+            reason = err.message;
+        }
+        const text = `TLS connection from ${address} failed: ${reason} (${err.code || 'TLS error'})`;
+        const code = err.code || err.message;
+        if (this.tlsErrorsLogged.get(address) === code) {
+            this.adapter.log.debug(text);
+            return;
+        }
+        if (this.tlsErrorsLogged.size >= 100 && !this.tlsErrorsLogged.has(address)) {
+            this.tlsErrorsLogged.clear();
+        }
+        this.tlsErrorsLogged.set(address, code);
+        this.adapter.log.warn(text);
     }
     /** The ports this server listens on: MQTT and, if enabled, MQTT over WebSocket on the next one */
     usedPorts() {
