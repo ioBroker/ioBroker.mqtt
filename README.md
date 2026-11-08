@@ -236,6 +236,9 @@ Objects of clients that have not been connected for some days are removed automa
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@Schimi1983) Server mode: a client that refuses the certificate (e.g. mosquitto without the CA certificate) is logged with a readable reason instead of the raw OpenSSL message. Timers use the adapter's own timer functions, which are cleared automatically when the instance stops (repository checker)
+
 ### 9.2.0 (2026-11-08)
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
 - (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
