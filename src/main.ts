@@ -8,7 +8,7 @@ import { checkPublicIP } from './lib/securityChecker';
 class MQTT extends Adapter {
     declare config: MqttAdapterConfig;
 
-    private checkTimeout: NodeJS.Timeout | null = null;
+    private checkTimeout: ioBroker.Timeout | undefined | null = null;
     private readonly messageboxRegex: RegExp = new RegExp('\\.messagebox$');
     private states: Record<string, ioBroker.State> = {};
     private server: any = null;
@@ -183,7 +183,7 @@ class MQTT extends Adapter {
             this.server = new MQTTServer(this, this.states);
 
             if (!this.config.doNotCheckPublicIP && (!this.config.user || !this.config.pass)) {
-                this.checkTimeout = setTimeout(async () => {
+                this.checkTimeout = this.setTimeout(async () => {
                     this.checkTimeout = null;
                     try {
                         await checkPublicIP(this.config.port, this.config.ssl);
@@ -351,7 +351,7 @@ class MQTT extends Adapter {
         // the credentials are passed as options, so special characters in them do not break the URL
         const _client = connect(_url, user ? { username: user, password: pass } : {});
         // Set timeout for connection
-        const timeout = setTimeout(() => {
+        const timeout = this.setTimeout(() => {
             _client.end();
             this.sendTo(obj.from, obj.command, 'timeout', obj.callback);
         }, 2000);
@@ -359,13 +359,13 @@ class MQTT extends Adapter {
         // If connected, return success
         _client.on('connect', () => {
             _client.end();
-            clearTimeout(timeout);
+            this.clearTimeout(timeout);
             this.sendTo(obj.from, obj.command, 'connected', obj.callback);
         });
         // If connected, return success
         _client.on('error', (err: Error): void => {
             _client.end();
-            clearTimeout(timeout);
+            this.clearTimeout(timeout);
             this.log.warn(`Error on mqtt test: ${err}`);
             this.sendTo(obj.from, obj.command, 'error', obj.callback);
         });
@@ -405,7 +405,7 @@ class MQTT extends Adapter {
 
     onUnload = (callback: () => void): void => {
         if (this.checkTimeout) {
-            clearTimeout(this.checkTimeout);
+            this.clearTimeout(this.checkTimeout);
             this.checkTimeout = null;
         }
 
