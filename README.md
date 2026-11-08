@@ -245,6 +245,7 @@ Objects of clients that have not been connected for some days are removed automa
 - (@GermanBluefox) Client mode: an empty payload is no longer stored as `NaN`, and a deleted state or a value of null is sent as an empty payload instead of the string "null", like in server mode since 8.1.5 (#499)
 - (@GermanBluefox) Client mode: the debug log of sent messages no longer shows the prefix, which is not added (and never was) to topics of `sendMessage2Client` (#448)
 - (@GermanBluefox) Server mode with "different topic names for set and get": a command reaches clients that subscribed to its `/set` topic, e.g. Z-Wave JS UI (#494), and a client no longer gets back the value it reported itself (ack=true) (#349)
+- (@GermanBluefox) Server mode: a topic that changes its type (e.g. number and text) becomes "mixed" and stays so, instead of changing the type of its object with every message (#340)
 
 ### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now

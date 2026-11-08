@@ -3265,3 +3265,48 @@ describe('MQTT server: topic filters', function () {
         bystander.end(true);
     });
 });
+
+// A topic that changes its type settles on "mixed" instead of flipping with every message (#340)
+describe('MQTT server: type of changing topics', function () {
+    const mqtt = require('mqtt');
+    let adapter: Adapter;
+    let server: any;
+    let client: any;
+    let suitePort: number;
+    this.timeout(10000);
+
+    const wait = (ms: number): Promise<void> => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+    async function typeAfter(topic: string, payload: string): Promise<string | undefined> {
+        await client.publishAsync(topic, payload);
+        await wait(300);
+        const obj = await adapter.getForeignObjectAsync(`mqtt.0.${topic.replace(/\//g, '.')}`);
+        return (obj?.common as ioBroker.StateCommon | undefined)?.type;
+    }
+
+    before('MQTT server (types): Start server', async () => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 0 });
+        server = new Server(adapter, {});
+        await wait(300);
+        client = mqtt.connect(`mqtt://127.0.0.1:${suitePort}`, { clientId: 'types', reconnectPeriod: 0 });
+        await new Promise<void>(resolve => client.on('connect', () => resolve()));
+    });
+
+    after('MQTT server (types): Stop server', done => {
+        client.end(true);
+        server.destroy(done);
+    });
+
+    it('a value of another type makes the state "mixed", and it stays so', async () => {
+        assert.strictEqual(await typeAfter('types/flip', '1'), 'number');
+        assert.strictEqual(await typeAfter('types/flip', 'on'), 'mixed');
+        assert.strictEqual(await typeAfter('types/flip', '2'), 'mixed');
+    });
+
+    it('a state created by a subscription takes the type of its first value', async () => {
+        await new Promise<void>(resolve => client.subscribe('types/subscribed', () => resolve()));
+        await wait(300);
+        assert.strictEqual(await typeAfter('types/subscribed', '5'), 'number');
+    });
+});

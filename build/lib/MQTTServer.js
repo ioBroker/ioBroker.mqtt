@@ -1176,9 +1176,14 @@ class MQTTServer {
             (!obj.native?.topic ||
                 (!deleted && obj.common && obj.common.type !== 'mixed' && obj.common.type !== stateType))) {
             if (!deleted && obj.common && obj.common.type !== 'mixed' && obj.common.type !== stateType) {
-                // mqtt topics could change types, but log it to communicate to the user if a type is frequently fluctuating
-                this.adapter.log.info(`Server: Changed type of "${id}" from "${obj.common.type}" to "${stateType}"`);
-                obj.common.type = stateType;
+                // A topic that changes its type after it had a value becomes "mixed" for good. Taking over
+                // the new type each time made the type flip with every message (#340). An object without
+                // a value yet (e.g. created by a subscription as "string") takes the type of the first one.
+                const previous = this.states[id]?.val;
+                const previousType = Array.isArray(previous) ? 'array' : typeof previous;
+                const newType = previous !== null && previous !== undefined && previousType !== stateType ? 'mixed' : stateType;
+                this.adapter.log.info(`Server: Changed type of "${id}" from "${obj.common.type}" to "${newType}"`);
+                obj.common.type = newType;
             }
             obj.native ||= {};
             obj.native.topic = topic;
