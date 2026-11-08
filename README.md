@@ -220,7 +220,7 @@ If a device connects again with the same client ID while its old connection is s
 
 You can disable the creation of the client objects in the instance settings. (**Do not create client objects**)
 
-Objects of clients that have not been connected for some days are removed automatically (**Remove client objects after**, default 7 days, `0` = never). This matters for devices that use a new client ID for every connection: without it, they leave a new object behind each time. The cleanup runs when the instance starts and then once a day.
+Objects of clients that have not been connected for some days are removed automatically (**Remove client objects after**, default 7 days, `0` = never). This matters for devices that use a new client ID for every connection: without it, they leave a new object behind each time. The cleanup runs when the instance starts and then once a day. Objects for which you have switched on logging (e.g. History or InfluxDB) are kept.
 
 ## Todo
 * Implement resend of `QoS 2` messages after a while.
@@ -237,6 +237,7 @@ Objects of clients that have not been connected for some days are removed automa
 ## Changelog
 ### **WORK IN PROGRESS**
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
+- (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
 
 ### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now

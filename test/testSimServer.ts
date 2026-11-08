@@ -2483,10 +2483,11 @@ describe('MQTT server: client objects cleanup', function () {
         name: string,
         offlineSince: number,
         withLastSeen: boolean,
+        custom?: Record<string, any>,
     ): Promise<void> {
         await adapter.setObjectAsync(`info.clients.${name}`, {
             type: 'state',
-            common: { name, role: 'indicator.reachable', type: 'boolean', read: true, write: false },
+            common: { name, role: 'indicator.reachable', type: 'boolean', read: true, write: false, custom },
             native: withLastSeen ? { ip: '10.0.0.1', lastSeen: offlineSince } : { ip: '10.0.0.1' },
         } as any);
         await adapter.setStateAsync(`info.clients.${name}`, false, true);
@@ -2521,6 +2522,12 @@ describe('MQTT server: client objects cleanup', function () {
             await addClientObject(adapter, 'old_lastseen', Date.now() - 8 * DAY, true);
             await addClientObject(adapter, 'old_state', Date.now() - 10 * DAY, false);
             await addClientObject(adapter, 'recent', Date.now() - DAY, true);
+            // logged by a history adapter: removing it would lose these settings
+            await addClientObject(adapter, 'old_logged', Date.now() - 30 * DAY, true, {
+                'history.0': { enabled: true },
+            });
+            // admin removes a switched-off entry; a leftover null must not count as logging either
+            await addClientObject(adapter, 'old_unlogged', Date.now() - 30 * DAY, true, { 'history.0': null });
             // count what is written to the client states
             const setStateAsync = adapter.setStateAsync.bind(adapter);
             adapter.setStateAsync = ((id: string, val: any, ack?: boolean) => {
@@ -2541,6 +2548,11 @@ describe('MQTT server: client objects cleanup', function () {
             assert.strictEqual(await adapter.getObjectAsync('info.clients.old_lastseen'), undefined);
             assert.strictEqual(await adapter.getObjectAsync('info.clients.old_state'), undefined);
             assert.ok(await adapter.getObjectAsync('info.clients.recent'), 'a recent client object was removed');
+            assert.ok(
+                await adapter.getObjectAsync('info.clients.old_logged'),
+                'an object with history settings was removed',
+            );
+            assert.strictEqual(await adapter.getObjectAsync('info.clients.old_unlogged'), undefined);
         });
 
         it('writes only the client states that change', async () => {
