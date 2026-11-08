@@ -575,3 +575,13 @@ export function convertMessage(
 
     return { message, isStateObject: false };
 }
+
+/**
+ * An IPv4 address the way people know it: a server listening on all addresses reports IPv4 clients as
+ * IPv6-mapped addresses ("::ffff:192.168.1.10").
+ *
+ * @param address the remote address of a socket
+ */
+export function plainAddress(address: string | undefined): string | undefined {
+    return address?.replace(/^::ffff:(?=\d+\.\d+\.\d+\.\d+$)/, '');
+}

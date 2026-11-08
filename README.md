@@ -238,6 +238,7 @@ Objects of clients that have not been connected for some days are removed automa
 ### **WORK IN PROGRESS**
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
 - (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
+- (@Schimi1983) Server mode: MQTT over secure WebSocket (SSL + WebSocket) accepts clients again (broken since 6.1.3), and a failed TLS connection is logged with the likely reason (e.g. the client does not trust the certificate or does not use TLS). Client mode: the same connection error is logged only once instead of on every reconnect, certificate errors get a hint which setting helps (#341)
 
 ### 9.1.0 (2026-11-03)
 - (copilot) Adapter requires node.js >= 22.19.0 now

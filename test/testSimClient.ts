@@ -449,3 +449,49 @@ describe('MQTT client speaking MQTT 5', function () {
         client.destroy();
     });
 });
+
+// A broker that cannot be reached: the client retries every second, but the error is logged once
+// as error (then at debug level), and closing the instance is not reported as an error (#341).
+describe('MQTT client: connection errors', function () {
+    let adapter: Adapter;
+    let client: any;
+    const errors: string[] = [];
+    const debugs: string[] = [];
+    this.timeout(10000);
+
+    before('MQTT client (errors): start a client without broker', done => {
+        adapter = new Adapter({
+            port: ++port, // nothing listens on this port
+            url: '127.0.0.1',
+            clientId: 'testAdapterNoBroker',
+            reconnectPeriod: 1,
+        });
+        adapter.log.error = (text: string): void => {
+            errors.push(text);
+        };
+        adapter.log.debug = (text: string): void => {
+            debugs.push(text);
+        };
+        client = new Client(adapter, {});
+        setTimeout(done, 3500);
+    });
+
+    it('logs the same connection error only once as error', () => {
+        const connectionErrors = errors.filter(text => text.startsWith('Client error'));
+        assert.strictEqual(connectionErrors.length, 1, JSON.stringify(errors));
+        assert.match(connectionErrors[0], /ECONNREFUSED/);
+        assert.ok(
+            debugs.filter(text => text.startsWith('Client error')).length >= 1,
+            'the repeated errors are logged at debug level',
+        );
+    });
+
+    it('does not log errors while the instance stops', done => {
+        errors.length = 0;
+        client.destroy();
+        setTimeout(() => {
+            assert.deepStrictEqual(errors, []);
+            done();
+        }, 1500);
+    });
+});
