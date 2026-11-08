@@ -2934,7 +2934,7 @@ describe('MQTT server: rejected login does not take over a session', function ()
 // (no private key in the repository); without openssl the suite is skipped.
 describe('MQTT server: TLS', function () {
     const mqtt = require('mqtt');
-    const { execFileSync } = require('node:child_process');
+    const { execFile, execFileSync } = require('node:child_process');
     const { mkdtempSync, readFileSync, rmSync } = require('node:fs');
     const { join } = require('node:path');
     const { tmpdir } = require('node:os');
@@ -3053,6 +3053,23 @@ describe('MQTT server: TLS', function () {
         await wait(200);
         assert.strictEqual(warnings.length, 1, JSON.stringify(warnings));
         assert.match(warnings[0], /the client does not use TLS/);
+    });
+
+    it('logs a client that refuses the certificate with an alert (e.g. mosquitto)', async () => {
+        // a new address, so the warning is not suppressed by the tests before
+        warnings.length = 0;
+        await new Promise<void>(resolve =>
+            execFile(
+                'openssl',
+                ['s_client', '-connect', `127.0.0.2:${suitePort}`, '-verify_return_error', '-servername', 'localhost'],
+                { timeout: 5000 },
+                () => resolve(),
+            ).stdin?.end(),
+        );
+        await wait(200);
+        assert.strictEqual(warnings.length, 1, JSON.stringify(warnings));
+        assert.match(warnings[0], /the client does not trust the certificate of this server/);
+        assert.ok(!warnings[0].includes('\n'), 'one line only');
     });
 
     it('logs a failure again after a successful connection of that address', async () => {
