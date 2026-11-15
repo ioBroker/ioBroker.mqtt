@@ -236,6 +236,9 @@ Objects of clients that have not been connected for some days are removed automa
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@GermanBluefox) Client mode reconnects after the broker refused the login (CONNACK error), e.g. while the broker is still starting (#703)
+
 ### 9.2.0 (2026-11-08)
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
 - (@Schimi1983) Server mode: client objects with logging switched on (e.g. History or InfluxDB) are no longer removed by the cleanup, and the cleanup reads all client objects in one query
