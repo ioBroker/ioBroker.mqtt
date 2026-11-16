@@ -237,6 +237,7 @@ Objects of clients that have not been connected for some days are removed automa
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (@GermanBluefox) Client mode reconnects after the broker refused the login (CONNACK error), e.g. while the broker is still starting (#703)
 - (@Schimi1983) Server mode: a client that refuses the certificate (e.g. mosquitto without the CA certificate) is logged with a readable reason instead of the raw OpenSSL message. Timers use the adapter's own timer functions, which are cleared automatically when the instance stops (repository checker)
 
 ### 9.2.0 (2026-11-08)

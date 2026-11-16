@@ -13,6 +13,8 @@ interface MqttServerConfig {
     pass?: string;
     dontSend?: boolean;
     webSocket?: boolean;
+    /** Number of first logins refused with "Not authorized", e.g. like a broker that is still starting */
+    refuseConnects?: number;
 }
 
 interface ConnectPacket {
@@ -105,6 +107,14 @@ export default class MqttServerEmulator {
                         client.stream.end();
                         return;
                     }
+                }
+                if (config.refuseConnects) {
+                    config.refuseConnects--;
+                    console.error(`Client [${packet.clientId}] refused: not authorized`);
+                    client.connack({ returnCode: 5 });
+                    delete clients[client.id];
+                    client.stream.end();
+                    return;
                 }
                 console.log(
                     `Client [${packet.clientId}] connected: user - ${packet.username}, pass - ${(packet.password || '').length} chars`,
