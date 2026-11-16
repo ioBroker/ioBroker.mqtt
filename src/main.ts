@@ -4,6 +4,7 @@ import MQTTClient from './lib/MQTTClient';
 import MQTTServer from './lib/MQTTServer';
 import type { MqttAdapterConfig, MqttPattern } from './lib/types';
 import { checkPublicIP } from './lib/securityChecker';
+import { publishDefaultFix } from './lib/common';
 
 class MQTT extends Adapter {
     declare config: MqttAdapterConfig;
@@ -99,13 +100,34 @@ class MQTT extends Adapter {
     async main(): Promise<void> {
         this.config.forceCleanSession ||= 'no'; // default
 
+        // Settings that are corrected once. They are written together, so the instance restarts only once.
+        const fixedSettings: Partial<MqttAdapterConfig> = {};
+
         // Keep alive could not be set in the admin until 9.2.0, so 1000 seconds is the untouched old
         // default: a lost broker was noticed only after about 25 minutes (#339, #508)
         if (this.config.type === 'client' && Number(this.config.keepalive) === 1000) {
             this.log.warn('Default "keepalive" setting changed from 1000 to 60 seconds. Restarting...');
-            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                native: { keepalive: 60 },
-            });
+            fixedSettings.keepalive = 60;
+        }
+
+        // The default "publish" mask "mqtt.0.*" of a new instance is changed to the own instance (#702)
+        const publishFix = publishDefaultFix(
+            this.config.publish,
+            this.instance,
+            this.namespace,
+            this.config.publishDefaultChecked,
+        );
+        if (publishFix) {
+            if (publishFix.publish) {
+                this.log.warn(`Default "publish" setting changed to "${publishFix.publish}". Restarting...`);
+            } else {
+                this.log.info('Default "publish" setting checked once. Restarting...');
+            }
+            Object.assign(fixedSettings, publishFix);
+        }
+
+        if (Object.keys(fixedSettings).length) {
+            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, { native: fixedSettings });
             return; // Adapter will be restarted soon, no need to initialize now
         }
 
@@ -121,17 +143,6 @@ class MQTT extends Adapter {
         }
 
         if (this.config.publish) {
-            // change default publish setting to real instance
-            if (this.config.publish === 'mqtt.0.*' && this.instance !== 0) {
-                this.log.warn(`Default "publish" setting changed to "${this.namespace}.*". Restarting...`);
-                await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                    native: {
-                        publish: `${this.namespace}.*`,
-                    },
-                });
-                return; // Adapter will be restarted soon, no need to initialize now
-            }
-
             const parts = this.config.publish
                 .split(',')
                 .map(p => p.trim())
