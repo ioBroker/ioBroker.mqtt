@@ -30,6 +30,8 @@ export interface MqttAdapterConfig {
     publishAllOnStart: boolean;
     debug: boolean;
     publish: string;
+    /** Set on the first start: the default "publish" mask was checked for this instance (#702) */
+    publishDefaultChecked?: boolean;
     certPublic: string;
     certPrivate: string;
     certChained: string;
