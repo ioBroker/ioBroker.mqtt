@@ -94,7 +94,7 @@
   "ignoredTopics_help": "Received topics matching these entries are ignored. Divided by comma, as ID ('evcc.loadpoints.*.planSoc') or MQTT filter ('homeassistant/#'). '*' and '#' match anything, '+' exactly one level. An entry without wildcard also covers everything below it",
   "Binary topics (stored as files):": "Binary topics (stored as files):",
   "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')",
-  "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')",
+  "These states will be published. Divided by comma, e.g. 'mqtt.X.*,javascript.*' (X = number of this instance)": "These states will be published. Divided by comma, e.g. 'mqtt.X.*,javascript.*' (X = number of this instance)",
   "Credentials:": "Credentials",
   "credentials_help": "If selected, user name and password are taken from the central credential storage (Settings → Credentials) instead of the fields below",
   "Remove client objects after": "Remove client objects after",
