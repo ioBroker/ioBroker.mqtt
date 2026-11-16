@@ -395,6 +395,7 @@
     "publishAllOnStart": true,
     "debug": false,
     "publish": "mqtt.0.*",
+    "publishDefaultChecked": false,
     "certPublic": "",
     "certPrivate": "",
     "certChained": "",

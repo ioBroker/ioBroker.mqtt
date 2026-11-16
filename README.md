@@ -31,7 +31,7 @@ This adapter uses the MQTT.js library from [https://github.com/adamvr/MQTT.js/](
 - **Authentication/Credentials** - Credentials from the central credential storage, see [Credentials](#credentials). If selected, the two fields below are not used.
 - **Authentication/Username** - If authentication is required, you can specify the username. It is suggested to always use SSL with authentication to not send passwords over unsecure connection.  
 - **Authentication/Password** - Password for user.
-- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify a group of messages, e.g., `*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter `mqtt.0`
+- **Mask to publish own states** - Pattern to filter ioBroker states, which will be sent to clients. You can use wildcards to specify a group of messages, e.g., `*.memRss, mqtt.0.*` to get all memory states of all adapters and all states of adapter `mqtt.0`. A new instance shows `mqtt.0.*` here; on its first start this is changed to the own instance (e.g. `mqtt.2.*`)
 - **Publish only on change** - New messages will be sent to a client only if the state value changes. Every message sent by the client will be accepted, even if the value does not change.
 - **Publish own states on connect** - by every client connection the all known states will be sent to a client (defined by the state mask), to tell him which states the ioBroker has.
 - **Prefix for all topics** - if set, every sent topic will be prepended with this prefix, e.g., if prefix `iobroker/` all states will have names like `**iobroker**/mqtt/0/connected`
@@ -122,7 +122,7 @@ and "Retain As Published".
 - **MQTT version** - Protocol level used to connect to the broker: MQTT 3.1.1 (default), MQTT 5.0 or the legacy MQTT 3.1. If the broker refuses the selected version, the adapter logs a warning and falls back to MQTT 3.1.1.
 - **Subscribe Patterns** - Subscribe by the pattern. See the chapter "Examples of using wildcards" to define the pattern. '#' to subscribe for all topics. `mqtt/0/#,javascript/#` to subscribe for states of `mqtt.0` and `javascript`
 - **Publish only on change** - Store incoming messages only if the payload differs from the actual stored.
-- **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter.  
+- **Mask to publish own states** - Mask for states, that must be published to broker. '*' - to publish all states. 'io.yr.*,io.hm-rpc.0.*' to publish states of `yr` and `hm-rpc` adapter. A new instance shows `mqtt.0.*` here; on its first start this is changed to the own instance (e.g. `mqtt.2.*`)  
 - **Publish all states at start** - Publish all states (defined by the state mask) every time by connection establishment to announce own available states and their values.
 - **Prefix for topics** - The prefix can be defined for own states. Like `/var/ioBroker/`. Name of topics will be, for example, published with the name `/var/ioBroker/ping/192-168-1-5`.
 - **Test connection** - Press the button to check the connection to broker. Adapter must be enabled before.
@@ -238,6 +238,7 @@ Objects of clients that have not been connected for some days are removed automa
 ## Changelog
 ### **WORK IN PROGRESS**
 - (@GermanBluefox) Client mode reconnects after the broker refused the login (CONNACK error), e.g. while the broker is still starting (#703)
+- (@Schimi1983) The default publish mask `mqtt.0.*` of a new instance is changed to the own instance only on the first start. A mask `mqtt.0.*` entered later on purpose (e.g. on `mqtt.2`) is kept. After the update every instance except `mqtt.0` restarts once (#702)
 
 ### 9.2.0 (2026-11-08)
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)
