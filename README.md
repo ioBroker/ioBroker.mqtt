@@ -238,6 +238,7 @@ Objects of clients that have not been connected for some days are removed automa
 
 ## Changelog
 ### **WORK IN PROGRESS**
+- (@GermanBluefox) Client mode reconnects after the broker refused the login (CONNACK error), e.g. while the broker is still starting (#703)
 - (@Schimi1983) Client mode: new setting "Do not subscribe" to only send ioBroker states to the broker; an empty pattern field still subscribes to all topics (#319)
 
 ### 9.2.0 (2026-11-08)

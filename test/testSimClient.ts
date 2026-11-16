@@ -467,6 +467,69 @@ describe('MQTT client speaking MQTT 5', function () {
     });
 });
 
+// A broker that refuses the login once (CONNACK "Not authorized"), e.g. while it is still starting:
+// the client has to retry after a longer pause and stay connected afterwards (#703)
+describe('MQTT client: login refused once', function () {
+    let adapter: Adapter;
+    let simulatedServer: SimulatedServer;
+    let client: any;
+    const errors: string[] = [];
+    this.timeout(10000);
+
+    before('MQTT client (refused): Start MQTT simulatedServer', done => {
+        adapter = new Adapter({
+            port: ++port,
+            url: '127.0.0.1',
+            clientId: 'testAdapterRefused',
+            reconnectPeriod: 1,
+        });
+        adapter.log.error = (text: string): void => {
+            errors.push(text);
+        };
+        simulatedServer = new SimulatedServer({ port, dontSend: true, refuseConnects: 1 });
+        client = new Client(adapter, {});
+        // 60 seconds in real life, shortened for the test
+        client.authErrorReconnectPeriod = 1500;
+        done();
+    });
+
+    it('MQTT client: waits longer before the next attempt after a refused login', done => {
+        setTimeout(async () => {
+            const data = await adapter.getStateAsync('info.connection');
+            try {
+                assert.notStrictEqual(data?.val, true, 'the first login was refused');
+                assert.ok(
+                    errors.some(text => /Not authorized/i.test(text)),
+                    `the refused login must be logged: ${JSON.stringify(errors)}`,
+                );
+                assert.strictEqual(client.client.options.reconnectPeriod, 1500);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }, 500);
+    });
+
+    it('MQTT client: is connected after the broker accepts the login', done => {
+        setTimeout(async () => {
+            const data = await adapter.getStateAsync('info.connection');
+            try {
+                assert.ok(data, 'the connection state must exist');
+                assert.strictEqual(data.val, true, 'the client must reconnect after the refused login');
+                assert.strictEqual(client.client.options.reconnectPeriod, 1000, 'back to the configured period');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        }, 2500);
+    });
+
+    after('MQTT client (refused): Stop MQTT simulatedServer', done => {
+        simulatedServer.stop(done);
+        client.destroy();
+    });
+});
+
 // A broker that cannot be reached: the client retries every second, but the error is logged once
 // as error (then at debug level), and closing the instance is not reported as an error (#341).
 describe('MQTT client: connection errors', function () {
