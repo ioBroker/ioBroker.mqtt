@@ -8,6 +8,7 @@ const mqtt_1 = require("mqtt");
 const MQTTClient_1 = __importDefault(require("./lib/MQTTClient"));
 const MQTTServer_1 = __importDefault(require("./lib/MQTTServer"));
 const securityChecker_1 = require("./lib/securityChecker");
+const common_1 = require("./lib/common");
 class MQTT extends adapter_core_1.Adapter {
     checkTimeout = null;
     messageboxRegex = new RegExp('\\.messagebox$');
@@ -91,13 +92,27 @@ class MQTT extends adapter_core_1.Adapter {
     }
     async main() {
         this.config.forceCleanSession ||= 'no'; // default
+        // Settings that are corrected once. They are written together, so the instance restarts only once.
+        const fixedSettings = {};
         // Keep alive could not be set in the admin until 9.2.0, so 1000 seconds is the untouched old
         // default: a lost broker was noticed only after about 25 minutes (#339, #508)
         if (this.config.type === 'client' && Number(this.config.keepalive) === 1000) {
             this.log.warn('Default "keepalive" setting changed from 1000 to 60 seconds. Restarting...');
-            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                native: { keepalive: 60 },
-            });
+            fixedSettings.keepalive = 60;
+        }
+        // The default "publish" mask "mqtt.0.*" of a new instance is changed to the own instance (#702)
+        const publishFix = (0, common_1.publishDefaultFix)(this.config.publish, this.instance, this.namespace, this.config.publishDefaultChecked);
+        if (publishFix) {
+            if (publishFix.publish) {
+                this.log.warn(`Default "publish" setting changed to "${publishFix.publish}". Restarting...`);
+            }
+            else {
+                this.log.info('Default "publish" setting checked once. Restarting...');
+            }
+            Object.assign(fixedSettings, publishFix);
+        }
+        if (Object.keys(fixedSettings).length) {
+            await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, { native: fixedSettings });
             return; // Adapter will be restarted soon, no need to initialize now
         }
         // Objects deleted by the user: the topics have to create them again (see onObjectChange)
@@ -110,16 +125,6 @@ class MQTT extends adapter_core_1.Adapter {
             await this.readStatesForPattern(`${this.namespace}.*`);
         }
         if (this.config.publish) {
-            // change default publish setting to real instance
-            if (this.config.publish === 'mqtt.0.*' && this.instance !== 0) {
-                this.log.warn(`Default "publish" setting changed to "${this.namespace}.*". Restarting...`);
-                await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                    native: {
-                        publish: `${this.namespace}.*`,
-                    },
-                });
-                return; // Adapter will be restarted soon, no need to initialize now
-            }
             const parts = this.config.publish
                 .split(',')
                 .map(p => p.trim())
@@ -165,7 +170,7 @@ class MQTT extends adapter_core_1.Adapter {
         else {
             this.server = new MQTTServer_1.default(this, this.states);
             if (!this.config.doNotCheckPublicIP && (!this.config.user || !this.config.pass)) {
-                this.checkTimeout = setTimeout(async () => {
+                this.checkTimeout = this.setTimeout(async () => {
                     this.checkTimeout = null;
                     try {
                         await (0, securityChecker_1.checkPublicIP)(this.config.port, this.config.ssl);
@@ -287,20 +292,20 @@ class MQTT extends adapter_core_1.Adapter {
         // the credentials are passed as options, so special characters in them do not break the URL
         const _client = (0, mqtt_1.connect)(_url, user ? { username: user, password: pass } : {});
         // Set timeout for connection
-        const timeout = setTimeout(() => {
+        const timeout = this.setTimeout(() => {
             _client.end();
             this.sendTo(obj.from, obj.command, 'timeout', obj.callback);
         }, 2000);
         // If connected, return success
         _client.on('connect', () => {
             _client.end();
-            clearTimeout(timeout);
+            this.clearTimeout(timeout);
             this.sendTo(obj.from, obj.command, 'connected', obj.callback);
         });
         // If connected, return success
         _client.on('error', (err) => {
             _client.end();
-            clearTimeout(timeout);
+            this.clearTimeout(timeout);
             this.log.warn(`Error on mqtt test: ${err}`);
             this.sendTo(obj.from, obj.command, 'error', obj.callback);
         });
@@ -337,7 +342,7 @@ class MQTT extends adapter_core_1.Adapter {
     };
     onUnload = (callback) => {
         if (this.checkTimeout) {
-            clearTimeout(this.checkTimeout);
+            this.clearTimeout(this.checkTimeout);
             this.checkTimeout = null;
         }
         try {
