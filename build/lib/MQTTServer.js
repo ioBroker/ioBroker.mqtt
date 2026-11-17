@@ -6,10 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const MqttConnection_1 = __importDefault(require("./MqttConnection"));
 const common_1 = require("./common");
 const scram_1 = require("./scram");
-const https_1 = require("https");
-const http_1 = require("http");
-const tls_1 = require("tls");
-const net_1 = require("net");
+const node_https_1 = require("node:https");
+const node_http_1 = require("node:http");
+const node_tls_1 = require("node:tls");
+const node_net_1 = require("node:net");
 const node_crypto_1 = require("node:crypto");
 const ws_1 = require("ws");
 const websocket_stream_1 = __importDefault(require("websocket-stream"));
@@ -100,11 +100,11 @@ class MQTTServer {
     }
     destroy(cb) {
         if (this.resendTimer) {
-            clearInterval(this.resendTimer);
+            this.adapter.clearInterval(this.resendTimer);
             this.resendTimer = null;
         }
         if (this.clientsCleanupTimer) {
-            clearInterval(this.clientsCleanupTimer);
+            this.adapter.clearInterval(this.clientsCleanupTimer);
             this.clientsCleanupTimer = null;
         }
         // pending wills must not fire into a torn down adapter
@@ -114,6 +114,8 @@ class MQTTServer {
         }
         this.persistentSessions = {};
         let tasks = 0;
+        // @KI_HINWEIS: destroy() runs while the adapter unloads; the adapter's own timers are cleared then,
+        // so this safety timeout uses the plain Node.js timer to make sure the callback is always called.
         let timeout = null;
         if (cb) {
             timeout = setTimeout(() => {
@@ -251,7 +253,7 @@ class MQTTServer {
                     clientIds.push(oid);
                     const clientObj = await this.adapter.getObjectAsync(oid);
                     if (!clientObj?.native) {
-                        await this.adapter.setObject(oid, {
+                        await this.adapter.extendObjectAsync(oid, {
                             type: 'state',
                             common: {
                                 name: _id,
@@ -1044,7 +1046,7 @@ class MQTTServer {
     sendStates2Client(client, list) {
         if (list?.length) {
             const id = list.shift() || '';
-            this.sendState2Client(client, id, this.states[id], 0, !this.config.noRetain, () => setTimeout(() => this.sendStates2Client(client, list), this.config.sendInterval), 
+            this.sendState2Client(client, id, this.states[id], 0, !this.config.noRetain, () => this.adapter.setTimeout(() => this.sendStates2Client(client, list), this.config.sendInterval), 
             // these are the values the broker already had, not live forwards
             'retained');
         }
@@ -1080,7 +1082,7 @@ class MQTTServer {
                 this.adapter.log.warn(`Client [${client.id}] Cannot resend message: ${e}`);
             }
             if (this.config.sendInterval) {
-                setTimeout(() => this.resendMessages2Client(client, messages, i + 1), this.config.sendInterval);
+                this.adapter.setTimeout(() => this.resendMessages2Client(client, messages, i + 1), this.config.sendInterval);
             }
             else {
                 setImmediate(() => this.resendMessages2Client(client, messages, i + 1));
@@ -1818,11 +1820,11 @@ class MQTTServer {
             client._pendingMessages = [];
         }
         if (client._sendOnStart) {
-            clearTimeout(client._sendOnStart);
+            this.adapter.clearTimeout(client._sendOnStart);
             client._sendOnStart = null;
         }
         if (client._resendonStart) {
-            clearTimeout(client._resendonStart);
+            this.adapter.clearTimeout(client._resendonStart);
             client._resendonStart = null;
         }
         try {
@@ -2035,7 +2037,7 @@ class MQTTServer {
                     // Send all subscribed variables to a client
                     if (this.config.publishAllOnStart) {
                         // Give to client 2 seconds to send the `subscribe` message
-                        client._sendOnStart = setTimeout(() => {
+                        client._sendOnStart = this.adapter.setTimeout(() => {
                             client._sendOnStart = null;
                             this.sendStates2Client(client, Object.keys(this.states));
                         }, this.config.sendOnStartInterval);
@@ -2053,7 +2055,7 @@ class MQTTServer {
                                 msg.ts = now;
                             }
                             // give to the client a little bit time
-                            client._resendonStart = setTimeout((clientId) => {
+                            client._resendonStart = this.adapter.setTimeout((clientId) => {
                                 client._resendonStart = null;
                                 if (this.persistentSessions[clientId]) {
                                     this.resendMessages2Client(client, this.persistentSessions[clientId]._messages);
@@ -2340,7 +2342,7 @@ class MQTTServer {
                         };
                         this.adapter.log.debug(`Client [${client.id}] subscribes on "${this.topic2id[topic].id}"`);
                         if (sendKnownValue) {
-                            setTimeout(() => {
+                            this.adapter.setTimeout(() => {
                                 this.adapter.log.debug(`Client [${client.id}] publishOnSubscribe`);
                                 this.sendState2Client(client, this.topic2id[topic].id, this.states[this.topic2id[topic].id], undefined, !this.config.noRetain, undefined, 'retained');
                             }, 200);
@@ -2386,7 +2388,7 @@ class MQTTServer {
                         };
                         this.adapter.log.debug(`Client [${client.id}] subscribes on "${topic}"  with regex /${namespaced}/`);
                         if (sendKnownValue) {
-                            setTimeout(() => {
+                            this.adapter.setTimeout(() => {
                                 this.adapter.log.debug(`Client [${client.id}] publishOnSubscribe send all known states`);
                                 Object.keys(this.states).forEach(savedId => {
                                     if (this.checkPattern(client._subs, savedId)) {
@@ -2575,7 +2577,7 @@ class MQTTServer {
                             this.adapter.log.warn(`Client [${clientId}] Cannot publish message: ${e}`);
                         }
                         if (this.config.sendInterval) {
-                            setTimeout(() => this.checkResends(), this.config.sendInterval);
+                            this.adapter.setTimeout(() => this.checkResends(), this.config.sendInterval);
                         }
                         else {
                             setImmediate(() => this.checkResends());
@@ -2625,7 +2627,7 @@ class MQTTServer {
                     },
                     native: {},
                 };
-                this.adapter.setObject('info.connection', obj, () => this.updateClients());
+                this.adapter.extendObject('info.connection', obj, () => this.updateClients());
             }
             else {
                 this.updateClients();
@@ -2652,7 +2654,7 @@ class MQTTServer {
         try {
             // If using MQTTs, then create a TLS server with tls.createServer(), it's better for the TLS handshake.
             // Otherwise, the server may not send MQTT-CONNACK, and protocol handling could fail.
-            this.server = this.config.ssl ? (0, tls_1.createServer)(this.config.certificates) : (0, net_1.createServer)();
+            this.server = this.config.ssl ? (0, node_tls_1.createServer)(this.config.certificates) : (0, node_net_1.createServer)();
         }
         catch (err) {
             this.adapter.log.error(`Cannot create server: ${err}`);
@@ -2671,14 +2673,14 @@ class MQTTServer {
         else {
             this.startListeners();
         }
-        this.resendTimer = setInterval(() => !this.resending && this.checkResends(), this.config.retransmitInterval || 2000);
+        this.resendTimer = this.adapter.setInterval(() => !this.resending && this.checkResends(), this.config.retransmitInterval || 2000);
         // remove the objects of clients that did not connect for a while: now and once a day
         if (!this.config.doNotCreateClientObjects && this.config.removeClientsAfterDays > 0) {
             const cleanup = () => {
                 this.removeStaleClientObjects().catch(e => this.adapter.log.warn(`Cannot remove old client objects: ${e?.message ?? e}`));
             };
             cleanup();
-            this.clientsCleanupTimer = setInterval(cleanup, 24 * 3600 * 1000);
+            this.clientsCleanupTimer = this.adapter.setInterval(cleanup, 24 * 3600 * 1000);
         }
     }
     /**
@@ -2699,6 +2701,14 @@ class MQTTServer {
             reason =
                 'the client closed the connection during the TLS handshake. Usually it does not trust the certificate of this server (self-signed?), or it was only a port check';
         }
+        else if (err.code === 'ERR_SSL_TLSV1_ALERT_UNKNOWN_CA' ||
+            err.code === 'ERR_SSL_SSLV3_ALERT_BAD_CERTIFICATE' ||
+            err.code === 'ERR_SSL_SSLV3_ALERT_CERTIFICATE_UNKNOWN' ||
+            err.code === 'ERR_SSL_SSLV3_ALERT_CERTIFICATE_EXPIRED') {
+            // the client refused the certificate and said so (e.g. mosquitto), instead of just closing
+            reason =
+                'the client does not trust the certificate of this server. For a self-signed certificate give the client its CA certificate (e.g. mosquitto: --cafile)';
+        }
         else if (err.code === 'ERR_SSL_WRONG_VERSION_NUMBER' || err.code === 'ERR_SSL_HTTP_REQUEST') {
             reason = 'the client does not use TLS. Switch on TLS (SSL) in the client or switch off "SSL" here';
         }
@@ -2706,7 +2716,8 @@ class MQTTServer {
             reason = 'the client uses a TLS version that is too old or not supported';
         }
         else {
-            reason = err.message;
+            // OpenSSL messages span several lines and name source files: keep the first line only
+            reason = String(err.message).split('\n')[0].trim();
         }
         const text = `TLS connection from ${address} failed: ${reason} (${err.code || 'TLS error'})`;
         const code = err.code || err.message;
@@ -2776,7 +2787,7 @@ class MQTTServer {
             return;
         }
         if (this.config.webSocket) {
-            this.serverForWs = this.config.ssl ? (0, https_1.createServer)(this.config.certificates) : (0, http_1.createServer)();
+            this.serverForWs = this.config.ssl ? (0, node_https_1.createServer)(this.config.certificates) : (0, node_http_1.createServer)();
             this.serverWs = new ws_1.Server({ server: this.serverForWs });
             try {
                 this.adapter.log.debug(`The MQTT server (Websocket) is starting now...`);

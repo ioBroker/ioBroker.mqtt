@@ -9,7 +9,7 @@ mqtt blocks to its "sendTo" category.
 npm run build:blockly
 ```
 
-which type-checks (`tsc -p src-blockly/tsconfig.json`) and bundles (`src-blockly/build.mjs`).
+which type-checks (`tsc -p src-blockly/tsconfig.json`) and bundles (`scripts/build-blockly.mjs`).
 `npm run build` does both this and the adapter build.
 
 ## Layout
