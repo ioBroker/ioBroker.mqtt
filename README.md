@@ -224,10 +224,10 @@ You can disable the creation of the client objects in the instance settings. (**
 
 Objects of clients that have not been connected for some days are removed automatically (**Remove client objects after**, default 7 days, `0` = never). This matters for devices that use a new client ID for every connection: without it, they leave a new object behind each time. The cleanup runs when the instance starts and then once a day. Objects for which you have switched on logging (e.g. History or InfluxDB) are kept.
 
-## Todo
-* Implement resend of `QoS 2` messages after a while.
-  Whenever a packet gets lost on the way, the sender is responsible for resending the last message after a reasonable amount of time. This is true when the sender is a MQTT client and also when a MQTT broker sends a message.
+### Messages with QoS 1 and 2
+In server mode, a message with QoS 1 or 2 that a client has not confirmed yet is sent again: to MQTT 3.1.1 clients every 2 seconds while the connection stands, to MQTT 5 clients only when they connect again and keep their session (MQTT 5 does not allow sending it again on the same connection). A message that is sent again is marked as a duplicate, so the client can recognize it.
 
+## Todo
 * queue packets with `QoS 1/2` for the offline clients with the persistent session.
   [Read here](https://www.hivemq.com/blog/mqtt-essentials-part-7-persistent-session-queuing-messages)
 
@@ -237,6 +237,9 @@ Objects of clients that have not been connected for some days are removed automa
 -->
 
 ## Changelog
+### **WORK IN PROGRESS**
+- (@Schimi1983) Server mode, QoS 1/2: MQTT 5 clients no longer get a message again while the connection stands, only after a reconnect with a kept session. After the client confirmed a QoS 2 message with PUBREC, only the PUBREL is repeated instead of the whole message. A message is marked as a duplicate only when it is really sent again. A QoS 2 message that a client sends twice, and a repeated PUBREL, are confirmed again instead of being ignored, so the client does not repeat them forever. Two QoS 2 messages completed at the same moment could deliver one twice and keep the other one in the queue
+
 ### 9.3.0 (2026-11-17)
 - (@GermanBluefox) Client mode reconnects after the broker refused the login (CONNACK error), e.g. while the broker is still starting (#703)
 - (@Schimi1983) Client mode: new setting "Do not subscribe" to only send ioBroker states to the broker; an empty pattern field still subscribes to all topics (#319)
