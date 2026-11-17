@@ -26,6 +26,8 @@ export interface MqttAdapterConfig {
     credentialId?: string;
     url: string;
     patterns: string;
+    /** Client mode: subscribe to no topic at all, only publish (#319) */
+    noSubscriptions?: boolean;
     onchange: boolean;
     publishAllOnStart: boolean;
     debug: boolean;

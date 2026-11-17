@@ -391,6 +391,7 @@
     "credentialId": "",
     "url": "127.0.0.1",
     "patterns": "#",
+    "noSubscriptions": false,
     "onchange": true,
     "publishAllOnStart": true,
     "debug": false,
