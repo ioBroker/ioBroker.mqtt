@@ -3327,3 +3327,270 @@ describe('MQTT server: type of changing topics', function () {
         assert.strictEqual(await typeAfter('types/subscribed', '5'), 'number');
     });
 });
+
+// QoS 2 handshake and retransmission: after PUBREC only PUBREL is repeated, DUP only for a real
+// redelivery, duplicates and repeated PUBREL are confirmed again, and MQTT 5 clients get nothing
+// repeated while the connection stands (MQTT-4.3.3-1, MQTT-3.3.1-1, MQTT-4.3.3-2, MQTT-4.4.0-1)
+describe('MQTT server: QoS 2 handshake and retransmission', function () {
+    const net = require('node:net');
+    const Connection = require('../build/lib/MqttConnection').default;
+    let adapter: Adapter;
+    let server: any;
+    const states: Record<string, any> = {};
+    this.timeout(10000);
+    let suitePort: number;
+
+    type RawClient = {
+        connection: any;
+        next: (cmd: string, timeout?: number) => Promise<any>;
+        close: () => void;
+    };
+
+    const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+    /**
+     * Connects a client that acknowledges nothing by itself, so the test decides what goes back.
+     *
+     * @param clientId The client id
+     * @param clean Whether to start a clean session
+     * @param protocolVersion MQTT 3.1.1 (4) or MQTT 5 (5)
+     * @returns The connected client
+     */
+    function rawClient(clientId: string, clean = true, protocolVersion: 4 | 5 = 4): Promise<RawClient> {
+        return new Promise((resolve, reject) => {
+            const stream = net.createConnection(suitePort, '127.0.0.1');
+            const connection = new Connection(stream);
+            const received: any[] = [];
+            const waiting: { cmd: string; resolve: (packet: any) => void }[] = [];
+            for (const cmd of ['connack', 'suback', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp']) {
+                connection.on(cmd, (packet: any) => {
+                    const pos = waiting.findIndex(w => w.cmd === packet.cmd);
+                    if (pos !== -1) {
+                        waiting.splice(pos, 1)[0].resolve(packet);
+                    } else {
+                        received.push(packet);
+                    }
+                });
+            }
+            const next = (cmd: string, timeout = 2000): Promise<any> =>
+                new Promise((resolveNext, rejectNext) => {
+                    const pos = received.findIndex(p => p.cmd === cmd);
+                    if (pos !== -1) {
+                        resolveNext(received.splice(pos, 1)[0]);
+                        return;
+                    }
+                    const entry = { cmd, resolve: resolveNext };
+                    waiting.push(entry);
+                    setTimeout(() => {
+                        const i = waiting.indexOf(entry);
+                        if (i !== -1) {
+                            waiting.splice(i, 1);
+                            rejectNext(new Error(`no ${cmd} received`));
+                        }
+                    }, timeout);
+                });
+            const close = (): void => {
+                try {
+                    stream.destroy();
+                } catch {
+                    /* ignore */
+                }
+            };
+            stream.on('error', reject);
+            stream.on('connect', () =>
+                connection.connect({
+                    clientId,
+                    protocolId: 'MQTT',
+                    protocolVersion,
+                    clean,
+                    keepalive: 0,
+                    properties: protocolVersion === 5 && !clean ? { sessionExpiryInterval: 300 } : undefined,
+                }),
+            );
+            next('connack').then(() => resolve({ connection, next, close }), reject);
+        });
+    }
+
+    async function subscribe(client: RawClient, topic: string, qos: 1 | 2): Promise<void> {
+        client.connection.subscribe({ messageId: 1, subscriptions: [{ topic, qos }] });
+        await client.next('suback');
+    }
+
+    async function sendState(topic: string, val: number): Promise<void> {
+        const id = `mqtt.0.${topic.replace(/\//g, '.')}`;
+        await adapter.setForeignObjectAsync(id, {
+            _id: id,
+            type: 'state',
+            common: { name: id, type: 'number', role: 'value', read: true, write: true },
+            native: { topic },
+        });
+        await adapter.setForeignStateAsync(id, val, true);
+        server.onStateChange(id, { val, ack: true });
+    }
+
+    /**
+     * Resolves true if no packet of this type arrives within the time.
+     *
+     * @param client The client
+     * @param cmd The packet type
+     * @param ms How long to wait
+     * @returns true if nothing arrived
+     */
+    async function nothing(client: RawClient, cmd: string, ms: number): Promise<boolean> {
+        try {
+            await client.next(cmd, ms);
+            return false;
+        } catch {
+            return true;
+        }
+    }
+
+    before('MQTT server (QoS 2 handshake): Start server', done => {
+        suitePort = ++port;
+        adapter = new Adapter({ port: suitePort, defaultQoS: 1, retransmitInterval: 200 });
+        server = new Server(adapter, states);
+        setTimeout(done, 300);
+    });
+
+    after('MQTT server (QoS 2 handshake): Stop server', done => {
+        server.destroy(done);
+    });
+
+    it('repeats the PUBREL and not the PUBLISH once the client sent PUBREC', async () => {
+        const client = await rawClient('relRepeat');
+        await subscribe(client, 'rel/#', 2);
+        await sendState('rel/a', 1);
+        const publish = await client.next('publish');
+        assert.strictEqual(publish.qos, 2);
+        client.connection.pubrec({ messageId: publish.messageId });
+        await client.next('pubrel');
+
+        // no PUBCOMP: the broker has to repeat the PUBREL, the PUBLISH is done
+        const again = await client.next('pubrel', 1500);
+        assert.strictEqual(again.messageId, publish.messageId);
+        assert.ok(await nothing(client, 'publish', 500), 'the PUBLISH must not be sent again after PUBREC');
+
+        client.connection.pubcomp({ messageId: publish.messageId });
+        await delay(100);
+        assert.strictEqual(server.clients.relRepeat._messages.length, 0);
+        client.close();
+    });
+
+    it('sends the PUBREL and not the PUBLISH after a reconnect', async () => {
+        let client = await rawClient('relReconnect', false);
+        await subscribe(client, 'relre/#', 2);
+        await sendState('relre/a', 1);
+        const publish = await client.next('publish');
+        client.connection.pubrec({ messageId: publish.messageId });
+        await client.next('pubrel');
+        client.close();
+        await delay(200);
+
+        client = await rawClient('relReconnect', false);
+        const pubrel = await client.next('pubrel', 3000);
+        assert.strictEqual(pubrel.messageId, publish.messageId);
+        assert.ok(await nothing(client, 'publish', 500), 'the PUBLISH must not be sent again after PUBREC');
+        client.connection.pubcomp({ messageId: publish.messageId });
+        await delay(100);
+        assert.strictEqual(server.clients.relReconnect._messages.length, 0);
+        client.close();
+    });
+
+    it('sets DUP for a redelivery but not for a message queued while the client was offline', async () => {
+        let client = await rawClient('dupFlag', false);
+        await subscribe(client, 'dup/#', 1);
+        await sendState('dup/a', 1);
+        const first = await client.next('publish');
+        assert.strictEqual(first.dup, false, 'the first delivery has no DUP');
+        client.close();
+        await delay(200);
+
+        await sendState('dup/b', 2); // the client is offline
+        await delay(100);
+
+        client = await rawClient('dupFlag', false);
+        const one = await client.next('publish', 3000);
+        const two = await client.next('publish', 3000);
+        const byTopic: Record<string, any> = { [one.topic]: one, [two.topic]: two };
+        assert.strictEqual(byTopic['dup/a'].dup, true, 'a message that was sent before is a redelivery');
+        assert.strictEqual(byTopic['dup/b'].dup, false, 'a message queued while offline goes out for the first time');
+        client.connection.puback({ messageId: one.messageId });
+        client.connection.puback({ messageId: two.messageId });
+        client.close();
+    });
+
+    it('answers a repeated QoS 2 PUBLISH with PUBREC again and processes it once', async () => {
+        const client = await rawClient('dupInbound');
+        client.connection.publish({ topic: 'twice/in', payload: '5', qos: 2, messageId: 77, retain: false });
+        await client.next('pubrec');
+        // our PUBREC got lost: the client sends the message again
+        client.connection.publish({ topic: 'twice/in', payload: '5', qos: 2, messageId: 77, retain: false, dup: true });
+        const again = await client.next('pubrec');
+        assert.strictEqual(again.messageId, 77);
+        client.connection.pubrel({ messageId: 77 });
+        await client.next('pubcomp');
+        await delay(100);
+        assert.strictEqual((await adapter.getForeignStateAsync('mqtt.0.twice.in'))?.val, 5);
+        assert.ok(!server.clients.dupInbound._messages.some((m: any) => m.cmd === 'pubrel'));
+        client.close();
+    });
+
+    it('confirms a PUBREL for an unknown identifier with PUBCOMP', async () => {
+        const client = await rawClient('unknownRel');
+        client.connection.pubrel({ messageId: 999 });
+        const pubcomp = await client.next('pubcomp');
+        assert.strictEqual(pubcomp.messageId, 999);
+        client.close();
+    });
+
+    it('processes two QoS 2 messages whose PUBREL come back to back', async () => {
+        const client = await rawClient('backToBack');
+        client.connection.publish({ topic: 'b2b/a', payload: '1', qos: 2, messageId: 11, retain: false });
+        client.connection.publish({ topic: 'b2b/b', payload: '2', qos: 2, messageId: 12, retain: false });
+        await client.next('pubrec');
+        await client.next('pubrec');
+        client.connection.pubrel({ messageId: 11 });
+        client.connection.pubrel({ messageId: 12 });
+        await client.next('pubcomp');
+        await client.next('pubcomp');
+        await delay(300);
+        assert.strictEqual((await adapter.getForeignStateAsync('mqtt.0.b2b.a'))?.val, 1);
+        assert.strictEqual((await adapter.getForeignStateAsync('mqtt.0.b2b.b'))?.val, 2);
+        assert.strictEqual(
+            server.clients.backToBack._messages.filter((m: any) => m.cmd === 'pubrel').length,
+            0,
+            'no inbound message may stay in the queue',
+        );
+        client.close();
+    });
+
+    it('MQTT 5: does not repeat a message while the connection stands, only after a reconnect', async () => {
+        let client = await rawClient('v5NoRepeat', false, 5);
+        await subscribe(client, 'v5r/#', 1);
+        await sendState('v5r/a', 1);
+        const first = await client.next('publish');
+        assert.ok(await nothing(client, 'publish', 800), 'MQTT 5 forbids a retransmission on the same connection');
+        client.close();
+        await delay(200);
+
+        client = await rawClient('v5NoRepeat', false, 5);
+        const again = await client.next('publish', 3000);
+        assert.strictEqual(again.messageId, first.messageId);
+        assert.strictEqual(again.dup, true);
+        client.connection.puback({ messageId: again.messageId });
+        await delay(100);
+        assert.strictEqual(server.clients.v5NoRepeat._messages.length, 0);
+        client.close();
+    });
+
+    it('MQTT 5: a PUBREC with an error code ends the exchange without PUBREL', async () => {
+        const client = await rawClient('v5Refused', true, 5);
+        await subscribe(client, 'v5x/#', 2);
+        await sendState('v5x/a', 1);
+        const publish = await client.next('publish');
+        client.connection.pubrec({ messageId: publish.messageId, reasonCode: 0x80 });
+        assert.ok(await nothing(client, 'pubrel', 500), 'no PUBREL after a refusing PUBREC');
+        assert.strictEqual(server.clients.v5Refused._messages.length, 0);
+        client.close();
+    });
+});

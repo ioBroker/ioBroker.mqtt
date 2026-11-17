@@ -60,6 +60,10 @@ type MqttMessage = {
     cmd?: 'pubreq' | 'publish' | 'pubrel';
     dup?: boolean;
     binary?: boolean;
+    /** The PUBLISH went out at least once, so sending it again is a redelivery (DUP 1, MQTT-3.3.1-1) */
+    sent?: boolean;
+    /** QoS 2 sent by us: the client answered with PUBREC and we sent PUBREL, only PUBCOMP is missing */
+    released?: boolean;
 };
 
 /**
@@ -855,6 +859,7 @@ export default class MQTTServer {
         }
 
         client.publish(message);
+        message.sent = true;
         client._messages.push(message);
     }
 
@@ -888,6 +893,7 @@ export default class MQTTServer {
             }
             message.ts = Date.now();
             client.publish(message);
+            message.sent = true;
             client._messages.push(message);
         }
     }
@@ -1472,7 +1478,11 @@ export default class MQTTServer {
                 this.adapter.log.debug(
                     `Client [${client.id}] Resend messages on connect: ${messages[i].topic} and id ${messages[i].messageId} (${messages[i].cmd}) = ${messages[i].payload}`,
                 );
-                if (messages[i].cmd === 'publish') {
+                if (messages[i].cmd === 'publish' && messages[i].released) {
+                    // The client already has the message and confirmed it with PUBREC: only the
+                    // PUBREL is repeated, never the PUBLISH again (MQTT-4.3.3-1, MQTT-4.4.0-1)
+                    client.pubrel({ messageId: messages[i].messageId });
+                } else if (messages[i].cmd === 'publish') {
                     // An unacknowledged message is sent again with the identifier it had
                     // (MQTT-4.4.0-1). Only one without an identifier, or whose identifier is
                     // taken by another queued message, gets a new one.
@@ -1482,7 +1492,11 @@ export default class MQTTServer {
                     ) {
                         messages[i].messageId = this.getNextMessageId(client);
                     }
+                    // DUP only for a real redelivery; a message queued while the client was offline
+                    // goes out for the first time (MQTT-3.3.1-1)
+                    messages[i].dup = !!messages[i].sent && messages[i].qos > 0;
                     client.publish(messages[i]);
+                    messages[i].sent = true;
                 }
             } catch (e) {
                 this.adapter.log.warn(`Client [${client.id}] Cannot resend message: ${e as Error}`);
@@ -2799,10 +2813,13 @@ export default class MQTTServer {
                             e => e.cmd === 'pubrel' && e.messageId === packet.messageId,
                         );
                         if (pack) {
-                            // duplicate message => ignore
-                            this.adapter.log.info(
-                                `Client [${client.id}] Ignored duplicate message with ID: ${packet.messageId}`,
+                            // The client did not get our PUBREC and sends the message again: it is not
+                            // processed twice, but has to be confirmed again, otherwise the client
+                            // repeats it forever (MQTT-4.3.3-2, MQTT 5 §4.3.3)
+                            this.adapter.log.debug(
+                                `Client [${client.id}] Duplicate message with ID ${packet.messageId}, PUBREC sent again`,
                             );
+                            client.pubrec({ messageId: packet.messageId });
                             return;
                         }
                         packet.ts = Date.now();
@@ -2829,6 +2846,7 @@ export default class MQTTServer {
                     payload: string | Buffer;
                     qos: 0 | 1 | 2;
                     retain: boolean;
+                    reasonCode?: number;
                 }) => {
                     if (!this.validateRequest('pubrec', client)) {
                         return;
@@ -2846,7 +2864,19 @@ export default class MQTTServer {
 
                     // remove this message from queue
                     const frame = client._messages?.find(e => e.cmd === 'publish' && e.messageId === packet.messageId);
-                    if (frame) {
+                    if (frame && (packet.reasonCode ?? 0) >= 0x80) {
+                        // MQTT 5: the client refused the message; the exchange ends here without
+                        // PUBREL and the identifier is free again (MQTT 5 §4.3.3)
+                        this.adapter.log.debug(
+                            `Client [${client.id}] refused message ${packet.messageId} for "${frame.topic}" (reason 0x${packet.reasonCode!.toString(16)})`,
+                        );
+                        client._messages.splice(client._messages.indexOf(frame), 1);
+                        this.flushPending(client);
+                    } else if (frame) {
+                        // From now on only the PUBREL is repeated, never the PUBLISH (MQTT-4.3.3-1)
+                        frame.released = true;
+                        frame.ts = Date.now();
+                        frame.count = 0;
                         client.pubrel({ messageId: packet.messageId });
                     } else {
                         // The message is not in our queue anymore (e.g. purged after exceeding the
@@ -2919,12 +2949,22 @@ export default class MQTTServer {
                     pos = client._messages.findIndex(e => e.cmd === 'pubrel' && e.messageId === packet.messageId);
                 }
                 if (pos !== -1) {
+                    // @KI_HINWEIS: taken out of the queue before the await. receivedTopic() waits for the
+                    // database, meanwhile another PUBREL can change the queue and `pos` would point to a
+                    // different message (one message delivered twice, another one kept forever).
+                    const [message] = client._messages.splice(pos, 1);
                     client.pubcomp({ messageId: packet.messageId });
-                    await this.receivedTopic(client._messages[pos], client);
-                    client._messages.splice(pos, 1);
+                    await this.receivedTopic(message, client);
                 } else {
-                    this.adapter.log.info(
-                        `Client [${client.id}] Received pubrel for unknown message ID: ${packet.messageId}`,
+                    // A repeated PUBREL (our PUBCOMP got lost) is confirmed again, otherwise the client
+                    // keeps the identifier busy forever (MQTT-4.3.3-2; MQTT 5 with reason 0x92)
+                    this.adapter.log.debug(
+                        `Client [${client.id}] Received pubrel for unknown message ID: ${packet.messageId}, PUBCOMP sent`,
+                    );
+                    client.pubcomp(
+                        client.protocolVersion === 5
+                            ? { messageId: packet.messageId, reasonCode: 0x92 }
+                            : { messageId: packet.messageId },
                     );
                 }
             });
@@ -3392,6 +3432,13 @@ export default class MQTTServer {
                         continue;
                     }
 
+                    // MQTT 5 forbids sending a message again while the connection stands; it is only
+                    // repeated after a reconnect with a kept session (MQTT-4.4.0-1 in 5.0). MQTT 3.1.1
+                    // allows it, so it is kept there.
+                    if (this.clients[clientId].protocolVersion === 5) {
+                        continue;
+                    }
+
                     if (now - message.ts! >= this.config.retransmitInterval) {
                         if (message.count! > this.config.retransmitCount) {
                             if (this.clients[clientId]._keepalive === 0) {
@@ -3421,7 +3468,10 @@ export default class MQTTServer {
                             this.adapter.log.debug(
                                 `Client [${clientId}] Resend for ${message.cmd} message topic: ${message.topic}, payload: ${message.payload}`,
                             );
-                            if (message.cmd === 'publish') {
+                            if (message.cmd === 'publish' && message.released) {
+                                // after PUBREC only the PUBREL is repeated (MQTT-4.3.3-1)
+                                this.clients[clientId].pubrel({ messageId: message.messageId });
+                            } else if (message.cmd === 'publish') {
                                 message.dup = true;
                                 this.clients[clientId].publish(message);
                             } else if (message.cmd === 'pubrel') {
