@@ -242,6 +242,7 @@ Objects of clients that have not been connected for some days are removed automa
 - (@Schimi1983) Client mode: new setting "Do not subscribe" to only send ioBroker states to the broker; an empty pattern field still subscribes to all topics (#319)
 - (@Schimi1983) Server mode: a client that refuses the certificate (e.g. mosquitto without the CA certificate) is logged with a readable reason instead of the raw OpenSSL message. Timers use the adapter's own timer functions, which are cleared automatically when the instance stops (repository checker)
 - (@Schimi1983) The default publish mask `mqtt.0.*` of a new instance is changed to the own instance only on the first start. A mask `mqtt.0.*` entered later on purpose (e.g. on `mqtt.2`) is kept. After the update every instance except `mqtt.0` restarts once (#702)
+- (@GermanBluefox) Objects of the adapter (`info.connection`, `info.lastSession`, client objects) are created with `extendObject` instead of `setObject`, so settings on them (e.g. History) are kept. `@iobroker/testing` updated, the Blockly build script moved to `scripts/` (repository checker, #665)
 
 ### 9.2.0 (2026-11-08)
 - (@Schimi1983) Server mode: objects of clients that have not been connected for 7 days are removed (setting "Remove client objects after", 0 = never), so devices with a new client ID per connection no longer leave one object behind each time. A connect or disconnect only writes the client states that change instead of all of them (#518)

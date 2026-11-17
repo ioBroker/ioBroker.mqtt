@@ -204,6 +204,18 @@ export default class AdapterSimulator {
         return new Promise(resolve => this.setObject(id, obj, (err, resObj) => resolve(resObj)));
     }
 
+    extendObjectAsync(id: string, obj: Partial<ioBroker.Object>): Promise<{ id: string }> {
+        if (!id.startsWith(`${this.namespace}.`)) {
+            id = `${this.namespace}.${id}`;
+        }
+        // like js-controller: undefined values are not stored
+        return this.extendForeignObjectAsync(id, JSON.parse(JSON.stringify(obj)));
+    }
+
+    extendObject(id: string, obj: Partial<ioBroker.Object>, cb?: ioBroker.SetObjectCallback): void {
+        void this.extendObjectAsync(id, obj).then(res => cb?.(null, res));
+    }
+
     getForeignObject(id: string, cb?: ioBroker.GetObjectCallback): void {
         cb?.(null, this.#objects[id]);
     }

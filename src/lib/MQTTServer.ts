@@ -459,7 +459,7 @@ export default class MQTTServer {
                     clientIds.push(oid);
                     const clientObj = await this.adapter.getObjectAsync(oid);
                     if (!clientObj?.native) {
-                        await this.adapter.setObject(oid, {
+                        await this.adapter.extendObjectAsync(oid, {
                             type: 'state',
                             common: {
                                 name: _id,
@@ -3489,7 +3489,7 @@ export default class MQTTServer {
                     native: {},
                 };
 
-                this.adapter.setObject('info.connection', obj, () => this.updateClients());
+                this.adapter.extendObject('info.connection', obj, () => this.updateClients());
             } else {
                 this.updateClients();
             }

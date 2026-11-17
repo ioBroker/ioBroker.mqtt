@@ -712,7 +712,7 @@ export default class MQTTClient {
                     native: {},
                 };
 
-                this.adapter.setObject('info.connection', obj, () =>
+                this.adapter.extendObject('info.connection', obj, () =>
                     this.adapter.setState('info.connection', this.connected, true),
                 );
             }
@@ -749,7 +749,7 @@ export default class MQTTClient {
                         native: {},
                     };
 
-                    this.adapter.setObject('info.lastSession', obj, () =>
+                    this.adapter.extendObject('info.lastSession', obj, () =>
                         this.adapter.setState('info.lastSession', '', true),
                     );
                 }
