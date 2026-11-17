@@ -627,3 +627,31 @@ export function convertMessage(
 export function plainAddress(address: string | undefined): string | undefined {
     return address?.replace(/^::ffff:(?=\d+\.\d+\.\d+\.\d+$)/, '');
 }
+
+/**
+ * Settings to write once on the first start of an instance (#702).
+ * Every new instance gets the default "publish" mask `mqtt.0.*`. On an instance other than 0 this
+ * would publish the states of another instance, so on the first start it is changed to the own
+ * namespace. The marker `publishDefaultChecked` is set in any case, also when the mask was not
+ * changed: a mask `mqtt.0.*` that the user enters later deliberately is then kept.
+ *
+ * @param publish the configured "publish" mask
+ * @param instance number of the instance
+ * @param namespace namespace of the instance, e.g. `mqtt.2`
+ * @param checked the marker `publishDefaultChecked`
+ * @returns the native settings to write (the instance restarts then), or null if there is nothing to do
+ */
+export function publishDefaultFix(
+    publish: string | undefined,
+    instance: number | undefined,
+    namespace: string,
+    checked: boolean | undefined,
+): { publish?: string; publishDefaultChecked: true } | null {
+    // @KI_HINWEIS Instance 0 gets no marker and no restart: for it the default already is its own namespace
+    if (checked || !instance) {
+        return null;
+    }
+    return publish === 'mqtt.0.*'
+        ? { publish: `${namespace}.*`, publishDefaultChecked: true }
+        : { publishDefaultChecked: true };
+}

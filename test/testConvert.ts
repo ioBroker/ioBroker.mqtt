@@ -14,6 +14,7 @@ const {
     idPattern2RegEx,
     isValidTopicFilter,
     plainAddress,
+    publishDefaultFix,
 } = require('../build/lib/common');
 
 // Minimal adapter stub – convertMessage only uses `log` (for the invalid-JSON debug branch).
@@ -450,5 +451,30 @@ describe('plainAddress', () => {
         assert.strictEqual(plainAddress('::1'), '::1');
         assert.strictEqual(plainAddress('::ffff:abcd'), '::ffff:abcd');
         assert.strictEqual(plainAddress(undefined), undefined);
+    });
+});
+
+describe('publishDefaultFix (#702)', () => {
+    it('changes the default mask of a new instance to the own instance and sets the marker', () => {
+        assert.deepStrictEqual(publishDefaultFix('mqtt.0.*', 2, 'mqtt.2', false), {
+            publish: 'mqtt.2.*',
+            publishDefaultChecked: true,
+        });
+        assert.deepStrictEqual(publishDefaultFix('mqtt.0.*', 2, 'mqtt.2', undefined), {
+            publish: 'mqtt.2.*',
+            publishDefaultChecked: true,
+        });
+    });
+    it('only sets the marker if the mask is not the default', () => {
+        assert.deepStrictEqual(publishDefaultFix('mqtt.2.*,javascript.*', 2, 'mqtt.2', undefined), {
+            publishDefaultChecked: true,
+        });
+        assert.deepStrictEqual(publishDefaultFix('', 2, 'mqtt.2', false), { publishDefaultChecked: true });
+    });
+    it('keeps "mqtt.0.*" on instance 2 once the marker is set', () => {
+        assert.strictEqual(publishDefaultFix('mqtt.0.*', 2, 'mqtt.2', true), null);
+    });
+    it('does nothing on instance 0 (no restart)', () => {
+        assert.strictEqual(publishDefaultFix('mqtt.0.*', 0, 'mqtt.0', false), null);
     });
 });

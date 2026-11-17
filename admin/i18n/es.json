@@ -94,7 +94,7 @@
     "ignoredTopics_help": "Los topics recibidos que coinciden con estas entradas se ignoran. Separados por comas, como ID ('evcc.loadpoints.*.planSoc') o filtro MQTT ('homeassistant/#'). '*' y '#' coinciden con cualquier cosa, '+' con exactamente un nivel. Una entrada sin comodín abarca también todo lo que está debajo",
     "Binary topics (stored as files):": "Temas binarios (guardados como archivos):",
     "Payloads of these topics are stored as files in the file storage instead of states. The state holds the file URL. Wildcards allowed (divided by comma, e.g. 'valetudo/+/map,zigbee.*.image')": "Los datos de estos temas se guardan como archivos en el almacenamiento de archivos en lugar de estados. El estado contiene la URL del archivo. Se permiten comodines (separados por coma, p. ej. 'valetudo/+/map,zigbee.*.image')",
-    "These states will be published. (Divided by comma, e.g. 'mqtt.0.*,javascript.*')": "Estos estados se publicarán. (Separados por coma, p. ej. 'mqtt.0.*,javascript.*')",
+    "These states will be published. Divided by comma, e.g. 'mqtt.X.*,javascript.*' (X = number of this instance)": "Estos estados se publicarán. Separados por coma, p. ej. 'mqtt.X.*,javascript.*' (X = número de esta instancia)",
     "Credentials:": "Credenciales",
     "credentials_help": "Si se selecciona, el nombre de usuario y la contraseña se toman del almacén central de credenciales (Ajustes → Credenciales) en lugar de los campos de abajo",
     "Remove client objects after": "Eliminar objetos de cliente después de",
