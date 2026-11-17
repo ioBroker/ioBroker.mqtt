@@ -237,7 +237,7 @@ Objects of clients that have not been connected for some days are removed automa
 -->
 
 ## Changelog
-### **WORK IN PROGRESS**
+### 9.3.0 (2026-11-17)
 - (@GermanBluefox) Client mode reconnects after the broker refused the login (CONNACK error), e.g. while the broker is still starting (#703)
 - (@Schimi1983) Client mode: new setting "Do not subscribe" to only send ioBroker states to the broker; an empty pattern field still subscribes to all topics (#319)
 - (@Schimi1983) Server mode: a client that refuses the certificate (e.g. mosquitto without the CA certificate) is logged with a readable reason instead of the raw OpenSSL message. Timers use the adapter's own timer functions, which are cleared automatically when the instance stops (repository checker)
@@ -273,13 +273,6 @@ Objects of clients that have not been connected for some days are removed automa
 * (@GermanBluefox) Client mode: "Test connection" passes user name and password as options, so special characters in them no longer break the connection URL
 * (@Schimi1983) Server mode: a client ID with characters that are not allowed in an object ID (e.g. binary data or `*`) no longer fails with "Cannot update client objects: Error: Invalid ID"; such characters become `_` in `info.clients.<clientId>` (#493)
 * (@Schimi1983) Log level of messages that come for every subscription or published state is debug instead of info: `subscribes on`, `unsubscribes on`, `publishOnSubscribe` (server) and `send2Server`, `Publishing state` (client) (#481)
-
-### 8.1.5 (2026-10-27)
-* (@Schimi1983) Server mode: every QoS 1/2 message sent to a client now gets its own packet identifier. Before, all messages used the same ID, so acknowledgements could not be matched and messages were retransmitted endlessly
-* (@GermanBluefox) Server mode: the packet identifiers of a client and of the broker are kept apart. A QoS 2 message of a client was dropped as duplicate when the broker had a message with the same identifier in flight to it. After the counter wrapped, an identifier still in flight is not handed out again, and an unacknowledged message keeps its identifier when it is sent again after a reconnect
-* (@GermanBluefox) Server mode: a deleted value (empty payload) and a value of `null` are sent as empty payload instead of `"null"` or `"NaN"`, so a client that deletes its retained topics does not get values back. A received empty payload sets the state to `null` and keeps its type (#682)
-* (@GermanBluefox) The default of "Maximum topic name length" is 255 characters for new instances (was 100). The warning about a too long topic names this setting and comes only once per topic (#560)
-* (@GermanBluefox) Client mode: a reconnect attempt no longer reports the connection as established (#508)
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
