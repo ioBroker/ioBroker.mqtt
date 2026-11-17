@@ -27,6 +27,7 @@ export interface AdapterConfig {
     doNotCreateClientObjects?: boolean;
     removeClientsAfterDays?: number;
     reconnectPeriod?: number;
+    noSubscriptions?: boolean;
 }
 
 export default class AdapterSimulator {
@@ -270,11 +271,19 @@ export default class AdapterSimulator {
         this.#files = {};
     }
 
-    setTimeout(func: (...args: unknown[]) => void, time: number): NodeJS.Timeout {
-        return setTimeout(func, time);
+    setTimeout(func: (...args: any[]) => void, time: number, ...args: any[]): NodeJS.Timeout {
+        return setTimeout(func, time, ...args);
     }
 
     clearTimeout(timer: NodeJS.Timeout): void {
         clearTimeout(timer);
+    }
+
+    setInterval(func: (...args: any[]) => void, time: number, ...args: any[]): NodeJS.Timeout {
+        return setInterval(func, time, ...args);
+    }
+
+    clearInterval(timer: NodeJS.Timeout): void {
+        clearInterval(timer);
     }
 }
