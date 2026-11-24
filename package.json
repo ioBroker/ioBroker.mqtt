@@ -47,7 +47,7 @@
     "@types/node": "^22.20.5",
     "blockly": "^13.4.0",
     "esbuild": "^0.28.2",
-    "globals": "^17.13.0",
+    "globals": "^17.14.0",
     "node.extend": "^2.0.3",
     "typescript": "~6.0.3"
   },
