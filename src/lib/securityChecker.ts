@@ -1,5 +1,5 @@
 import https from 'node:https';
-import { connect, type MqttClient, type IClientOptions } from 'mqtt';
+import type { MqttClient, IClientOptions } from 'mqtt';
 
 function _getPublicIP(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -15,7 +15,8 @@ function _getPublicIP(): Promise<string> {
     });
 }
 
-function _checkMqttServer(url: string): Promise<void> {
+async function _checkMqttServer(url: string): Promise<void> {
+    const { connect } = await import('mqtt');
     return new Promise<void>((resolve, reject) => {
         const opts: IClientOptions = {
             clientId: 'ioBrokerChecker',

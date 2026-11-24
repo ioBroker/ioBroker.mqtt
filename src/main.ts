@@ -1,6 +1,5 @@
 import { Adapter, Credentials, type AdapterOptions } from '@iobroker/adapter-core';
-import { connect } from 'mqtt';
-import MQTTClient from './lib/MQTTClient';
+import type MQTTClient from './lib/MQTTClient';
 import MQTTServer from './lib/MQTTServer';
 import type { MqttAdapterConfig, MqttPattern } from './lib/types';
 import { checkPublicIP } from './lib/securityChecker';
@@ -188,8 +187,10 @@ class MQTT extends Adapter {
         }
         // If no subscription, start client or server
         if (this.config.type === 'client') {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports -- Keep the client library out of server mode.
+            const { default: Client }: { default: typeof MQTTClient } = require('./lib/MQTTClient');
             this.config.clientId = this.config.clientId || `${this.host || 'mqtt'}.${this.namespace}`;
-            this.client = new MQTTClient(this, this.states);
+            this.client = new Client(this, this.states);
         } else {
             this.server = new MQTTServer(this, this.states);
 
@@ -341,6 +342,7 @@ class MQTT extends Adapter {
      * @param obj The `test` message: `url`, `port`, `ssl` and either `user`/`pass` or `credentialId`
      */
     async testConnection(obj: ioBroker.Message): Promise<void> {
+        const { connect } = await import('mqtt');
         let user: string = obj.message.user || '';
         let pass: string = obj.message.pass || '';
         if (obj.message.credentialId) {
